@@ -2,18 +2,46 @@ import React, { useEffect, useState } from "react";
 import ContactLink from "../organization/ContactLink";
 import { authFetch } from "../utils/authFetch";
 
+
 function ContactsList() {
   const [contacts, setContacts] = useState([]);
+  const [sortField, setSortField] = useState('name');
+  const [sortAsc, setSortAsc] = useState(true);
+
   useEffect(() => {
     async function fetchContacts() {
       const resp = await authFetch("/api/contacts/");
       if (resp.ok) {
         const data = await resp.json();
-        setContacts(data.contacts || []);
+        // Support both array and object response formats
+        setContacts(Array.isArray(data) ? data : data.contacts || []);
       }
     }
     fetchContacts();
   }, []);
+
+  function handleSort(field) {
+    if (sortField === field) {
+      setSortAsc(!sortAsc);
+    } else {
+      setSortField(field);
+      setSortAsc(true);
+    }
+  }
+
+  function getSortedContacts() {
+    const sorted = [...contacts].sort((a, b) => {
+      let valA = a[sortField] || '';
+      let valB = b[sortField] || '';
+      // Case-insensitive string sort
+      valA = typeof valA === 'string' ? valA.toLowerCase() : valA;
+      valB = typeof valB === 'string' ? valB.toLowerCase() : valB;
+      if (valA < valB) return sortAsc ? -1 : 1;
+      if (valA > valB) return sortAsc ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }
 
   return (
     <div className="container mt-4">
@@ -21,15 +49,21 @@ function ContactsList() {
       <table className="table table-sm mb-0">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Role</th>
+            <th style={{ cursor: 'pointer' }} onClick={() => handleSort('name')}>
+              Name {sortField === 'name' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
+            <th style={{ cursor: 'pointer' }} onClick={() => handleSort('role')}>
+              Role {sortField === 'role' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
             <th>Email</th>
             <th>Phone</th>
-            <th>Organization</th>
+            <th style={{ cursor: 'pointer' }} onClick={() => handleSort('organization_name')}>
+              Organization {sortField === 'organization_name' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
           </tr>
         </thead>
         <tbody>
-          {contacts.map(contact => (
+          {getSortedContacts().map(contact => (
             <tr key={contact.id}>
               <td><ContactLink contact={contact} /></td>
               <td>{contact.role}</td>
