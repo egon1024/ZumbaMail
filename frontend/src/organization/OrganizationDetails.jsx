@@ -21,7 +21,7 @@ function OrganizationDetails() {
       const resp = await authFetch(`/api/organizations/${id}/details/`);
       if (resp.ok) {
         const data = await resp.json();
-        setOrganization(data.organization);
+        setOrganization(data);
         setCurrentSession(data.current_session);
         setFutureSessions(data.future_sessions);
         setPastSessions(data.past_sessions);
@@ -55,7 +55,7 @@ function OrganizationDetails() {
               </thead>
               <tbody>
                 {organization.contacts.map(contact => (
-                  <tr key={contact.id}>
+                  <tr key={contact.id} className="reactive-contact-row">
                     <td><ContactLink contact={contact} /></td>
                     <td>{contact.role}</td>
                     <td>{contact.email ? (

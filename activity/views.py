@@ -1,4 +1,5 @@
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.generics import RetrieveUpdateAPIView
 from django.shortcuts import render
 from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
@@ -7,8 +8,8 @@ from .models import Organization, Contact, Session, Activity
 from .serializers import OrganizationSerializer, ContactSerializer
 
 
-# Contact detail view
-class ContactDetailView(RetrieveAPIView):
+# Contact detail view (GET, PUT/PATCH)
+class ContactDetailView(RetrieveUpdateAPIView):
     queryset = Contact.objects.select_related('organization').all()
     serializer_class = ContactSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -25,13 +26,19 @@ class ContactListView(generics.ListAPIView):
     serializer_class = ContactSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+# Organization update view (GET, PUT/PATCH)
+class OrganizationUpdateView(RetrieveUpdateAPIView):
+    queryset = Organization.objects.all()
+    serializer_class = OrganizationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
 # New: OrganizationDetailsView
 class OrganizationDetailsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, id):
+    def get(self, request, pk):
         try:
-            org = Organization.objects.prefetch_related('contacts', 'sessions').get(id=id)
+            org = Organization.objects.prefetch_related('contacts', 'sessions').get(pk=pk)
         except Organization.DoesNotExist:
             return Response({'detail': 'Organization not found.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -88,11 +95,9 @@ class OrganizationDetailsView(APIView):
         ]
 
         return Response({
-            'organization': {
-                'id': org.id,
-                'name': org.name,
-                'contacts': contacts,
-            },
+            'id': org.id,
+            'name': org.name,
+            'contacts': contacts,
             'current_session': current_session_data,
             'future_sessions': future_sessions_data,
             'past_sessions': past_sessions_data,

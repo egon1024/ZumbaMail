@@ -1,0 +1,12 @@
+/* Highlight entire row and field on hover for clickable rows */
+.hover-link-row {
+  transition: background 0.2s;
+}
+.hover-link-row:hover {
+  background: #f0f8ff;
+}
+.hover-link-row:hover td {
+  color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+}

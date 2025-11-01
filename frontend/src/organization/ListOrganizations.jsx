@@ -48,7 +48,7 @@ function ListOrganizations() {
                 {organizations.map(org => (
                   <tr key={org.id}>
                     <td style={{ width: 'fit-content', textAlign: 'center', padding: '0 6px' }}>
-                      <Link to={`/organization/edit/${org.id}`} className="edit-icon-link" title="Edit">
+                      <Link to={`/organization/${org.id}/edit`} className="edit-icon-link" title="Edit">
                         <i className="bi bi-pencil"></i>
                       </Link>
                     </td>

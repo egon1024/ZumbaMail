@@ -17,7 +17,7 @@ function Breadcrumbs() {
           const resp = await authFetch(`/api/organizations/${pathnames[1]}/details/`);
           if (resp.ok) {
             const data = await resp.json();
-            setOrgName(data.organization.name);
+            setOrgName(data.name);
           }
         } catch {}
       })();

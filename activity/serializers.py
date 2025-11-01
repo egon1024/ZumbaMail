@@ -4,9 +4,10 @@ from .models import Organization, Contact
 
 class ContactSerializer(serializers.ModelSerializer):
     organization_name = serializers.CharField(source='organization.name', read_only=True)
+    organization_id = serializers.IntegerField(source='organization.id', read_only=True)
     class Meta:
         model = Contact
-        fields = ['id', 'name', 'phone', 'email', 'role', 'organization_name']
+        fields = ['id', 'name', 'phone', 'email', 'role', 'organization_name', 'organization_id']
 
 class OrganizationSerializer(serializers.ModelSerializer):
     contacts = ContactSerializer(many=True, read_only=True)

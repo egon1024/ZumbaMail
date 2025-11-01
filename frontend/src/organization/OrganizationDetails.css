@@ -14,14 +14,19 @@
   transition: box-shadow 0.2s, border-color 0.2s;
 }
 
-/* Table row effect for sessions and classes */
-.clickable-row td, .clickable-row .reactive-link-text {
-  color: #212529;
+.reactive-contact-row {
+  transition: background 0.2s;
+}
+.reactive-contact-row a {
+  color: inherit;
   text-decoration: none;
   transition: color 0.2s;
 }
-.clickable-row:hover td,
-.clickable-row:focus td,
+.reactive-contact-row a:hover {
+  color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+}
 .clickable-row:hover .reactive-link-text,
 .clickable-row:focus .reactive-link-text {
   color: #0d6efd;

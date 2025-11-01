@@ -7,8 +7,10 @@ import Navbar from './Navbar';
 import ListOrganizations from './organization/ListOrganizations';
 import OrganizationDetails from './organization/OrganizationDetails';
 import OrganizationForm from './organization/OrganizationForm';
+import OrganizationEdit from './organization/OrganizationEdit';
 import ContactsList from './contact/ContactsList';
 import ContactDetails from './contact/ContactDetails';
+import ContactEdit from './contact/ContactEdit';
 import Breadcrumbs from './Breadcrumbs';
 
 function AppLayout() {
@@ -47,7 +49,7 @@ function AppLayout() {
         } />
         <Route path="/organization/:id/edit" element={
           <PrivateRoute>
-            <OrganizationForm editMode />
+            <OrganizationEdit />
           </PrivateRoute>
         } />
         <Route path="/contacts" element={
@@ -58,6 +60,11 @@ function AppLayout() {
         <Route path="/contacts/:id" element={
           <PrivateRoute>
             <ContactDetails />
+          </PrivateRoute>
+        } />
+        <Route path="/contacts/:id/edit" element={
+          <PrivateRoute>
+            <ContactEdit />
           </PrivateRoute>
         } />
       </Routes>
