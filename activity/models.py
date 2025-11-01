@@ -37,6 +37,8 @@ class Session(models.Model):
 	end_date = models.DateField()
 	closed = models.BooleanField(default=False, help_text="Mark this session as closed when it has completed.")
 
+	def __str__(self):
+		return f"{self.name} ({self.start_date} - {self.end_date}) [{self.organization.name}]"
 
 	def copy_activity_from(self, previous_session, activity_id):
 		"""
@@ -75,7 +77,16 @@ class Activity(models.Model):
 	]
 	type = models.CharField(max_length=20, choices=TYPE_CHOICES)
 	session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name='activities')
-	day_of_week = models.CharField(max_length=10)  # e.g., "Monday"
+	DAY_CHOICES = [
+		("Monday", "Monday"),
+		("Tuesday", "Tuesday"),
+		("Wednesday", "Wednesday"),
+		("Thursday", "Thursday"),
+		("Friday", "Friday"),
+		("Saturday", "Saturday"),
+		("Sunday", "Sunday"),
+	]
+	day_of_week = models.CharField(max_length=10, choices=DAY_CHOICES)  # e.g., "Monday"
 	time = models.TimeField()
 	location = models.CharField(max_length=100)
 	closed = models.BooleanField(default=False, help_text="Mark this activity as closed when it has completed.")

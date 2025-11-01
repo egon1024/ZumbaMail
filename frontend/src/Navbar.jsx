@@ -73,12 +73,12 @@ function Navbar() {
               </ul>
             </li>
             <li className="nav-item dropdown">
-              <a className="nav-link dropdown-toggle" href="#" id="orgDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Organization
+              <a className="nav-link dropdown-toggle" href="#" id="peopleDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                People
               </a>
-              <ul className="dropdown-menu" aria-labelledby="orgDropdown">
-                <li><NavLink className="dropdown-item" to="/organization/list">List Organizations</NavLink></li>
-                <li><NavLink className="dropdown-item" to="/organization/setup">Add New Organization</NavLink></li>
+              <ul className="dropdown-menu" aria-labelledby="peopleDropdown">
+                <li><NavLink className="dropdown-item" to="/organization">Organizations</NavLink></li>
+                <li><NavLink className="dropdown-item" to="/contacts">Contacts</NavLink></li>
               </ul>
             </li>
           </ul>

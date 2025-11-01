@@ -5,6 +5,9 @@ import PrivateRoute from './PrivateRoute';
 import Header from './Header';
 import Navbar from './Navbar';
 import ListOrganizations from './organization/ListOrganizations';
+import OrganizationDetails from './organization/OrganizationDetails';
+import OrganizationForm from './organization/OrganizationForm';
+import ContactsList from './contact/ContactsList';
 import Breadcrumbs from './Breadcrumbs';
 
 function AppLayout() {
@@ -24,13 +27,33 @@ function AppLayout() {
             </div>
           </PrivateRoute>
         } />
-        <Route path="/organization/list" element={
+        <Route path="/organization" element={
           <PrivateRoute>
             <ListOrganizations />
           </PrivateRoute>
         } />
-        {/* Contact list route removed for now */}
-        {/* Future routes for /classes, /attendance */}
+        <Route path="/organization/new" element={
+          <PrivateRoute>
+            <OrganizationForm />
+          </PrivateRoute>
+        } />
+        <Route path="/organization/:id" element={
+          <PrivateRoute>
+            <div className="container-fluid p-3">
+              <OrganizationDetails />
+            </div>
+          </PrivateRoute>
+        } />
+        <Route path="/organization/:id/edit" element={
+          <PrivateRoute>
+            <OrganizationForm editMode />
+          </PrivateRoute>
+        } />
+        <Route path="/contacts" element={
+          <PrivateRoute>
+            <ContactsList />
+          </PrivateRoute>
+        } />
       </Routes>
     </>
   );

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { authFetch } from '../utils/authFetch';
 import { Link } from 'react-router-dom';
+import Organization from './OrganizationLink';
 
 function ListOrganizations() {
   const [organizations, setOrganizations] = useState([]);
@@ -26,9 +27,12 @@ function ListOrganizations() {
   }, []);
   return (
     <div className="container mt-4">
-      <div className="card shadow">
+      <h2 className="mb-4" style={{ color: '#6a359c' }}>Organizations</h2>
+      <div className="card shadow-sm border-primary mb-4">
+        <div className="card-header bg-dark text-white">
+          <h4 className="mb-0">Organizations</h4>
+        </div>
         <div className="card-body">
-          <h2 className="mb-4" style={{ color: '#6a359c' }}>Organizations</h2>
           {loading && <p>Loading...</p>}
           {error && <div className="alert alert-danger">{error}</div>}
           {!loading && !error && (
@@ -48,7 +52,9 @@ function ListOrganizations() {
                         <i className="bi bi-pencil"></i>
                       </Link>
                     </td>
-                    <td style={{ textAlign: 'left', padding: '0.25rem' }}>{org.name}</td>
+                    <td style={{ textAlign: 'left', padding: '0.25rem' }}>
+                      <Organization organization={org} />
+                    </td>
                     <td style={{ textAlign: 'left', padding: '0.25rem' }}>{org.contact_count ?? (org.contacts ? org.contacts.length : 0)}</td>
                   </tr>
                 ))}

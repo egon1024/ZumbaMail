@@ -7,8 +7,25 @@ from django.utils.html import format_html
 from django.urls import reverse, path
 from django.http import HttpResponse
 
+
 from django import forms
 from .models import Activity
+
+class ActivityAdminForm(forms.ModelForm):
+	DAYS = [
+		("Monday", "Monday"),
+		("Tuesday", "Tuesday"),
+		("Wednesday", "Wednesday"),
+		("Thursday", "Thursday"),
+		("Friday", "Friday"),
+		("Saturday", "Saturday"),
+		("Sunday", "Sunday"),
+	]
+	day_of_week = forms.ChoiceField(choices=DAYS, label="Day of Week")
+
+	class Meta:
+		model = Activity
+		fields = '__all__'
 
 class ActivityAdminForm(forms.ModelForm):
 	time = forms.TimeField(
@@ -87,13 +104,21 @@ class ActivityAdmin(admin.ModelAdmin):
 	list_filter = ('type', 'day_of_week', 'location', 'session')
 	search_fields = ('location',)
 
+	form = ActivityAdminForm
+
+	def get_status(self, obj):
+		return 'Open' if not obj.session.closed else 'Closed'
+	get_status.short_description = 'Status'
+
 	def get_queryset(self, request):
 		qs = super().get_queryset(request)
 		return qs.filter(closed=False)
 
-	def get_status(self, obj):
-		return 'Open' if not obj.closed else 'Closed'
-	get_status.short_description = 'Status'
+	def formfield_for_foreignkey(self, db_field, request, **kwargs):
+		if db_field.name == "session":
+			from .models import Session
+			kwargs["queryset"] = Session.objects.filter(closed=False)
+		return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 admin.site.register(Activity, ActivityAdmin)
 admin.site.register(Meeting)
