@@ -9,4 +9,5 @@ from .contact import (
 	ContactListView,
 	ContactDetailView,
 	ContactCreateView,
+	ContactDeleteView,
 )

@@ -51,23 +51,16 @@ function OrganizationDetails() {
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4">
-        <span
-          className="reactive-link-text"
-          style={{ color: '#6a359c', transition: 'color 0.2s', cursor: 'pointer' }}
-          onMouseOver={e => (e.currentTarget.style.color = '#007bff')}
-          onMouseOut={e => (e.currentTarget.style.color = '#6a359c')}
-        >
-          {organization.name}
-        </span>
-      </h2>
-      {organization.is_deleted ? (
-        <div className="alert alert-warning">This organization is deactivated.</div>
-      ) : (
-        <button className="btn btn-danger mb-3" disabled={deleting} onClick={handleSoftDelete}>
-          {deleting ? "Deactivating..." : "Deactivate Organization"}
-        </button>
-      )}
+      <div className="d-flex align-items-center mb-3">
+        <h2 className="mb-0 me-3" style={{ color: '#6a359c' }}>{organization.name}</h2>
+        {organization.is_deleted ? (
+          <div className="alert alert-warning mb-0">This organization is deactivated.</div>
+        ) : (
+          <button className="btn btn-danger" disabled={deleting} onClick={handleSoftDelete}>
+            {deleting ? "Deactivating..." : "Deactivate Organization"}
+          </button>
+        )}
+      </div>
       {deleteError && <div className="alert alert-danger">{deleteError}</div>}
 
       {/* Contacts Section */}
@@ -95,13 +88,17 @@ function OrganizationDetails() {
               <tbody>
                 {organization.contacts.map(contact => (
                   <tr key={contact.id} className="reactive-contact-row">
-                    <td><ContactLink contact={contact} /></td>
+                    <td>
+                      <a href={`/contacts/${contact.id}`} target="_blank" rel="noopener noreferrer">
+                        {contact.name}
+                      </a>
+                    </td>
                     <td>{contact.role}</td>
                     <td>{contact.email ? (
-                      <a href={`mailto:${contact.email}`}>{contact.email}</a>
+                      <a href={`mailto:${contact.email}`} target="_blank" rel="noopener noreferrer">{contact.email}</a>
                     ) : ''}</td>
                     <td>{contact.phone ? (
-                      <a href={`tel:${contact.phone}`}>{contact.phone}</a>
+                      <a href={`tel:${contact.phone}`} target="_blank" rel="noopener noreferrer">{contact.phone}</a>
                     ) : ''}</td>
                   </tr>
                 ))}
@@ -135,10 +132,9 @@ function OrganizationDetails() {
                 {[...(futureSessions || []), ...(currentSession ? [currentSession] : [])]
                   .sort((a, b) => new Date(a.start_date) - new Date(b.start_date))
                   .map(session => (
-                    <tr key={session.id} className="clickable-row" onClick={() => window.location.href = `/sessions/details/${session.id}`}
-                        tabIndex={0} style={{ cursor: 'pointer' }}>
+                    <tr key={session.id} className="clickable-row">
                       <td className="reactive-link-cell">
-                        <span className="reactive-link-text">{session.name}</span>
+                        <a href={`/sessions/details/${session.id}`} target="_blank" rel="noopener noreferrer">{session.name}</a>
                       </td>
                       <td>{session.start_date}</td>
                       <td>{session.end_date}</td>
@@ -211,9 +207,10 @@ function OrganizationDetails() {
                     };
                     return parseTime(a.time) - parseTime(b.time);
                   }).map(activity => (
-                    <tr key={activity.id} className="clickable-row" tabIndex={0} style={{ cursor: 'pointer' }}
-                        onClick={() => window.location.href = `/classes/details/${activity.id}`}>
-                      <td>{activity.type}</td>
+                    <tr key={activity.id} className="clickable-row">
+                      <td>
+                        <a href={`/classes/details/${activity.id}`} target="_blank" rel="noopener noreferrer">{activity.type}</a>
+                      </td>
                       <td>{activity.day_of_week}</td>
                       <td>{activity.time}</td>
                       <td>{activity.location}</td>

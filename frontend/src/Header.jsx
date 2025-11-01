@@ -3,8 +3,8 @@ import { APP_TITLE } from './appConfig';
 
 function Header() {
   const handleLogout = () => {
-    sessionStorage.removeItem('access_token');
-    sessionStorage.removeItem('refresh_token');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     window.location.href = '/';
   };
 

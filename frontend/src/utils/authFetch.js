@@ -1,7 +1,7 @@
 // src/utils/authFetch.js
 export async function authFetch(url, options = {}) {
-  let token = sessionStorage.getItem('access_token');
-  let refreshToken = sessionStorage.getItem('refresh_token');
+  let token = localStorage.getItem('access_token');
+  let refreshToken = localStorage.getItem('refresh_token');
   options.headers = options.headers || {};
   options.headers['Authorization'] = `Bearer ${token}`;
   options.headers['Content-Type'] = 'application/json';
@@ -16,13 +16,13 @@ export async function authFetch(url, options = {}) {
     });
     if (refreshResp.ok) {
       const refreshData = await refreshResp.json();
-      sessionStorage.setItem('access_token', refreshData.access);
+      localStorage.setItem('access_token', refreshData.access);
       token = refreshData.access;
       options.headers['Authorization'] = `Bearer ${token}`;
       response = await fetch(url, options);
     } else {
       // Refresh failed, redirect to login
-      sessionStorage.clear();
+      localStorage.clear();
       window.location.href = '/';
       throw new Error('Session expired. Please log in again.');
     }

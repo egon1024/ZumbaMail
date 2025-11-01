@@ -44,3 +44,29 @@
   color: #0d6efd;
   text-decoration: none;
 }
+
+/* Rounded corners for all tables, including Bootstrap tables */
+table,
+.table,
+.card-body table {
+  border-radius: 0.5rem !important;
+  overflow: hidden !important;
+  box-shadow: 0 2px 8px rgba(106,53,156,0.04);
+}
+/* Round corners for first/last cells in first/last rows */
+table tr:first-child th:first-child,
+table tr:first-child td:first-child {
+  border-top-left-radius: 0.5rem;
+}
+table tr:first-child th:last-child,
+table tr:first-child td:last-child {
+  border-top-right-radius: 0.5rem;
+}
+table tr:last-child th:first-child,
+table tr:last-child td:first-child {
+  border-bottom-left-radius: 0.5rem;
+}
+table tr:last-child th:last-child,
+table tr:last-child td:last-child {
+  border-bottom-right-radius: 0.5rem;
+}

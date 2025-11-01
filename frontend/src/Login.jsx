@@ -27,8 +27,8 @@ function Login({ onLogin }) {
       }
 
       const data = await response.json();
-      sessionStorage.setItem('access_token', data.access);
-      sessionStorage.setItem('refresh_token', data.refresh);
+  localStorage.setItem('access_token', data.access);
+  localStorage.setItem('refresh_token', data.refresh);
 
       setLoading(false);
       setSuccess(true);
