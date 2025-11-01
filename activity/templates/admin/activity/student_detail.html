@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+  <div class="module">
+    <h2>Student Details</h2>
+    <table class="admin-table">
+      <tr><th>Name</th><td>{{ student.first_name }} {{ student.last_name }}</td></tr>
+      <tr><th>Email</th><td>{{ student.email }}</td></tr>
+      <tr><th>Phone</th><td>{{ student.phone }}</td></tr>
+      <tr><th>Emergency Contact</th><td>{{ student.emergency_contact_name }} ({{ student.emergency_contact_phone }})</td></tr>
+      <tr><th>Notes</th><td>{{ student.notes }}</td></tr>
+    </table>
+    <p>
+      <a class="button" href="{% url 'admin:activity_student_changelist' %}">Back to Students</a>
+      <a class="button" href="{% url 'admin:activity_student_change' student.pk %}">Edit Student</a>
+    </p>
+  </div>
+{% endblock %}
