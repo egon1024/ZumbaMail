@@ -7,7 +7,7 @@ class ContactSerializer(serializers.ModelSerializer):
     organization_id = serializers.IntegerField(source='organization.id', read_only=True)
     class Meta:
         model = Contact
-        fields = ['id', 'name', 'phone', 'email', 'role', 'organization_name', 'organization_id']
+        fields = ['id', 'name', 'phone', 'email', 'role', 'organization', 'organization_name', 'organization_id']
 
 class OrganizationSerializer(serializers.ModelSerializer):
     contacts = ContactSerializer(many=True, read_only=True)

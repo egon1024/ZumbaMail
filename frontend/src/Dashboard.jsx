@@ -1,4 +1,5 @@
 import React from 'react';
+import { APP_TITLE } from './appConfig';
 
 function Dashboard() {
   return (
@@ -7,7 +8,7 @@ function Dashboard() {
         <div className="col-md-8">
           <div className="card shadow">
             <div className="card-body text-center">
-              <h1 className="mb-4" style={{ color: '#6a359c' }}>Welcome to the Zumba Tool Dashboard!</h1>
+              <h1 className="mb-4" style={{ color: '#6a359c' }}>Welcome to the {APP_TITLE} Dashboard!</h1>
               <p className="lead">You are now logged in.</p>
             </div>
           </div>

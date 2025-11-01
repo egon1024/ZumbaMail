@@ -1,3 +1,15 @@
+/* Organization name link: only blue on hover */
+/* Organization name link: black by default, blue on hover */
+.org-name-link {
+  color: #222;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.org-name-link:hover {
+  color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+}
 /* Session status colors */
 .status-open {
   color: #176a3a;

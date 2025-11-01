@@ -50,7 +50,7 @@ function ListOrganizations() {
                 </tr>
               </thead>
               <tbody>
-                {organizations.map(org => (
+                {[...organizations].sort((a, b) => a.name.localeCompare(b.name)).map(org => (
                   <tr key={org.id}>
                     <td style={{ width: 'fit-content', textAlign: 'center', padding: '0 6px' }}>
                       <Link to={`/organization/${org.id}/edit`} className="edit-icon-link" title="Edit">

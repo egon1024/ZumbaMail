@@ -51,7 +51,16 @@ function OrganizationDetails() {
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4" style={{ color: "#6a359c" }}>{organization.name}</h2>
+      <h2 className="mb-4">
+        <span
+          className="reactive-link-text"
+          style={{ color: '#6a359c', transition: 'color 0.2s', cursor: 'pointer' }}
+          onMouseOver={e => (e.currentTarget.style.color = '#007bff')}
+          onMouseOut={e => (e.currentTarget.style.color = '#6a359c')}
+        >
+          {organization.name}
+        </span>
+      </h2>
       {organization.is_deleted ? (
         <div className="alert alert-warning">This organization is deactivated.</div>
       ) : (
@@ -64,8 +73,14 @@ function OrganizationDetails() {
       {/* Contacts Section */}
       <section className="mb-4">
         <div className="card shadow-sm border-primary mb-4">
-          <div className="card-header bg-dark text-white">
+          <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center">
             <h4 className="mb-0">Contacts</h4>
+            <button
+              className="btn btn-sm btn-success"
+              onClick={() => navigate(`/contacts/new?organization=${organization.id}`)}
+            >
+              <i className="bi bi-plus-lg me-1"></i> New Contact
+            </button>
           </div>
           <div className="card-body">
             <table className="table table-sm mb-0">

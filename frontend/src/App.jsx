@@ -12,6 +12,7 @@ import OrganizationEdit from './organization/OrganizationEdit';
 import ContactsList from './contact/ContactsList';
 import ContactDetails from './contact/ContactDetails';
 import ContactEdit from './contact/ContactEdit';
+import ContactCreate from './contact/ContactCreate';
 import Breadcrumbs from './Breadcrumbs';
 
 function AppLayout() {
@@ -56,6 +57,11 @@ function AppLayout() {
         <Route path="/contacts" element={
           <PrivateRoute>
             <ContactsList />
+          </PrivateRoute>
+        } />
+        <Route path="/contacts/new" element={
+          <PrivateRoute>
+            <ContactCreate />
           </PrivateRoute>
         } />
         <Route path="/contacts/:id" element={

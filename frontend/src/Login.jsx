@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { APP_TITLE } from './appConfig';
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -52,7 +53,7 @@ function Login({ onLogin }) {
         boxSizing: 'border-box',
         padding: '2rem',
       }}>
-        <h2 className="text-center mb-4" style={{ color: '#6f42c1' }}>Zumba Tool Login</h2>
+  <h2 className="text-center mb-4" style={{ color: '#6f42c1' }}>{APP_TITLE} Login</h2>
         <form onSubmit={handleSubmit}>
           {success && (
             <div className="alert alert-success text-center" role="alert">

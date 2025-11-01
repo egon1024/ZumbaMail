@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from activity import api
-from activity.views import OrganizationListCreateView, ContactListView, OrganizationDetailsView, ContactDetailView, OrganizationUpdateView, OrganizationSoftDeleteView
+from activity.views import OrganizationListCreateView, ContactListView, OrganizationDetailsView, ContactDetailView, OrganizationUpdateView, OrganizationSoftDeleteView, ContactCreateView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -14,5 +14,6 @@ urlpatterns = [
     path('api/organizations/<int:pk>/', OrganizationUpdateView.as_view(), name='organization-update'),
     path('api/organizations/<int:pk>/soft_delete/', OrganizationSoftDeleteView.as_view(), name='organization-soft-delete'),
     path('api/contacts/', ContactListView.as_view(), name='contact-list'),
+    path('api/contacts/new/', ContactCreateView.as_view(), name='contact-create'),
     path('api/contacts/<int:pk>/', ContactDetailView.as_view(), name='contact-detail'),
 ]
