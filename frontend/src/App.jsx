@@ -8,6 +8,7 @@ import ListOrganizations from './organization/ListOrganizations';
 import OrganizationDetails from './organization/OrganizationDetails';
 import OrganizationForm from './organization/OrganizationForm';
 import ContactsList from './contact/ContactsList';
+import ContactDetails from './contact/ContactDetails';
 import Breadcrumbs from './Breadcrumbs';
 
 function AppLayout() {
@@ -52,6 +53,11 @@ function AppLayout() {
         <Route path="/contacts" element={
           <PrivateRoute>
             <ContactsList />
+          </PrivateRoute>
+        } />
+        <Route path="/contacts/:id" element={
+          <PrivateRoute>
+            <ContactDetails />
           </PrivateRoute>
         } />
       </Routes>

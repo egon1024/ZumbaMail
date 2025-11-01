@@ -49,6 +49,7 @@ function ContactsList() {
       <table className="table table-sm mb-0">
         <thead>
           <tr>
+            <th></th>
             <th style={{ cursor: 'pointer' }} onClick={() => handleSort('name')}>
               Name {sortField === 'name' ? (sortAsc ? '▲' : '▼') : ''}
             </th>
@@ -65,6 +66,11 @@ function ContactsList() {
         <tbody>
           {getSortedContacts().map(contact => (
             <tr key={contact.id}>
+              <td style={{ width: 'fit-content', textAlign: 'center', padding: '0 6px' }}>
+                <a href={`/contacts/${contact.id}/edit`} className="edit-icon-link" title="Edit">
+                  <i className="bi bi-pencil"></i>
+                </a>
+              </td>
               <td><ContactLink contact={contact} /></td>
               <td>{contact.role}</td>
               <td>{contact.email ? <a href={`mailto:${contact.email}`}>{contact.email}</a> : ""}</td>

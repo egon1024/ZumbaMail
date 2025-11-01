@@ -1,3 +1,4 @@
+from rest_framework.generics import RetrieveAPIView
 from django.shortcuts import render
 from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
@@ -5,6 +6,12 @@ from rest_framework.response import Response
 from .models import Organization, Contact, Session, Activity
 from .serializers import OrganizationSerializer, ContactSerializer
 
+
+# Contact detail view
+class ContactDetailView(RetrieveAPIView):
+    queryset = Contact.objects.select_related('organization').all()
+    serializer_class = ContactSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 # Create your views here.
 

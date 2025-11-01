@@ -6,7 +6,7 @@ function ContactLink({ contact, className = "" }) {
   const id = contact.id || contact;
   const name = contact.name || contact;
   return (
-    <Link to={`/contact/details/${id}`} className={`contact-name-link ${className}`}>
+    <Link to={`/contacts/${id}`} className={`contact-name-link ${className}`}>
       {name}
     </Link>
   );

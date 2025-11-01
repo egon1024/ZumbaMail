@@ -6,6 +6,7 @@ function Breadcrumbs() {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter(x => x);
   const [orgName, setOrgName] = useState(null);
+  const [contactName, setContactName] = useState(null);
 
   // Detect if on organization details page
   useEffect(() => {
@@ -23,6 +24,20 @@ function Breadcrumbs() {
     } else {
       setOrgName(null);
     }
+    // Detect /contacts/:id route
+    if (pathnames[0] === 'contacts' && pathnames[1] && !isNaN(Number(pathnames[1]))) {
+      (async () => {
+        try {
+          const resp = await authFetch(`/api/contacts/${pathnames[1]}/`);
+          if (resp.ok) {
+            const data = await resp.json();
+            setContactName(data.name);
+          }
+        } catch {}
+      })();
+    } else {
+      setContactName(null);
+    }
   }, [location.pathname]);
 
   return (
@@ -38,6 +53,10 @@ function Breadcrumbs() {
           // If on /organization/:id, show org name for id segment
           if (pathnames[0] === 'organization' && idx === 1 && orgName) {
             label = orgName;
+          }
+          // If on /contacts/:id, show contact name for id segment
+          if (pathnames[0] === 'contacts' && idx === 1 && contactName) {
+            label = contactName;
           }
           return isLast ? (
             <li className="breadcrumb-item active" aria-current="page" key={to}>
