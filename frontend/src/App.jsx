@@ -4,6 +4,8 @@ import Dashboard from './Dashboard';
 import PrivateRoute from './PrivateRoute';
 import Header from './Header';
 import Navbar from './Navbar';
+import ListOrganizations from './organization/ListOrganizations';
+import Breadcrumbs from './Breadcrumbs';
 
 function AppLayout() {
   const location = useLocation();
@@ -12,6 +14,7 @@ function AppLayout() {
     <>
       {!isLoginPage && <Header />}
       {!isLoginPage && <Navbar />}
+      {!isLoginPage && <Breadcrumbs />}
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={
@@ -21,7 +24,13 @@ function AppLayout() {
             </div>
           </PrivateRoute>
         } />
-        {/* Future routes for /classes, /attendance, /contacts */}
+        <Route path="/organization/list" element={
+          <PrivateRoute>
+            <ListOrganizations />
+          </PrivateRoute>
+        } />
+        {/* Contact list route removed for now */}
+        {/* Future routes for /classes, /attendance */}
       </Routes>
     </>
   );

@@ -9,11 +9,23 @@ class Organization(models.Model):
 	Represents a city rec department or other entity that hosts fitness activities.
 	"""
 	name = models.CharField(max_length=100)
-	contact_email = models.EmailField(blank=True, null=True)
 	# Add other organization-specific fields as needed
 
 	def __str__(self):
 		return self.name
+
+class Contact(models.Model):
+	"""
+	Represents a contact person for an organization.
+	"""
+	organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='contacts')
+	name = models.CharField(max_length=100)
+	phone = models.CharField(max_length=30, blank=True)
+	email = models.EmailField(blank=True, null=True)
+	role = models.CharField(max_length=100, blank=True)
+
+	def __str__(self):
+		return f"{self.name} ({self.role})"
 
 class Session(models.Model):
 	"""

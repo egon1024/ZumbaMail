@@ -1,3 +1,16 @@
+/* Navbar hover effect */
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+  background-color: #e9ecef;
+  color: #6a359c !important;
+  border-radius: 4px;
+}
+
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item.active {
+  background-color: #f3e6fa;
+  color: #6a359c !important;
+}
 #root {
   width: 100vw;
   max-width: none;
@@ -54,6 +67,19 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* Edit icon link styling */
+.edit-icon-link {
+  color: #6a359c;
+  text-decoration: none;
+  padding: 4px;
+  transition: background 0.2s, color 0.2s, border-radius 0.2s;
+}
+.edit-icon-link:hover {
+  background: #f3e6fa;
+  color: #3a185b;
+  border-radius: 4px;
 }
 
 @media (prefers-color-scheme: light) {

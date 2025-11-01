@@ -1,6 +1,6 @@
 from django.contrib.admin import SimpleListFilter
 from django.contrib import admin
-from .models import Organization, Session, Activity, Meeting, Student, Enrollment, AttendanceRecord
+from .models import Organization, Session, Activity, Meeting, Student, Enrollment, AttendanceRecord, Contact
 from django.db import models
 from django.shortcuts import render, get_object_or_404
 from django.utils.html import format_html
@@ -33,7 +33,26 @@ class ActivityAdminForm(forms.ModelForm):
 class ActivityAdmin(admin.ModelAdmin):
 	form = ActivityAdminForm
 
-admin.site.register(Organization)
+class OrganizationAdmin(admin.ModelAdmin):
+	list_display = ('name', 'contact_count_link')
+
+	def contact_count_link(self, obj):
+		count = obj.contacts.count()
+		if count == 0:
+			return '0'
+		url = (
+			reverse('admin:activity_contact_changelist') + f'?organization__id__exact={obj.id}'
+		)
+		return format_html('<a href="{}">{}</a>', url, count)
+	contact_count_link.short_description = 'Contacts'
+
+admin.site.register(Organization, OrganizationAdmin)
+class ContactAdmin(admin.ModelAdmin):
+	list_display = ('name', 'email', 'phone', 'role', 'organization')
+	list_filter = ('organization',)
+	ordering = ('organization', 'name')
+
+admin.site.register(Contact, ContactAdmin)
 
 class StatusListFilter(SimpleListFilter):
 	title = 'Status'
