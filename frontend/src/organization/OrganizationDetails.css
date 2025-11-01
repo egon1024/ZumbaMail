@@ -1,3 +1,12 @@
+/* Session status colors */
+.status-open {
+  color: #176a3a;
+  font-weight: 600;
+}
+.status-closed {
+  color: #b30000;
+  font-weight: 600;
+}
 /* Card hover effect for all sections */
 .card:hover {
   box-shadow: 0 0 0 2px #6a359c, 0 2px 8px rgba(106,53,156,0.15);

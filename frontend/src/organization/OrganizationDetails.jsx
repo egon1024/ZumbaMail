@@ -92,7 +92,8 @@ function OrganizationDetails() {
                 </tr>
               </thead>
               <tbody>
-                {[...(futureSessions || []), ...(currentSession ? [currentSession] : []), ...(showPastSessions ? pastSessions : [])]
+                {/* Open sessions: future + current, sorted chronologically */}
+                {[...(futureSessions || []), ...(currentSession ? [currentSession] : [])]
                   .sort((a, b) => new Date(a.start_date) - new Date(b.start_date))
                   .map(session => (
                     <tr key={session.id} className="clickable-row" onClick={() => window.location.href = `/sessions/details/${session.id}`}
@@ -102,7 +103,33 @@ function OrganizationDetails() {
                       </td>
                       <td>{session.start_date}</td>
                       <td>{session.end_date}</td>
-                      <td>{session.closed ? "Closed" : "Open"}</td>
+                      <td>
+                        {session.closed ? (
+                          <span className="status-closed">Closed</span>
+                        ) : (
+                          <span className="status-open">Open</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                {/* Closed sessions: pastSessions, reverse chronological */}
+                {showPastSessions && pastSessions && [...pastSessions]
+                  .sort((a, b) => new Date(b.start_date) - new Date(a.start_date))
+                  .map(session => (
+                    <tr key={session.id} className="clickable-row" onClick={() => window.location.href = `/sessions/details/${session.id}`}
+                        tabIndex={0} style={{ cursor: 'pointer' }}>
+                      <td className="reactive-link-cell">
+                        <span className="reactive-link-text">{session.name}</span>
+                      </td>
+                      <td>{session.start_date}</td>
+                      <td>{session.end_date}</td>
+                      <td>
+                        {session.closed ? (
+                          <span className="status-closed">Closed</span>
+                        ) : (
+                          <span className="status-open">Open</span>
+                        )}
+                      </td>
                     </tr>
                   ))}
               </tbody>
