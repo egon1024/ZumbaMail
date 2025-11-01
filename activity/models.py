@@ -9,6 +9,7 @@ class Organization(models.Model):
 	Represents a city rec department or other entity that hosts fitness activities.
 	"""
 	name = models.CharField(max_length=100)
+	is_deleted = models.BooleanField(default=False)
 	# Add other organization-specific fields as needed
 
 	def __str__(self):

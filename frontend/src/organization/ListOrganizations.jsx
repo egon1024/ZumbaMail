@@ -27,7 +27,12 @@ function ListOrganizations() {
   }, []);
   return (
     <div className="container mt-4">
-      <h2 className="mb-4" style={{ color: '#6a359c' }}>Organizations</h2>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2 style={{ color: '#6a359c' }}>Organizations</h2>
+        <button className="btn btn-success" onClick={() => window.location.href = '/organization/new'}>
+          <i className="bi bi-plus-lg me-1"></i> New Organization
+        </button>
+      </div>
       <div className="card shadow-sm border-primary mb-4">
         <div className="card-header bg-dark text-white">
           <h4 className="mb-0">Organizations</h4>

@@ -1,22 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Organization from "./OrganizationLink";
 import ContactLink from "./ContactLink";
 import { authFetch } from "../utils/authFetch";
 import SessionLink from "./SessionLink";
 import './OrganizationDetails.css';
 
+
 function OrganizationDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [organization, setOrganization] = useState(null);
   const [showPastSessions, setShowPastSessions] = useState(false);
   const [currentSession, setCurrentSession] = useState(null);
   const [futureSessions, setFutureSessions] = useState([]);
   const [pastSessions, setPastSessions] = useState([]);
   const [activities, setActivities] = useState([]);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
   useEffect(() => {
-    // Fetch organization details (contacts, sessions, activities)
     async function fetchDetails() {
       const resp = await authFetch(`/api/organizations/${id}/details/`);
       if (resp.ok) {
@@ -29,13 +32,34 @@ function OrganizationDetails() {
       }
     }
     fetchDetails();
-  }, [id]);
+  }, [id, deleting]);
+
+  async function handleSoftDelete() {
+    if (!window.confirm("Are you sure you want to deactivate this organization? This will hide it and all its contacts/sessions/classes from the system.")) return;
+    setDeleting(true);
+    setDeleteError(null);
+    const resp = await authFetch(`/api/organizations/${id}/soft_delete/`, { method: "DELETE" });
+    if (resp.status === 204) {
+      navigate('/organization');
+    } else {
+      setDeleteError("Failed to deactivate organization.");
+      setDeleting(false);
+    }
+  }
 
   if (!organization) return <div>Loading...</div>;
 
   return (
     <div className="container mt-4">
       <h2 className="mb-4" style={{ color: "#6a359c" }}>{organization.name}</h2>
+      {organization.is_deleted ? (
+        <div className="alert alert-warning">This organization is deactivated.</div>
+      ) : (
+        <button className="btn btn-danger mb-3" disabled={deleting} onClick={handleSoftDelete}>
+          {deleting ? "Deactivating..." : "Deactivate Organization"}
+        </button>
+      )}
+      {deleteError && <div className="alert alert-danger">{deleteError}</div>}
 
       {/* Contacts Section */}
       <section className="mb-4">

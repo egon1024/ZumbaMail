@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ContactLink from "../organization/ContactLink";
+import "../organization/OrganizationDetails.css";
 import { authFetch } from "../utils/authFetch";
 
 
@@ -77,7 +78,7 @@ function ContactsList() {
           </thead>
           <tbody>
             {getSortedContacts().map(contact => (
-              <tr key={contact.id}>
+              <tr key={contact.id} className="reactive-contact-row">
                 <td style={{ width: 'fit-content', textAlign: 'center', padding: '0 6px' }}>
                   <a href={`/contacts/${contact.id}/edit`} className="edit-icon-link" title="Edit">
                     <i className="bi bi-pencil"></i>

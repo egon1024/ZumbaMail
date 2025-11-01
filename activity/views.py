@@ -1,5 +1,7 @@
-from rest_framework.generics import RetrieveUpdateAPIView
-from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.generics import CreateAPIView
+from rest_framework.generics import RetrieveUpdateAPIView, CreateAPIView, ListCreateAPIView
 from django.shortcuts import render
 from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
@@ -7,6 +9,30 @@ from rest_framework.response import Response
 from .models import Organization, Contact, Session, Activity
 from .serializers import OrganizationSerializer, ContactSerializer
 
+# Organization soft delete view
+class OrganizationSoftDeleteView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, pk):
+        try:
+            org = Organization.objects.get(pk=pk, is_deleted=False)
+        except Organization.DoesNotExist:
+            return Response({'detail': 'Organization not found or already deleted.'}, status=404)
+        org.is_deleted = True
+        org.save()
+        return Response({'detail': 'Organization soft deleted.'}, status=204)
+
+class OrganizationListCreateView(ListCreateAPIView):
+    serializer_class = OrganizationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Only return non-deleted organizations unless ?include_deleted=1 is set
+        include_deleted = self.request.query_params.get('include_deleted') == '1'
+        qs = Organization.objects.all()
+        if not include_deleted:
+            qs = qs.filter(is_deleted=False)
+        return qs
 
 # Contact detail view (GET, PUT/PATCH)
 class ContactDetailView(RetrieveUpdateAPIView):
@@ -22,23 +48,35 @@ class OrganizationListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
 class ContactListView(generics.ListAPIView):
-    queryset = Contact.objects.select_related('organization').all()
+    def get_queryset(self):
+        # Only return contacts whose organization is not soft deleted
+        return Contact.objects.select_related('organization').filter(organization__is_deleted=False)
     serializer_class = ContactSerializer
     permission_classes = [permissions.IsAuthenticated]
 
 # Organization update view (GET, PUT/PATCH)
 class OrganizationUpdateView(RetrieveUpdateAPIView):
-    queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        include_deleted = self.request.query_params.get('include_deleted') == '1'
+        qs = Organization.objects.all()
+        if not include_deleted:
+            qs = qs.filter(is_deleted=False)
+        return qs
 
 # New: OrganizationDetailsView
 class OrganizationDetailsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, pk):
+        include_deleted = request.query_params.get('include_deleted') == '1'
+        qs = Organization.objects.prefetch_related('contacts', 'sessions')
+        if not include_deleted:
+            qs = qs.filter(is_deleted=False)
         try:
-            org = Organization.objects.prefetch_related('contacts', 'sessions').get(pk=pk)
+            org = qs.get(pk=pk)
         except Organization.DoesNotExist:
             return Response({'detail': 'Organization not found.'}, status=status.HTTP_404_NOT_FOUND)
 

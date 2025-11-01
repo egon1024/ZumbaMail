@@ -51,7 +51,7 @@ class ActivityAdmin(admin.ModelAdmin):
 	form = ActivityAdminForm
 
 class OrganizationAdmin(admin.ModelAdmin):
-	list_display = ('name', 'contact_count_link')
+	list_display = ('name', 'contact_count_link', 'status_display')
 
 	def contact_count_link(self, obj):
 		count = obj.contacts.count()
@@ -62,6 +62,10 @@ class OrganizationAdmin(admin.ModelAdmin):
 		)
 		return format_html('<a href="{}">{}</a>', url, count)
 	contact_count_link.short_description = 'Contacts'
+
+	def status_display(self, obj):
+		return 'deactivated' if obj.is_deleted else 'active'
+	status_display.short_description = 'Status'
 
 admin.site.register(Organization, OrganizationAdmin)
 class ContactAdmin(admin.ModelAdmin):

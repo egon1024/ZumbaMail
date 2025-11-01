@@ -7,6 +7,7 @@ import Navbar from './Navbar';
 import ListOrganizations from './organization/ListOrganizations';
 import OrganizationDetails from './organization/OrganizationDetails';
 import OrganizationForm from './organization/OrganizationForm';
+import OrganizationCreate from './organization/OrganizationCreate';
 import OrganizationEdit from './organization/OrganizationEdit';
 import ContactsList from './contact/ContactsList';
 import ContactDetails from './contact/ContactDetails';
@@ -37,7 +38,7 @@ function AppLayout() {
         } />
         <Route path="/organization/new" element={
           <PrivateRoute>
-            <OrganizationForm />
+            <OrganizationCreate />
           </PrivateRoute>
         } />
         <Route path="/organization/:id" element={
