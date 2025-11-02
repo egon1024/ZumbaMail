@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import PhoneInput from 'react-phone-input-2';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { authFetch } from "../utils/authFetch";
 import "./StudentsList.css";
 import Tooltip from "../utils/Tooltip";
@@ -43,7 +45,16 @@ function StudentsList() {
       </div>
       <div className="card shadow-sm border-primary mb-4">
         <div className="card-header bg-dark text-white">
-          <h4 className="mb-0">{showInactive ? "All Students" : "Active Students"}</h4>
+          <div className="d-flex justify-content-between align-items-center">
+            <h4 className="mb-0">{showInactive ? "All Students" : "Active Students"}</h4>
+            <button
+              className="btn btn-sm btn-success"
+              onClick={() => window.location.href = '/students/new'}
+              title="Add New Student"
+            >
+              <i className="bi bi-plus-lg"></i> New Student
+            </button>
+          </div>
         </div>
         <div className="card-body">
           {error && (
@@ -156,7 +167,7 @@ function StudentsList() {
                                 href={`tel:${student.phone}`}
                                 className="reactive-student-contact-link"
                               >
-                                {student.phone}
+                                {parsePhoneNumberFromString(student.phone, 'US')?.formatNational() || student.phone}
                               </a>
                             </Tooltip>
                           ) : <span className="text-muted">—</span>}
