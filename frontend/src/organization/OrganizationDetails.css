@@ -1,0 +1,106 @@
+.clickable-row .reactive-link-text,
+.clickable-row:hover .reactive-link-text,
+.clickable-row:focus .reactive-link-text {
+  text-decoration: none !important;
+  text-decoration-line: none !important;
+  text-decoration-style: none !important;
+  text-decoration-color: inherit !important;
+  text-decoration-thickness: 0 !important;
+  text-decoration-skip-ink: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.clickable-row a,
+.clickable-row a:hover,
+.clickable-row a:focus {
+  text-decoration: none !important;
+  text-decoration-line: none !important;
+  text-decoration-style: none !important;
+  text-decoration-color: inherit !important;
+  text-decoration-thickness: 0 !important;
+  text-decoration-skip-ink: none !important;
+}
+.clickable-row a,
+.clickable-row a:hover,
+.clickable-row a:focus {
+  text-decoration: none !important;
+  text-decoration-line: none !important;
+  text-decoration-style: none !important;
+  text-decoration-color: inherit !important;
+}
+/* Organization name link: only blue on hover */
+/* Organization name link: black by default, blue on hover */
+.org-name-link {
+  color: #222;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.org-name-link:hover {
+  color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+}
+/* Session status colors */
+.status-open {
+  color: #176a3a;
+  font-weight: 600;
+}
+.status-closed {
+  color: #b30000;
+  font-weight: 600;
+}
+/* Card hover effect for all sections */
+.card:hover {
+  box-shadow: 0 0 0 2px #6a359c, 0 2px 8px rgba(106,53,156,0.15);
+  border-color: #6a359c;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.reactive-contact-row {
+  transition: background 0.2s;
+}
+.reactive-contact-row a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.reactive-contact-row a:hover {
+  color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+}
+.clickable-row:hover,
+.clickable-row:focus {
+  background: #f5f3ff;
+}
+.clickable-row:hover .reactive-link-text,
+.clickable-row:focus .reactive-link-text {
+  color: #0d6efd;
+  text-decoration: none !important;
+}
+
+/* Rounded corners for all tables, including Bootstrap tables */
+table,
+.table,
+.card-body table {
+  border-radius: 0.5rem !important;
+  overflow: hidden !important;
+  box-shadow: 0 2px 8px rgba(106,53,156,0.04);
+}
+/* Round corners for first/last cells in first/last rows */
+table tr:first-child th:first-child,
+table tr:first-child td:first-child {
+  border-top-left-radius: 0.5rem;
+}
+table tr:first-child th:last-child,
+table tr:first-child td:last-child {
+  border-top-right-radius: 0.5rem;
+}
+table tr:last-child th:first-child,
+table tr:last-child td:first-child {
+  border-bottom-left-radius: 0.5rem;
+}
+table tr:last-child th:last-child,
+table tr:last-child td:last-child {
+  border-bottom-right-radius: 0.5rem;
+}

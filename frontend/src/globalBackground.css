@@ -1,0 +1,9 @@
+body, #root, .global-bg {
+  min-width: 0;
+  width: 100vw;
+  background: #ece6f7;
+  min-height: 100vh;
+  overflow-x: auto;
+}
+
+/* Ensure all main containers use .global-bg for background sizing */
