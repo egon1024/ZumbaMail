@@ -55,19 +55,19 @@ function Breadcrumbs() {
       setSessionName(null);
     }
       // Detect /students/:id route
-      if (pathnames[0] === 'students' && pathnames[1] && !isNaN(Number(pathnames[1]))) {
-        (async () => {
-          try {
-            const resp = await authFetch(`/api/students/${pathnames[1]}/details/`);
-            if (resp.ok) {
-              const data = await resp.json();
-              setStudentName(data.student ? `${data.student.first_name} ${data.student.last_name}` : null);
-            }
-          } catch {}
-        })();
-      } else {
-        setStudentName(null);
-      }
+        if (pathnames[0] === 'students' && pathnames[1] && !isNaN(Number(pathnames[1]))) {
+          (async () => {
+            try {
+              const resp = await authFetch(`/api/students/${pathnames[1]}/details/`);
+              if (resp.ok) {
+                const data = await resp.json();
+                setStudentName(data.first_name && data.last_name ? `${data.last_name}, ${data.first_name}` : null);
+              }
+            } catch {}
+          })();
+        } else {
+          setStudentName(null);
+        }
   }, [location.pathname]);
 
   return (

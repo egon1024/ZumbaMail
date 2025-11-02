@@ -57,12 +57,21 @@ function ContactDetails() {
       </div>
       <div className="card shadow-sm border-primary mb-4 w-100" style={{ maxWidth: '100%' }}>
         <div className="card-header bg-dark text-white text-start">
-          <h4 className="mb-0">Contact Details</h4>
+          <div className="d-flex justify-content-between align-items-center">
+            <h4 className="mb-0">Contact Details</h4>
+            <button
+              className="btn btn-sm btn-outline-light"
+              onClick={() => navigate(`/contacts/${id}/edit`)}
+              title="Edit Contact"
+            >
+              <i className="bi bi-pencil-square"></i> Edit
+            </button>
+          </div>
         </div>
         <div className="card-body">
           <table className="table table-sm mb-0" style={{ borderCollapse: 'collapse' }}>
             <tbody>
-              <tr className="hover-link-row" style={{ borderBottom: '2px solid #222' }}>
+              <tr className="hover-link-row">
                 <th scope="row">Organization</th>
                 <td>
                   {contact.organization_id ? (
@@ -72,11 +81,11 @@ function ContactDetails() {
                   ) : contact.organization_name}
                 </td>
               </tr>
-              <tr style={{ borderBottom: '2px solid #222' }}>
+              <tr>
                 <th scope="row">Role</th>
                 <td>{contact.role}</td>
               </tr>
-              <tr className="hover-link-row" style={{ borderBottom: '2px solid #222' }}>
+              <tr className="hover-link-row">
                 <th scope="row">Email</th>
                 <td>
                   {contact.email ? (
@@ -95,15 +104,11 @@ function ContactDetails() {
             </tbody>
           </table>
           <div className="mt-3 text-end">
-            <button
-              className="btn btn-primary"
-              onClick={() => navigate(`/contacts/${id}/edit`)}
-            >
-              <i className="bi bi-pencil-square"></i> Edit
-            </button>
+            {/* Edit button moved to card header */}
           </div>
         </div>
       </div>
+*** End Patch
     </div>
   );
 }

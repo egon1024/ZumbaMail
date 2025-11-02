@@ -1,6 +1,7 @@
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
 from rest_framework import permissions, serializers
 from activity.models import Student
+from activity.serializers import StudentDetailSerializer
 
 class StudentListView(ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -18,3 +19,8 @@ class StudentListView(ListAPIView):
                 model = Student
                 exclude = ['notes']
         return StudentSerializer
+
+class StudentDetailView(RetrieveUpdateAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]

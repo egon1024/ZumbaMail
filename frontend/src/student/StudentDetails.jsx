@@ -19,11 +19,11 @@ function StudentDetails() {
   useEffect(() => {
     async function fetchDetails() {
       try {
-        const url = `/api/students/${id}/details/` + (showClosed ? '?include_closed=true' : '');
+        const url = `/api/students/${id}/` + (showClosed ? '?include_closed=true' : '');
         const resp = await authFetch(url);
         if (!resp.ok) throw new Error("Failed to fetch student details");
         const data = await resp.json();
-        setStudent(data.student);
+        setStudent(data);
         setCurrentClasses(data.current_classes || []);
         setWaitlistClasses(data.waitlist_classes || []);
       } catch (err) {
@@ -53,13 +53,30 @@ function StudentDetails() {
       {/* Student Details Card */}
       <section className="mb-4">
         <div className="card shadow-sm border-primary mb-4">
-          <div className="card-header bg-dark text-white">
+          <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center">
             <h4 className="mb-0">Student Details</h4>
+            <button
+              className="btn btn-sm btn-outline-light"
+              onClick={() => navigate(`/students/${id}/edit`)}
+              title="Edit Student"
+            >
+              <i className="bi bi-pencil-square"></i> Edit
+            </button>
           </div>
           <div className="card-body">
             <table className="table table-sm mb-0">
               <tbody>
-                <tr><th>Name</th><td>{student.first_name} {student.last_name}</td></tr>
+                <tr><th>Name</th><td>{student.last_name}, {student.first_name}</td></tr>
+                <tr>
+                  <th>Status</th>
+                  <td>
+                    {student.active ? (
+                      <span className="text-success" title="Active">&#10003;</span>
+                    ) : (
+                      <span className="text-danger" title="Inactive">&#10007;</span>
+                    )}
+                  </td>
+                </tr>
                 <tr>
                   <th>Rochester Resident</th>
                   <td>
@@ -76,14 +93,6 @@ function StudentDetails() {
                     {student.facebook_profile ? (
                       <a href={student.facebook_profile} target="_blank" rel="noopener noreferrer">{student.facebook_profile}</a>
                     ) : <span className="text-muted">—</span>}
-                  </td>
-                </tr>
-                <tr>
-                  <th>Status</th>
-                  <td>
-                    <span className={student.active ? 'text-success' : 'text-danger'}>
-                      {student.active ? 'Active' : 'Inactive'}
-                    </span>
                   </td>
                 </tr>
                 <tr
