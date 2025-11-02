@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation, Link, useParams } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { authFetch } from './utils/authFetch';
 
 function Breadcrumbs() {
@@ -7,6 +7,7 @@ function Breadcrumbs() {
   const pathnames = location.pathname.split('/').filter(x => x);
   const [orgName, setOrgName] = useState(null);
   const [contactName, setContactName] = useState(null);
+  const [sessionName, setSessionName] = useState(null);
 
   // Detect if on organization details page
   useEffect(() => {
@@ -38,6 +39,20 @@ function Breadcrumbs() {
     } else {
       setContactName(null);
     }
+    // Detect /sessions/details/:id route
+    if (pathnames[0] === 'sessions' && pathnames[1] === 'details' && pathnames[2] && !isNaN(Number(pathnames[2]))) {
+      (async () => {
+        try {
+          const resp = await authFetch(`/api/sessions/${pathnames[2]}/`);
+          if (resp.ok) {
+            const data = await resp.json();
+            setSessionName(data.session?.name || null);
+          }
+        } catch {}
+      })();
+    } else {
+      setSessionName(null);
+    }
   }, [location.pathname]);
 
   return (
@@ -57,6 +72,10 @@ function Breadcrumbs() {
           // If on /contacts/:id, show contact name for id segment
           if (pathnames[0] === 'contacts' && idx === 1 && contactName) {
             label = contactName;
+          }
+          // If on /sessions/details/:id, show session name for id segment
+          if (pathnames[0] === 'sessions' && pathnames[1] === 'details' && idx === 2 && sessionName) {
+            label = sessionName;
           }
           return isLast ? (
             <li className="breadcrumb-item active" aria-current="page" key={to}>

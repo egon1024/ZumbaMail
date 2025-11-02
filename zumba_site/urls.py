@@ -10,4 +10,5 @@ urlpatterns = [
     path('api/user/', api.user_info, name='user_info'),
     path('api/', include('activity.urls.organization_urls')),
     path('api/', include('activity.urls.contact_urls')),
+    path('api/', include('activity.urls.session_urls')),
 ]

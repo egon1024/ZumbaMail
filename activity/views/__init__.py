@@ -5,6 +5,7 @@ from .organization import (
 	OrganizationUpdateView,
 	OrganizationSoftDeleteView,
 )
+from .session import SessionListView, SessionDetailView
 from .contact import (
 	ContactListView,
 	ContactDetailView,

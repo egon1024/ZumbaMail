@@ -13,6 +13,8 @@ import ContactsList from './contact/ContactsList';
 import ContactDetails from './contact/ContactDetails';
 import ContactEdit from './contact/ContactEdit';
 import ContactCreate from './contact/ContactCreate';
+import SessionsList from './session/SessionsList';
+import SessionDetails from './session/SessionDetails';
 import Breadcrumbs from './Breadcrumbs';
 import './roundedCards.css';
 
@@ -58,6 +60,16 @@ function AppLayout() {
         <Route path="/contacts" element={
           <PrivateRoute>
             <ContactsList />
+          </PrivateRoute>
+        } />
+        <Route path="/sessions" element={
+          <PrivateRoute>
+            <SessionsList />
+          </PrivateRoute>
+        } />
+        <Route path="/sessions/:id" element={
+          <PrivateRoute>
+            <SessionDetails />
           </PrivateRoute>
         } />
         <Route path="/contacts/new" element={

@@ -56,13 +56,10 @@ function Navbar() {
                 Schedules
               </a>
               <ul className="dropdown-menu" aria-labelledby="schedulesDropdown">
-                <li><NavLink className="dropdown-item" to="/classes/create">Create/Edit Class</NavLink></li>
+                <li><NavLink className="dropdown-item" to="/sessions">Sessions</NavLink></li>
+                <li><NavLink className="dropdown-item" to="/classes">Classes</NavLink></li>
                 <li><NavLink className="dropdown-item" to="/classes/assign">Assign Students</NavLink></li>
                 <li><NavLink className="dropdown-item" to="/classes/waitlist">Manage Waitlist</NavLink></li>
-                <li><NavLink className="dropdown-item" to="/classes/details">Class Details</NavLink></li>
-                <li><NavLink className="dropdown-item" to="/sessions/create">Create/Edit Session</NavLink></li>
-                <li><NavLink className="dropdown-item" to="/sessions/manage">Start/End Session</NavLink></li>
-                <li><NavLink className="dropdown-item" to="/sessions/details">Session Details</NavLink></li>
               </ul>
             </li>
             <li className="nav-item dropdown">

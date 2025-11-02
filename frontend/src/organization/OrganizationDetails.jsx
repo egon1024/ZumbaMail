@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Organization from "./OrganizationLink";
 import ContactLink from "./ContactLink";
 import { authFetch } from "../utils/authFetch";
+import { formatDate } from "../utils/formatDate";
 import SessionLink from "./SessionLink";
 import './OrganizationDetails.css';
 
@@ -89,16 +90,16 @@ function OrganizationDetails() {
                 {organization.contacts.map(contact => (
                   <tr key={contact.id} className="reactive-contact-row">
                     <td>
-                      <a href={`/contacts/${contact.id}`} target="_blank" rel="noopener noreferrer">
+                      <a href={`/contacts/${contact.id}`}>
                         {contact.name}
                       </a>
                     </td>
                     <td>{contact.role}</td>
                     <td>{contact.email ? (
-                      <a href={`mailto:${contact.email}`} target="_blank" rel="noopener noreferrer">{contact.email}</a>
+                      <a href={`mailto:${contact.email}`}>{contact.email}</a>
                     ) : ''}</td>
                     <td>{contact.phone ? (
-                      <a href={`tel:${contact.phone}`} target="_blank" rel="noopener noreferrer">{contact.phone}</a>
+                      <a href={`tel:${contact.phone}`}>{contact.phone}</a>
                     ) : ''}</td>
                   </tr>
                 ))}
@@ -134,10 +135,10 @@ function OrganizationDetails() {
                   .map(session => (
                     <tr key={session.id} className="clickable-row">
                       <td className="reactive-link-cell">
-                        <a href={`/sessions/details/${session.id}`} target="_blank" rel="noopener noreferrer">{session.name}</a>
+                        <a href={`/sessions/${session.id}`}>{session.name}</a>
                       </td>
-                      <td>{session.start_date}</td>
-                      <td>{session.end_date}</td>
+                      <td>{formatDate(session.start_date)}</td>
+                      <td>{formatDate(session.end_date)}</td>
                       <td>
                         {session.closed ? (
                           <span className="status-closed">Closed</span>
@@ -151,13 +152,13 @@ function OrganizationDetails() {
                 {showPastSessions && pastSessions && [...pastSessions]
                   .sort((a, b) => new Date(b.start_date) - new Date(a.start_date))
                   .map(session => (
-                    <tr key={session.id} className="clickable-row" onClick={() => window.location.href = `/sessions/details/${session.id}`}
+                    <tr key={session.id} className="clickable-row" onClick={() => window.location.href = `/sessions/${session.id}`}
                         tabIndex={0} style={{ cursor: 'pointer' }}>
                       <td className="reactive-link-cell">
                         <span className="reactive-link-text">{session.name}</span>
                       </td>
-                      <td>{session.start_date}</td>
-                      <td>{session.end_date}</td>
+                      <td>{formatDate(session.start_date)}</td>
+                      <td>{formatDate(session.end_date)}</td>
                       <td>
                         {session.closed ? (
                           <span className="status-closed">Closed</span>
@@ -209,7 +210,7 @@ function OrganizationDetails() {
                   }).map(activity => (
                     <tr key={activity.id} className="clickable-row">
                       <td>
-                        <a href={`/classes/details/${activity.id}`} target="_blank" rel="noopener noreferrer">{activity.type}</a>
+                        <a href={`/classes/details/${activity.id}`}>{activity.type}</a>
                       </td>
                       <td>{activity.day_of_week}</td>
                       <td>{activity.time}</td>
