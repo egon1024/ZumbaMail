@@ -14,3 +14,14 @@
   border-bottom-left-radius: 0.75rem !important;
   border-bottom-right-radius: 0.75rem !important;
 }
+
+/* Responsive row hover behavior for SessionsList */
+.session-name-cell a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.row-hover-active .session-name-cell a {
+  color: #007bff !important; /* Bootstrap blue */
+  text-decoration: none;
+}

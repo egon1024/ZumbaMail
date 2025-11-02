@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { authFetch } from "../utils/authFetch";
 import { Link } from "react-router-dom";
 import Tooltip from "../utils/Tooltip";
+import { formatDate } from "../utils/formatDate";
 
 function SessionsList() {
   const [sessions, setSessions] = useState([]);
@@ -76,76 +77,101 @@ function SessionsList() {
     return sorted;
   }
 
+  if (loading) {
+    return <div className="container mt-4"><div>Loading sessions...</div></div>;
+  }
+
   return (
     <div className="container mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 style={{ color: "#6a359c" }}>Sessions</h2>
-        <button className="btn btn-light" onClick={() => setShowClosed(v => !v)}>
-          {showClosed ? "Hide Closed Sessions" : "Show Closed Sessions"}
-        </button>
-      </div>
-      <div className="card mb-4" style={{ borderRadius: "18px", boxShadow: "0 2px 8px rgba(106,53,156,0.12)", background: "#f5f3ff", border: "none" }}>
-        <div className="card-body p-4">
+      <div className="card shadow-sm border-primary mb-4">
+        <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+          <h4 className="mb-0">Sessions</h4>
+          <button className="btn btn-light" onClick={() => setShowClosed(v => !v)}>
+            {showClosed ? "Hide Closed Sessions" : "Show Closed Sessions"}
+          </button>
+        </div>
+        <div className="card-body">
           {error && (
             <div className="alert alert-danger" role="alert">
               {error}
             </div>
           )}
           {!error && (
-            <table className="table table-sm mb-0 align-middle">
-              <thead>
-                <tr>
-                  <th style={{ width: '60px' }}></th>
-                  <th style={{ cursor: 'pointer' }} onClick={() => handleSort('name')}>
-                    Name {sortField === 'name' ? (sortAsc ? '▲' : '▼') : ''}
-                  </th>
-                  <th style={{ cursor: 'pointer' }} onClick={() => handleSort('start_date')}>
-                    Start Date {sortField === 'start_date' ? (sortAsc ? '▲' : '▼') : ''}
-                  </th>
-                  <th>End Date</th>
-                  <th>Status</th>
-                  <th style={{ cursor: 'pointer' }} onClick={() => handleSort('organization')}>
-                    Organization {sortField === 'organization' ? (sortAsc ? '▲' : '▼') : ''}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {getSortedSessions().map(session => (
-                  <tr key={session.id}>
-                    <td style={{ width: 'fit-content', textAlign: 'center', padding: '0 6px' }}>
-                      <Tooltip text="Edit session">
-                        <Link to={`/sessions/edit/${session.id}`} className="edit-icon-link">
-                          <i className="bi bi-pencil"></i>
-                        </Link>
-                      </Tooltip>
-                    </td>
-                    <td>
-                      <Tooltip text={`View details for ${session.name}`}>
-                        <Link to={`/sessions/${session.id}`}>{session.name}</Link>
-                      </Tooltip>
-                    </td>
-                    <td>{session.start_date}</td>
-                    <td>{session.end_date}</td>
-                    <td>
-                      {session.closed ? (
-                        <Tooltip text="Session is closed">
-                          <span style={{ color: '#b30000', fontWeight: 600 }}>Closed</span>
-                        </Tooltip>
-                      ) : (
-                        <Tooltip text="Session is open">
-                          <span style={{ color: '#176a3a', fontWeight: 600 }}>Open</span>
-                        </Tooltip>
-                      )}
-                    </td>
-                    <td>
-                      <Tooltip text={`View organization: ${session.organization_name || session.organization}`}>
-                        {session.organization_name || session.organization}
-                      </Tooltip>
-                    </td>
+            getSortedSessions().length === 0 ? (
+              <div className="text-center text-muted py-4">No sessions found.</div>
+            ) : (
+              <table className="table table-sm mb-0 align-middle">
+                <thead>
+                  <tr>
+                    <th style={{ width: '60px' }}></th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('name')}>
+                      Name {sortField === 'name' ? (sortAsc ? '▲' : '▼') : ''}
+                    </th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('start_date')}>
+                      Start Date {sortField === 'start_date' ? (sortAsc ? '▲' : '▼') : ''}
+                    </th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('organization')}>
+                      Organization {sortField === 'organization' ? (sortAsc ? '▲' : '▼') : ''}
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {getSortedSessions().map(session => (
+                    <tr key={session.id} className="table-row-hover"
+                      style={{ cursor: 'pointer' }}
+                      onClick={e => {
+                        if (e.target.closest('.edit-icon-link')) return;
+                        window.location.href = `/sessions/${session.id}`;
+                      }}
+                      onMouseOver={e => {
+                        // Only activate hover if NOT over the edit column
+                        if (e.target.closest('td') && e.target.closest('td').classList.contains('edit-col')) {
+                          e.currentTarget.classList.remove('row-hover-active');
+                        } else {
+                          e.currentTarget.classList.add('row-hover-active');
+                        }
+                      }}
+                      onMouseOut={e => {
+                        e.currentTarget.classList.remove('row-hover-active');
+                      }}
+                    >
+                      <td className="edit-col" style={{ width: 'fit-content', textAlign: 'center', padding: '0 6px' }}>
+                        <Tooltip tooltip="Edit session">
+                          <Link to={`/sessions/edit/${session.id}`} className="edit-icon-link">
+                            <i className="bi bi-pencil-square"></i>
+                          </Link>
+                        </Tooltip>
+                      </td>
+                      <td className="session-name-cell">
+                        <Tooltip tooltip={`View details for ${session.name}`}>
+                          <Link to={`/sessions/${session.id}`}>{session.name}</Link>
+                        </Tooltip>
+                      </td>
+                      <td>{formatDate(session.start_date)}</td>
+                      <td>{formatDate(session.end_date)}</td>
+                      <td>
+                        {session.closed ? (
+                          <Tooltip tooltip="Session is closed">
+                            <span style={{ color: '#b30000', fontWeight: 600 }}>Closed</span>
+                          </Tooltip>
+                        ) : (
+                          <Tooltip tooltip="Session is open">
+                            <span style={{ color: '#176a3a', fontWeight: 600 }}>Open</span>
+                          </Tooltip>
+                        )}
+                      </td>
+                      <td>
+                        <Tooltip tooltip={`View organization: ${session.organization_name || session.organization}`}>
+                          <span>{session.organization_name || session.organization}</span>
+                        </Tooltip>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )
           )}
         </div>
       </div>
@@ -154,3 +180,17 @@ function SessionsList() {
 }
 
 export default SessionsList;
+
+/* Add to the bottom of the file or your main CSS */
+/* Responsive row hover behavior */
+/* Only the .session-name-cell link turns blue on row hover */
+
+/* If using CSS-in-JS, move to your main CSS file */
+
+/* Example CSS: */
+/*
+.table-row-hover:hover .session-name-cell a {
+  color: #176a3a !important;
+  text-decoration: underline;
+}
+*/

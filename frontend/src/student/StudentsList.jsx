@@ -58,6 +58,9 @@ function StudentsList() {
                   <tr>
                     <th style={{ width: '1%', whiteSpace: 'nowrap' }}></th>
                     <th style={{ width: '1%', whiteSpace: 'nowrap' }}>Name</th>
+                    {showInactive && (
+                      <th style={{ width: '1%', whiteSpace: 'nowrap', textAlign: 'center' }}>Status</th>
+                    )}
                     <th style={{ width: '1%', whiteSpace: 'nowrap', textAlign: 'center' }}>
                       Rochester<br />Resident
                     </th>
@@ -93,7 +96,7 @@ function StudentsList() {
                           </Tooltip>
                         </td>
                         <td style={{ whiteSpace: 'nowrap', width: '1%' }}>
-                          <Tooltip tooltip={`View details for ${student.first_name} ${student.last_name}`}>
+                          <Tooltip tooltip={`View details for ${student.last_name}, ${student.first_name}`}>
                             <a
                               href={`/students/${student.id}`}
                               className="reactive-student-link"
@@ -101,18 +104,36 @@ function StudentsList() {
                               {student.last_name}, {student.first_name}
                             </a>
                           </Tooltip>
-                          {student.active === false && (
-                            <span className="badge bg-danger ms-2">Inactive</span>
-                          )}
                         </td>
+                        {showInactive && (
+                          <td style={{ textAlign: 'center', width: '1%' }}>
+                            {student.active !== false ? (
+                              <Tooltip tooltip="Active">
+                                <span style={{ color: 'green', fontSize: '1.2em' }}>
+                                  &#10003;
+                                </span>
+                              </Tooltip>
+                            ) : (
+                              <Tooltip tooltip="Inactive">
+                                <span style={{ color: 'red', fontSize: '1.2em' }}>
+                                  &#10007;
+                                </span>
+                              </Tooltip>
+                            )}
+                          </td>
+                        )}
                         <td style={{ textAlign: 'center', width: '1%' }}>
                           {student.rochester ? (
                             <Tooltip tooltip="Rochester Resident">
-                              <span style={{ color: 'green', fontSize: '1.2em' }}>&#10003;</span>
+                              <span style={{ color: 'green', fontSize: '1.2em' }}>
+                                &#10003;
+                              </span>
                             </Tooltip>
                           ) : (
                             <Tooltip tooltip="Not a Rochester Resident">
-                              <span style={{ color: 'red', fontSize: '1.2em' }}>&#10007;</span>
+                              <span style={{ color: 'red', fontSize: '1.2em' }}>
+                                &#10007;
+                              </span>
                             </Tooltip>
                           )}
                         </td>
