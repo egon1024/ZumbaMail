@@ -107,6 +107,8 @@ class Meeting(models.Model):
 		return f"{self.activity} on {self.date}"
 
 class Student(models.Model):
+	active = models.BooleanField(default=True, help_text="Is this student currently active?")
+	rochester = models.BooleanField(default=False, help_text="Rochester Resident")
 	@property
 	def full_name(self):
 		return f"{self.first_name} {self.last_name}".strip()
@@ -118,8 +120,8 @@ class Student(models.Model):
 	email = models.EmailField()
 	phone = models.CharField(max_length=20, blank=True, null=True)
 	facebook_profile = models.URLField("Facebook profile URL", blank=True, null=True)
-	emergency_contact_name = models.CharField(max_length=100)
-	emergency_contact_phone = models.CharField(max_length=20)
+	emergency_contact_name = models.CharField(max_length=100, blank=True, null=True)
+	emergency_contact_phone = models.CharField(max_length=20, blank=True, null=True)
 	notes = models.TextField(blank=True, null=True, max_length=2048)
 
 	def __str__(self):

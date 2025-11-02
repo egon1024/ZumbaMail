@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { APP_TITLE } from './appConfig';
+import './globalBackground.css';
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -69,6 +70,8 @@ function Login({ onLogin }) {
               onChange={e => setUsername(e.target.value)}
               required
               disabled={loading}
+              autoCapitalize="none"
+              autoComplete="username"
             />
           </div>
           <div className="mb-3">
@@ -80,6 +83,7 @@ function Login({ onLogin }) {
               onChange={e => setPassword(e.target.value)}
               required
               disabled={loading}
+              autoComplete="current-password"
             />
           </div>
           {error && <div className="alert alert-danger">{error}</div>}

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Organization from "./OrganizationLink";
+import Tooltip from "../utils/Tooltip";
 import ContactLink from "./ContactLink";
 import { authFetch } from "../utils/authFetch";
 import { formatDate } from "../utils/formatDate";
 import SessionLink from "./SessionLink";
 import './OrganizationDetails.css';
+import DayOfWeekDisplay from "../utils/DayOfWeekDisplay";
 
 
 function OrganizationDetails() {
@@ -90,16 +92,20 @@ function OrganizationDetails() {
                 {organization.contacts.map(contact => (
                   <tr key={contact.id} className="reactive-contact-row">
                     <td>
-                      <a href={`/contacts/${contact.id}`}>
-                        {contact.name}
-                      </a>
+                          <Tooltip tooltip={`View details for ${contact.name}`}>
+                            <a href={`/contacts/${contact.id}`}>{contact.name}</a>
+                          </Tooltip>
                     </td>
                     <td>{contact.role}</td>
                     <td>{contact.email ? (
-                      <a href={`mailto:${contact.email}`}>{contact.email}</a>
+                          <Tooltip tooltip={`Email ${contact.name}`}>
+                            <a href={`mailto:${contact.email}`}>{contact.email}</a>
+                          </Tooltip>
                     ) : ''}</td>
                     <td>{contact.phone ? (
-                      <a href={`tel:${contact.phone}`}>{contact.phone}</a>
+                          <Tooltip tooltip={`Call ${contact.name}`}>
+                            <a href={`tel:${contact.phone}`}>{contact.phone}</a>
+                          </Tooltip>
                     ) : ''}</td>
                   </tr>
                 ))}
@@ -133,20 +139,28 @@ function OrganizationDetails() {
                 {[...(futureSessions || []), ...(currentSession ? [currentSession] : [])]
                   .sort((a, b) => new Date(a.start_date) - new Date(b.start_date))
                   .map(session => (
-                    <tr key={session.id} className="clickable-row">
-                      <td className="reactive-link-cell">
-                        <a href={`/sessions/${session.id}`}>{session.name}</a>
-                      </td>
-                      <td>{formatDate(session.start_date)}</td>
-                      <td>{formatDate(session.end_date)}</td>
-                      <td>
-                        {session.closed ? (
-                          <span className="status-closed">Closed</span>
-                        ) : (
-                          <span className="status-open">Open</span>
-                        )}
-                      </td>
-                    </tr>
+                    <Tooltip tooltip={`View session: ${session.name}`} key={session.id}>
+                      <tr
+                        className="clickable-row"
+                        tabIndex={0}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => navigate(`/sessions/${session.id}`)}
+                        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate(`/sessions/${session.id}`); }}
+                      >
+                        <td className="reactive-link-cell">
+                          <span className="reactive-link-text">{session.name}</span>
+                        </td>
+                        <td>{formatDate(session.start_date)}</td>
+                        <td>{formatDate(session.end_date)}</td>
+                        <td>
+                          {session.closed ? (
+                            <span className="status-closed">Closed</span>
+                          ) : (
+                            <span className="status-open">Open</span>
+                          )}
+                        </td>
+                      </tr>
+                    </Tooltip>
                   ))}
                 {/* Closed sessions: pastSessions, reverse chronological */}
                 {showPastSessions && pastSessions && [...pastSessions]
@@ -208,14 +222,22 @@ function OrganizationDetails() {
                     };
                     return parseTime(a.time) - parseTime(b.time);
                   }).map(activity => (
-                    <tr key={activity.id} className="clickable-row">
-                      <td>
-                        <a href={`/classes/details/${activity.id}`}>{activity.type}</a>
-                      </td>
-                      <td>{activity.day_of_week}</td>
-                      <td>{activity.time}</td>
-                      <td>{activity.location}</td>
-                    </tr>
+                    <Tooltip tooltip={`View class: ${activity.type}`} key={activity.id}>
+                      <tr
+                        className="clickable-row"
+                        tabIndex={0}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => navigate(`/classes/details/${activity.id}`)}
+                        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate(`/classes/details/${activity.id}`); }}
+                      >
+                        <td>
+                          <span className="reactive-link-text">{activity.type}</span>
+                        </td>
+                        <td><DayOfWeekDisplay activeDay={activity.day_of_week} /></td>
+                        <td>{activity.time}</td>
+                        <td>{activity.location}</td>
+                      </tr>
+                    </Tooltip>
                   ))}
                 </tbody>
               </table>

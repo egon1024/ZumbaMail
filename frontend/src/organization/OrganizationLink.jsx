@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import Tooltip from "../utils/Tooltip";
 
 function Organization({ organization, className = "" }) {
   if (!organization) return null;
@@ -8,9 +9,11 @@ function Organization({ organization, className = "" }) {
   const name = organization.name || organization.name || organization;
   // Future: add badges, tooltips, menus, etc.
   return (
-    <Link to={`/organization/${id}`} className={`org-name-link ${className}`}>
-      {name}
-    </Link>
+    <Tooltip tooltip={`View details for ${name}`}>
+      <Link to={`/organization/${id}`} className={`org-name-link ${className}`}>
+        {name}
+      </Link>
+    </Tooltip>
   );
 }
 

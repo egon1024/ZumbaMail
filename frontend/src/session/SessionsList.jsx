@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { authFetch } from "../utils/authFetch";
 import { Link } from "react-router-dom";
+import Tooltip from "../utils/Tooltip";
 
 function SessionsList() {
   const [sessions, setSessions] = useState([]);
@@ -112,23 +113,35 @@ function SessionsList() {
                 {getSortedSessions().map(session => (
                   <tr key={session.id}>
                     <td style={{ width: 'fit-content', textAlign: 'center', padding: '0 6px' }}>
-                      <Link to={`/sessions/edit/${session.id}`} className="edit-icon-link" title="Edit">
-                        <i className="bi bi-pencil"></i>
-                      </Link>
+                      <Tooltip text="Edit session">
+                        <Link to={`/sessions/edit/${session.id}`} className="edit-icon-link">
+                          <i className="bi bi-pencil"></i>
+                        </Link>
+                      </Tooltip>
                     </td>
                     <td>
-                      <Link to={`/sessions/${session.id}`}>{session.name}</Link>
+                      <Tooltip text={`View details for ${session.name}`}>
+                        <Link to={`/sessions/${session.id}`}>{session.name}</Link>
+                      </Tooltip>
                     </td>
                     <td>{session.start_date}</td>
                     <td>{session.end_date}</td>
                     <td>
                       {session.closed ? (
-                        <span style={{ color: '#b30000', fontWeight: 600 }}>Closed</span>
+                        <Tooltip text="Session is closed">
+                          <span style={{ color: '#b30000', fontWeight: 600 }}>Closed</span>
+                        </Tooltip>
                       ) : (
-                        <span style={{ color: '#176a3a', fontWeight: 600 }}>Open</span>
+                        <Tooltip text="Session is open">
+                          <span style={{ color: '#176a3a', fontWeight: 600 }}>Open</span>
+                        </Tooltip>
                       )}
                     </td>
-                    <td>{session.organization_name || session.organization}</td>
+                    <td>
+                      <Tooltip text={`View organization: ${session.organization_name || session.organization}`}>
+                        {session.organization_name || session.organization}
+                      </Tooltip>
+                    </td>
                   </tr>
                 ))}
               </tbody>

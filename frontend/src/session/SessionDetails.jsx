@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { authFetch } from "../utils/authFetch";
 import { formatDate } from "../utils/formatDate";
 import '../organization/OrganizationDetails.css';
+import DayOfWeekDisplay from "../utils/DayOfWeekDisplay";
+import Tooltip from "../utils/Tooltip";
 
 function SessionDetails() {
   const { id } = useParams();
@@ -68,21 +70,20 @@ function SessionDetails() {
             <div className="card-body">
               <table className="table table-sm mb-0">
                 <tbody>
-                  <tr
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => navigate(`/organization/${organization.id}`)}
-                    onMouseEnter={e => {
-                      e.currentTarget.querySelector('.reactive-link-text').style.color = '#2456a5';
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.querySelector('.reactive-link-text').style.color = '';
-                    }}
-                  >
-                    <th>Name</th>
-                    <td>
-                      <span className="reactive-link-text">{organization.name}</span>
-                    </td>
-                  </tr>
+                  <Tooltip tooltip={`View organization: ${organization.name}`}>
+                    <tr
+                      className="clickable-row"
+                      tabIndex={0}
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => navigate(`/organization/${organization.id}`)}
+                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate(`/organization/${organization.id}`); }}
+                    >
+                      <th>Name</th>
+                      <td>
+                        <span className="reactive-link-text">{organization.name}</span>
+                      </td>
+                    </tr>
+                  </Tooltip>
                 </tbody>
               </table>
             </div>
@@ -104,26 +105,28 @@ function SessionDetails() {
                   <th>Day</th>
                   <th>Time</th>
                   <th>Location</th>
+                  <th>Students</th>
+                  <th>Waitlist</th>
                 </tr>
               </thead>
               <tbody>
                 {classes.map(cls => (
-                  <tr
-                    key={cls.id}
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => navigate(`/classes/${cls.id}`)}
-                    onMouseEnter={e => {
-                      e.currentTarget.querySelector('.reactive-link-text').style.color = '#2456a5';
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.querySelector('.reactive-link-text').style.color = '';
-                    }}
-                  >
-                    <td><span className="reactive-link-text">{cls.type}</span></td>
-                    <td>{cls.day_of_week}</td>
-                    <td>{cls.time}</td>
-                    <td>{cls.location}</td>
-                  </tr>
+                  <Tooltip tooltip={`View class: ${cls.type}`} key={cls.id}>
+                    <tr
+                      className="clickable-row"
+                      tabIndex={0}
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => navigate(`/classes/${cls.id}`)}
+                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate(`/classes/${cls.id}`); }}
+                    >
+                      <td><span className="reactive-link-text">{cls.type}</span></td>
+                      <td><DayOfWeekDisplay activeDay={cls.day_of_week} /></td>
+                      <td>{cls.time}</td>
+                      <td>{cls.location}</td>
+                      <td>{cls.num_students ?? ''}</td>
+                      <td>{cls.num_waitlist ?? ''}</td>
+                    </tr>
+                  </Tooltip>
                 ))}
               </tbody>
             </table>

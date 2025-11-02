@@ -130,8 +130,14 @@ class StudentAdmin(admin.ModelAdmin):
 
 	list_display = (
 		'student_links', 'first_name', 'last_name', 'email', 'phone',
-		'emergency_contact_name', 'emergency_contact_phone'
+		'emergency_contact_name', 'emergency_contact_phone', 'active_status', 'rochester_resident_icon'
 	)
+	def rochester_resident_icon(self, obj):
+		if obj.rochester:
+			return format_html('<span style="color: green; font-size: 1.2em;">&#10003;</span>')
+		else:
+			return format_html('<span style="color: red; font-size: 1.2em;">&#10007;</span>')
+	rochester_resident_icon.short_description = "Rochester Resident"
 	search_fields = ('^last_name', '^first_name', 'email', 'phone')
 
 	def get_search_results(self, request, queryset, search_term):
@@ -155,6 +161,13 @@ class StudentAdmin(admin.ModelAdmin):
 		)
 	student_links.short_description = 'Actions'
 
+	def active_status(self, obj):
+		if obj.active:
+			return format_html('<span style="color:green;font-weight:bold;">Active</span>')
+		else:
+			return format_html('<span style="color:red;font-weight:bold;">Inactive</span>')
+	active_status.short_description = 'Status'
+
 class CustomStudentAdmin(StudentAdmin):
 	def get_urls(self):
 		urls = super().get_urls()
@@ -166,7 +179,7 @@ class CustomStudentAdmin(StudentAdmin):
 
 	def student_detail_view(self, request, student_id):
 		student = get_object_or_404(Student, pk=student_id)
-		return render(request, 'admin/activity/student_detail.html', {'student': student})
+		return render(request, 'admin/activity/student_detail.html', {'student': student, 'rochester_icon': self.rochester_resident_icon(student)})
 
 admin.site.register(Student, CustomStudentAdmin)
 

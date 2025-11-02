@@ -39,11 +39,11 @@ function Breadcrumbs() {
     } else {
       setContactName(null);
     }
-    // Detect /sessions/details/:id route
-    if (pathnames[0] === 'sessions' && pathnames[1] === 'details' && pathnames[2] && !isNaN(Number(pathnames[2]))) {
+    // Detect /sessions/:id route
+    if (pathnames[0] === 'sessions' && pathnames[1] && !isNaN(Number(pathnames[1]))) {
       (async () => {
         try {
-          const resp = await authFetch(`/api/sessions/${pathnames[2]}/`);
+          const resp = await authFetch(`/api/sessions/${pathnames[1]}/`);
           if (resp.ok) {
             const data = await resp.json();
             setSessionName(data.session?.name || null);
@@ -73,8 +73,8 @@ function Breadcrumbs() {
           if (pathnames[0] === 'contacts' && idx === 1 && contactName) {
             label = contactName;
           }
-          // If on /sessions/details/:id, show session name for id segment
-          if (pathnames[0] === 'sessions' && pathnames[1] === 'details' && idx === 2 && sessionName) {
+          // If on /sessions/:id, show session name for id segment
+          if (pathnames[0] === 'sessions' && idx === 1 && sessionName) {
             label = sessionName;
           }
           return isLast ? (

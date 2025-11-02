@@ -28,9 +28,17 @@ class SessionDetailView(RetrieveAPIView):
                 model = organization.__class__
                 fields = ['id', 'name', 'is_deleted']
         class ClassSerializer(serializers.ModelSerializer):
+            num_students = serializers.SerializerMethodField()
+            num_waitlist = serializers.SerializerMethodField()
             class Meta:
                 model = Activity
-                fields = ['id', 'type', 'day_of_week', 'time', 'location']
+                fields = ['id', 'type', 'day_of_week', 'time', 'location', 'num_students', 'num_waitlist']
+
+            def get_num_students(self, obj):
+                return obj.enrollments.filter(status='active').count()
+
+            def get_num_waitlist(self, obj):
+                return obj.enrollments.filter(status='waiting').count()
         class SessionSerializer(serializers.ModelSerializer):
             class Meta:
                 model = session.__class__

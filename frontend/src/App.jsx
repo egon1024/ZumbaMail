@@ -14,15 +14,18 @@ import ContactDetails from './contact/ContactDetails';
 import ContactEdit from './contact/ContactEdit';
 import ContactCreate from './contact/ContactCreate';
 import SessionsList from './session/SessionsList';
+import StudentsList from './student/StudentsList';
 import SessionDetails from './session/SessionDetails';
 import Breadcrumbs from './Breadcrumbs';
 import './roundedCards.css';
+import './globalBackground.css';
+import './utils/tooltip.css';
 
 function AppLayout() {
   const location = useLocation();
   const isLoginPage = location.pathname === '/';
   return (
-    <div style={{ background: "#ece6f7", minHeight: "100vh" }}>
+    <div className="global-bg">
       {!isLoginPage && <Header />}
       {!isLoginPage && <Navbar />}
       {!isLoginPage && <Breadcrumbs />}
@@ -87,6 +90,11 @@ function AppLayout() {
             <ContactEdit />
           </PrivateRoute>
         } />
+          <Route path="/students" element={
+            <PrivateRoute>
+              <StudentsList />
+            </PrivateRoute>
+          } />
       </Routes>
   </div>
   );

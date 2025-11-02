@@ -1,0 +1,29 @@
+.table-responsive tbody td {
+  white-space: nowrap;
+}
+.reactive-student-row td {
+  color: #222;
+  transition: color 0.2s;
+}
+.reactive-student-row:hover td {
+  color: #2456a5;
+}
+.reactive-student-link {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 600;
+}
+.reactive-student-link:hover {
+  color: #2456a5;
+  text-decoration: none;
+}
+
+.reactive-student-contact-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.reactive-student-contact-link:hover {
+  color: #2456a5;
+  text-decoration: none;
+}

@@ -11,4 +11,5 @@ urlpatterns = [
     path('api/', include('activity.urls.organization_urls')),
     path('api/', include('activity.urls.contact_urls')),
     path('api/', include('activity.urls.session_urls')),
+    path('api/', include('activity.urls.student_urls')),
 ]

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Tooltip from "../utils/Tooltip";
 import ContactLink from "../organization/ContactLink";
 import "../organization/OrganizationDetails.css";
 import { authFetch } from "../utils/authFetch";
@@ -80,15 +81,36 @@ function ContactsList() {
             {getSortedContacts().map(contact => (
               <tr key={contact.id} className="reactive-contact-row">
                 <td style={{ width: 'fit-content', textAlign: 'center', padding: '0 6px' }}>
-                  <a href={`/contacts/${contact.id}/edit`} className="edit-icon-link" title="Edit">
-                    <i className="bi bi-pencil"></i>
-                  </a>
+                  <Tooltip tooltip="Edit contact">
+                    <a href={`/contacts/${contact.id}/edit`} className="edit-icon-link">
+                      <i className="bi bi-pencil"></i>
+                    </a>
+                  </Tooltip>
                 </td>
                 <td><ContactLink contact={contact} /></td>
                 <td>{contact.role}</td>
-                <td>{contact.email ? <a href={`mailto:${contact.email}`}>{contact.email}</a> : ""}</td>
-                <td>{contact.phone ? <a href={`tel:${contact.phone}`}>{contact.phone}</a> : ""}</td>
-                <td>{contact.organization_name}</td>
+                <td>{contact.email ? (
+                  <Tooltip tooltip={`Email ${contact.name}`}>
+                    <a href={`mailto:${contact.email}`}>{contact.email}</a>
+                  </Tooltip>
+                ) : ""}</td>
+                <td>{contact.phone ? (
+                  <Tooltip tooltip={`Call ${contact.name}`}>
+                    <a href={`tel:${contact.phone}`}>{contact.phone}</a>
+                  </Tooltip>
+                ) : ""}</td>
+                <td>
+                  {contact.organization_id ? (
+                    <Tooltip tooltip={`View details for ${contact.organization_name}`}>
+                      <a
+                        href={`/organization/${contact.organization_id}`}
+                        className="reactive-student-contact-link"
+                      >
+                        {contact.organization_name}
+                      </a>
+                    </Tooltip>
+                  ) : <span className="text-muted">—</span>}
+                </td>
               </tr>
             ))}
           </tbody>

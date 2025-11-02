@@ -1,3 +1,33 @@
+.clickable-row .reactive-link-text,
+.clickable-row:hover .reactive-link-text,
+.clickable-row:focus .reactive-link-text {
+  text-decoration: none !important;
+  text-decoration-line: none !important;
+  text-decoration-style: none !important;
+  text-decoration-color: inherit !important;
+  text-decoration-thickness: 0 !important;
+  text-decoration-skip-ink: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.clickable-row a,
+.clickable-row a:hover,
+.clickable-row a:focus {
+  text-decoration: none !important;
+  text-decoration-line: none !important;
+  text-decoration-style: none !important;
+  text-decoration-color: inherit !important;
+  text-decoration-thickness: 0 !important;
+  text-decoration-skip-ink: none !important;
+}
+.clickable-row a,
+.clickable-row a:hover,
+.clickable-row a:focus {
+  text-decoration: none !important;
+  text-decoration-line: none !important;
+  text-decoration-style: none !important;
+  text-decoration-color: inherit !important;
+}
 /* Organization name link: only blue on hover */
 /* Organization name link: black by default, blue on hover */
 .org-name-link {
@@ -39,10 +69,14 @@
   text-decoration: none;
   cursor: pointer;
 }
+.clickable-row:hover,
+.clickable-row:focus {
+  background: #f5f3ff;
+}
 .clickable-row:hover .reactive-link-text,
 .clickable-row:focus .reactive-link-text {
   color: #0d6efd;
-  text-decoration: none;
+  text-decoration: none !important;
 }
 
 /* Rounded corners for all tables, including Bootstrap tables */

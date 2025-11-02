@@ -46,9 +46,7 @@ function Navbar() {
                 Students
               </a>
               <ul className="dropdown-menu" aria-labelledby="studentDropdown">
-                <li><NavLink className="dropdown-item" to="/students/add">Add/Edit Student</NavLink></li>
-                <li><NavLink className="dropdown-item" to="/students/directory">Student Directory</NavLink></li>
-                <li><NavLink className="dropdown-item" to="/students/details">Student Details</NavLink></li>
+                <li><NavLink className="dropdown-item" to="/students">Student List</NavLink></li>
               </ul>
             </li>
             <li className="nav-item dropdown">
