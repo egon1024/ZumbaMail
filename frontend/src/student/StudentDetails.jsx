@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Tooltip from "../utils/Tooltip";
 import DayOfWeekDisplay from "../utils/DayOfWeekDisplay";
 import { formatDate } from "../utils/formatDate";
+import { authFetch } from "../utils/authFetch";
 import "./StudentsList.css";
 
 function StudentDetails() {
@@ -13,11 +14,13 @@ function StudentDetails() {
   const [waitlistClasses, setWaitlistClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showClosed, setShowClosed] = useState(false);
 
   useEffect(() => {
     async function fetchDetails() {
       try {
-        const resp = await fetch(`/api/students/${id}/details/`);
+        const url = `/api/students/${id}/details/` + (showClosed ? '?include_closed=true' : '');
+        const resp = await authFetch(url);
         if (!resp.ok) throw new Error("Failed to fetch student details");
         const data = await resp.json();
         setStudent(data.student);
@@ -30,7 +33,7 @@ function StudentDetails() {
       }
     }
     fetchDetails();
-  }, [id]);
+  }, [id, showClosed]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="alert alert-danger">{error}</div>;
@@ -38,6 +41,15 @@ function StudentDetails() {
 
   return (
     <div className="container mt-4">
+      {/* Toggle closed classes button */}
+      <div className="mb-3 text-end">
+        <button
+          className="btn btn-outline-primary"
+          onClick={() => setShowClosed(v => !v)}
+        >
+          {showClosed ? "Hide Closed Classes" : "Show Closed Classes"}
+        </button>
+      </div>
       {/* Student Details Card */}
       <section className="mb-4">
         <div className="card shadow-sm border-primary mb-4">
@@ -48,10 +60,88 @@ function StudentDetails() {
             <table className="table table-sm mb-0">
               <tbody>
                 <tr><th>Name</th><td>{student.first_name} {student.last_name}</td></tr>
-                <tr><th>Email</th><td>{student.email}</td></tr>
-                <tr><th>Phone</th><td>{student.phone}</td></tr>
-                <tr><th>Rochester Resident</th><td>{student.rochester ? "Yes" : "No"}</td></tr>
-                <tr><th>Status</th><td>{student.active ? "Active" : "Inactive"}</td></tr>
+                <tr>
+                  <th>Rochester Resident</th>
+                  <td>
+                    {student.rochester ? (
+                      <span className="text-success" title="Rochester Resident">&#10003;</span>
+                    ) : (
+                      <span className="text-danger" title="Not a Rochester Resident">&#10007;</span>
+                    )}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Facebook Profile</th>
+                  <td>
+                    {student.facebook_profile ? (
+                      <a href={student.facebook_profile} target="_blank" rel="noopener noreferrer">{student.facebook_profile}</a>
+                    ) : <span className="text-muted">—</span>}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Status</th>
+                  <td>
+                    <span className={student.active ? 'text-success' : 'text-danger'}>
+                      {student.active ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  className={student.email ? "reactive-student-row clickable-row" : "reactive-student-row"}
+                  style={student.email ? { cursor: "pointer" } : undefined}
+                  tabIndex={student.email ? 0 : undefined}
+                  onClick={student.email ? () => window.location.href = `mailto:${student.email}` : undefined}
+                  onKeyDown={student.email ? (e) => { if (e.key === "Enter" || e.key === " ") window.location.href = `mailto:${student.email}`; } : undefined}
+                >
+                  <th>Email</th>
+                  <td>
+                    {student.email ? (
+                      <Tooltip tooltip={`Email ${student.first_name} ${student.last_name}`}>
+                        <span className="reactive-student-contact-link">{student.email}</span>
+                      </Tooltip>
+                    ) : <span className="text-muted">—</span>}
+                  </td>
+                </tr>
+                <tr
+                  className={student.phone ? "reactive-student-row clickable-row" : "reactive-student-row"}
+                  style={student.phone ? { cursor: "pointer" } : undefined}
+                  tabIndex={student.phone ? 0 : undefined}
+                  onClick={student.phone ? () => window.location.href = `tel:${student.phone}` : undefined}
+                  onKeyDown={student.phone ? (e) => { if (e.key === "Enter" || e.key === " ") window.location.href = `tel:${student.phone}`; } : undefined}
+                >
+                  <th>Phone</th>
+                  <td>
+                    {student.phone ? (
+                      <Tooltip tooltip={`Call ${student.first_name} ${student.last_name}`}>
+                        <span className="reactive-student-contact-link">{student.phone}</span>
+                      </Tooltip>
+                    ) : <span className="text-muted">—</span>}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Emergency Contact Name</th>
+                  <td>{student.emergency_contact_name ? student.emergency_contact_name : <span className="text-muted">—</span>}</td>
+                </tr>
+                <tr
+                  className={student.emergency_contact_phone ? "reactive-student-row clickable-row" : "reactive-student-row"}
+                  style={student.emergency_contact_phone ? { cursor: "pointer" } : undefined}
+                  tabIndex={student.emergency_contact_phone ? 0 : undefined}
+                  onClick={student.emergency_contact_phone ? () => window.location.href = `tel:${student.emergency_contact_phone}` : undefined}
+                  onKeyDown={student.emergency_contact_phone ? (e) => { if (e.key === "Enter" || e.key === " ") window.location.href = `tel:${student.emergency_contact_phone}`; } : undefined}
+                >
+                  <th>Emergency Contact Phone</th>
+                  <td>
+                    {student.emergency_contact_phone ? (
+                      <Tooltip tooltip={`Call Emergency Contact`}>
+                        <span className="reactive-student-contact-link">{student.emergency_contact_phone}</span>
+                      </Tooltip>
+                    ) : <span className="text-muted">—</span>}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Notes</th>
+                  <td>{student.notes ? student.notes : <span className="text-muted">—</span>}</td>
+                </tr>
               </tbody>
             </table>
           </div>

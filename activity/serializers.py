@@ -16,17 +16,20 @@ class StudentDetailSerializer(serializers.ModelSerializer):
         model = Student
         fields = [
             'id', 'first_name', 'last_name', 'email', 'phone', 'rochester', 'active',
+            'emergency_contact_name', 'emergency_contact_phone', 'facebook_profile', 'notes',
             'current_classes', 'waitlist_classes'
         ]
 
     def get_current_classes(self, obj):
+        include_closed = self.context.get('include_closed', False)
         enrollments = obj.enrollments.filter(status='active')
-        activities = [e.activity for e in enrollments]
+        activities = [e.activity for e in enrollments if include_closed or not e.activity.closed]
         return ActivitySerializer(activities, many=True).data
 
     def get_waitlist_classes(self, obj):
+        include_closed = self.context.get('include_closed', False)
         enrollments = obj.enrollments.filter(status='waiting')
-        activities = [e.activity for e in enrollments]
+        activities = [e.activity for e in enrollments if include_closed or not e.activity.closed]
         return ActivitySerializer(activities, many=True).data
 
 class ContactSerializer(serializers.ModelSerializer):

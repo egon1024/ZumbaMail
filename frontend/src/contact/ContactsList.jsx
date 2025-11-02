@@ -11,6 +11,7 @@ function ContactsList() {
   const [sortField, setSortField] = useState('name');
   const [sortAsc, setSortAsc] = useState(true);
   const [error, setError] = useState(null);
+  const [hoveredContactId, setHoveredContactId] = useState(null);
 
   useEffect(() => {
     async function fetchContacts() {
@@ -87,8 +88,34 @@ function ContactsList() {
                     </a>
                   </Tooltip>
                 </td>
-                <td><ContactLink contact={contact} /></td>
-                <td>{contact.role}</td>
+                <td
+                  onMouseEnter={() => setHoveredContactId(contact.id)}
+                  onMouseLeave={() => setHoveredContactId(null)}
+                >
+                  <Tooltip tooltip={`View contact details for ${contact.name}`}>
+                    <a
+                      href={`/contacts/${contact.id}`}
+                      className={`contact-name-link${hoveredContactId === contact.id ? ' contact-hovered' : ''}`}
+                      style={{ color: hoveredContactId === contact.id ? '#007bff' : '', textDecoration: 'none', cursor: 'pointer' }}
+                    >
+                      {contact.name}
+                    </a>
+                  </Tooltip>
+                </td>
+                <td
+                  onMouseEnter={() => setHoveredContactId(contact.id)}
+                  onMouseLeave={() => setHoveredContactId(null)}
+                >
+                  <Tooltip tooltip={`View contact details for ${contact.name}`}>
+                    <a
+                      href={`/contacts/${contact.id}`}
+                      className={`contact-role-link${hoveredContactId === contact.id ? ' contact-hovered' : ''}`}
+                      style={{ color: hoveredContactId === contact.id ? '#007bff' : '', textDecoration: 'none', cursor: 'pointer' }}
+                    >
+                      {contact.role}
+                    </a>
+                  </Tooltip>
+                </td>
                 <td>{contact.email ? (
                   <Tooltip tooltip={`Email ${contact.name}`}>
                     <a href={`mailto:${contact.email}`}>{contact.email}</a>

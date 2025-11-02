@@ -8,6 +8,7 @@ function Breadcrumbs() {
   const [orgName, setOrgName] = useState(null);
   const [contactName, setContactName] = useState(null);
   const [sessionName, setSessionName] = useState(null);
+    const [studentName, setStudentName] = useState(null);
 
   // Detect if on organization details page
   useEffect(() => {
@@ -53,6 +54,20 @@ function Breadcrumbs() {
     } else {
       setSessionName(null);
     }
+      // Detect /students/:id route
+      if (pathnames[0] === 'students' && pathnames[1] && !isNaN(Number(pathnames[1]))) {
+        (async () => {
+          try {
+            const resp = await authFetch(`/api/students/${pathnames[1]}/details/`);
+            if (resp.ok) {
+              const data = await resp.json();
+              setStudentName(data.student ? `${data.student.first_name} ${data.student.last_name}` : null);
+            }
+          } catch {}
+        })();
+      } else {
+        setStudentName(null);
+      }
   }, [location.pathname]);
 
   return (
@@ -77,6 +92,10 @@ function Breadcrumbs() {
           if (pathnames[0] === 'sessions' && idx === 1 && sessionName) {
             label = sessionName;
           }
+            // If on /students/:id, show student name for id segment
+            if (pathnames[0] === 'students' && idx === 1 && studentName) {
+              label = studentName;
+            }
           return isLast ? (
             <li className="breadcrumb-item active" aria-current="page" key={to}>
               {label}
