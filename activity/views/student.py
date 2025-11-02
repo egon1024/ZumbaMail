@@ -5,8 +5,13 @@ from activity.models import Student
 class StudentListView(ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     def get_queryset(self):
-        # Return all students marked as active
-        return Student.objects.filter(active=True)
+        status = self.request.query_params.get('status', 'active')
+        if status == 'all':
+            return Student.objects.all()
+        elif status == 'inactive':
+            return Student.objects.filter(active=False)
+        else:
+            return Student.objects.filter(active=True)
     def get_serializer_class(self):
         class StudentSerializer(serializers.ModelSerializer):
             class Meta:

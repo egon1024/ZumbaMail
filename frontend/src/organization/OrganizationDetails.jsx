@@ -82,6 +82,7 @@ function OrganizationDetails() {
             <table className="table table-sm mb-0">
               <thead>
                 <tr>
+                  <th style={{ width: '1%', textAlign: 'center' }}></th>
                   <th>Name</th>
                   <th>Role</th>
                   <th>Email</th>
@@ -91,6 +92,17 @@ function OrganizationDetails() {
               <tbody>
                 {organization.contacts.map(contact => (
                   <tr key={contact.id} className="reactive-contact-row">
+                    <td style={{ width: '1%', textAlign: 'center' }}>
+                      <Tooltip tooltip="Edit contact">
+                        <a
+                          href={`/contacts/${contact.id}/edit`}
+                          style={{ border: 'none', background: 'none', padding: 0, outline: 'none', boxShadow: 'none' }}
+                          tabIndex={0}
+                        >
+                          <i className="bi bi-pencil-square" style={{ fontSize: '1.2em', color: '#6a359c', verticalAlign: 'middle' }}></i>
+                        </a>
+                      </Tooltip>
+                    </td>
                     <td>
                           <Tooltip tooltip={`View details for ${contact.name}`}>
                             <a href={`/contacts/${contact.id}`}>{contact.name}</a>

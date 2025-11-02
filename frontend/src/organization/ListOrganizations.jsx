@@ -53,8 +53,13 @@ function ListOrganizations() {
                 {[...organizations].sort((a, b) => a.name.localeCompare(b.name)).map(org => (
                   <tr key={org.id}>
                     <td style={{ width: 'fit-content', textAlign: 'center', padding: '0 6px' }}>
-                      <Link to={`/organization/${org.id}/edit`} className="edit-icon-link" title="Edit">
-                        <i className="bi bi-pencil"></i>
+                      <Link
+                        to={`/organization/${org.id}/edit`}
+                        style={{ border: 'none', background: 'none', padding: 0, outline: 'none', boxShadow: 'none' }}
+                        tabIndex={0}
+                        title="Edit"
+                      >
+                        <i className="bi bi-pencil-square" style={{ fontSize: '1.2em', color: '#6a359c', verticalAlign: 'middle' }}></i>
                       </Link>
                     </td>
                     <td style={{ textAlign: 'left', padding: '0.25rem' }}>
