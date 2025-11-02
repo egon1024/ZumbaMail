@@ -49,7 +49,7 @@ function StudentsList() {
               {students.map(student => (
                 <tr key={student.id} className="reactive-student-row">
                   <td style={{ whiteSpace: 'nowrap', width: '1%' }}>
-                    <Tooltip text={`View details for ${student.first_name} ${student.last_name}`}>
+                    <Tooltip tooltip={`View details for ${student.first_name} ${student.last_name}`}>
                       <a
                         href={`/students/${student.id}`}
                         className="reactive-student-link"
@@ -63,18 +63,18 @@ function StudentsList() {
                   </td>
                   <td style={{ textAlign: 'center', width: '1%' }}>
                     {student.rochester ? (
-                      <Tooltip text="Rochester Resident">
+                      <Tooltip tooltip="Rochester Resident">
                         <span style={{ color: 'green', fontSize: '1.2em' }}>&#10003;</span>
                       </Tooltip>
                     ) : (
-                      <Tooltip text="Not a Rochester Resident">
+                      <Tooltip tooltip="Not a Rochester Resident">
                         <span style={{ color: 'red', fontSize: '1.2em' }}>&#10007;</span>
                       </Tooltip>
                     )}
                   </td>
                   <td>
                     {student.email ? (
-                      <Tooltip text={`Email ${student.first_name} ${student.last_name}`}>
+                      <Tooltip tooltip={`Email ${student.first_name} ${student.last_name}`}>
                         <a
                           href={`mailto:${student.email}`}
                           className="reactive-student-contact-link"
@@ -86,7 +86,7 @@ function StudentsList() {
                   </td>
                   <td>
                     {student.phone ? (
-                      <Tooltip text={`Call ${student.first_name} ${student.last_name}`}>
+                      <Tooltip tooltip={`Call ${student.first_name} ${student.last_name}`}>
                         <a
                           href={`tel:${student.phone}`}
                           className="reactive-student-contact-link"

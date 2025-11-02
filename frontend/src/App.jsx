@@ -16,6 +16,7 @@ import ContactCreate from './contact/ContactCreate';
 import SessionsList from './session/SessionsList';
 import StudentsList from './student/StudentsList';
 import SessionDetails from './session/SessionDetails';
+import StudentDetails from './student/StudentDetails';
 import Breadcrumbs from './Breadcrumbs';
 import './roundedCards.css';
 import './globalBackground.css';
@@ -93,6 +94,11 @@ function AppLayout() {
           <Route path="/students" element={
             <PrivateRoute>
               <StudentsList />
+            </PrivateRoute>
+          } />
+          <Route path="/students/:id" element={
+            <PrivateRoute>
+              <StudentDetails />
             </PrivateRoute>
           } />
       </Routes>
