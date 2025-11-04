@@ -20,6 +20,7 @@ import StudentDetails from './student/StudentDetails';
 import StudentEdit from './student/StudentEdit';
 import StudentCreate from './student/StudentCreate';
 import ClassList from './class/ClassList';
+import ClassDetail from './class/ClassDetail';
 import Breadcrumbs from './Breadcrumbs';
 import './roundedCards.css';
 import './globalBackground.css';
@@ -122,6 +123,11 @@ function AppLayout() {
           <Route path="/classes" element={
             <PrivateRoute>
               <ClassList />
+            </PrivateRoute>
+          } />
+          <Route path="/classes/:id" element={
+            <PrivateRoute>
+              <ClassDetail />
             </PrivateRoute>
           } />
       </Routes>
