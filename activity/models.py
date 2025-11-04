@@ -74,6 +74,9 @@ class Activity(models.Model):
 	TYPE_CHOICES = [
 		('Zumba', 'Zumba'),
 		('Pound', 'Pound'),
+		('Zumba Gold', 'Zumba Gold'),
+		('Aqua Zumba', 'Aqua Zumba'),
+		('Cardio Drumming', 'Cardio Drumming'),
 		# Add more types as needed
 	]
 	type = models.CharField(max_length=20, choices=TYPE_CHOICES)

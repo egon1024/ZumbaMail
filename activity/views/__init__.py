@@ -1,3 +1,4 @@
+from .activity import ActivityListView
 from .organization import (
 	OrganizationListCreateView,
 	OrganizationListView,

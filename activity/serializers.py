@@ -49,3 +49,21 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
     def get_contact_count(self, obj):
         return obj.contacts.count()
+
+class ActivityListSerializer(serializers.ModelSerializer):
+    session_name = serializers.CharField(source='session.name', read_only=True)
+    session_id = serializers.IntegerField(source='session.id', read_only=True)
+    organization_name = serializers.CharField(source='session.organization.name', read_only=True)
+    organization_id = serializers.IntegerField(source='session.organization.id', read_only=True)
+    students_count = serializers.SerializerMethodField()
+    waitlist_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Activity
+        fields = ['id', 'type', 'day_of_week', 'time', 'location', 'session_name', 'session_id', 'organization_name', 'organization_id', 'students_count', 'waitlist_count']
+
+    def get_students_count(self, obj):
+        return obj.enrollments.filter(status='active').count()
+
+    def get_waitlist_count(self, obj):
+        return obj.enrollments.filter(status='waiting').count()

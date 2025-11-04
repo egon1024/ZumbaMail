@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import "./SessionLink.css";
 
 function SessionLink({ session, className = "" }) {
   if (!session) return null;

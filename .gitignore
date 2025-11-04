@@ -208,4 +208,8 @@ __marimo__/
 
 # AI
 copilot-instructions.md
+
+# Environment stuff
 token.txt
+.env
+settings_production.py
