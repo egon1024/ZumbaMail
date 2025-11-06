@@ -19,6 +19,9 @@ import SessionDetails from './session/SessionDetails';
 import StudentDetails from './student/StudentDetails';
 import StudentEdit from './student/StudentEdit';
 import StudentCreate from './student/StudentCreate';
+import ClassList from './class/ClassList';
+import ClassDetail from './class/ClassDetail';
+import ManageEnrollment from './class/ManageEnrollment';
 import Breadcrumbs from './Breadcrumbs';
 import './roundedCards.css';
 import './globalBackground.css';
@@ -111,6 +114,26 @@ function AppLayout() {
           <Route path="/students/:id/edit" element={
             <PrivateRoute>
               <StudentEdit />
+            </PrivateRoute>
+          } />
+          <Route path="/class" element={
+            <PrivateRoute>
+              <ClassList />
+            </PrivateRoute>
+          } />
+          <Route path="/classes" element={
+            <PrivateRoute>
+              <ClassList />
+            </PrivateRoute>
+          } />
+          <Route path="/classes/:id" element={
+            <PrivateRoute>
+              <ClassDetail />
+            </PrivateRoute>
+          } />
+          <Route path="/classes/:id/enrollment" element={
+            <PrivateRoute>
+              <ManageEnrollment />
             </PrivateRoute>
           } />
       </Routes>

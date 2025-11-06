@@ -9,15 +9,17 @@ class ActivitySerializer(serializers.ModelSerializer):
         fields = ['id', 'type', 'day_of_week', 'time', 'location']
 
 class StudentDetailSerializer(serializers.ModelSerializer):
+
     current_classes = serializers.SerializerMethodField()
     waitlist_classes = serializers.SerializerMethodField()
+    display_name = serializers.CharField(read_only=True)
 
     class Meta:
         model = Student
         fields = [
             'id', 'first_name', 'last_name', 'email', 'phone', 'rochester', 'active',
             'emergency_contact_name', 'emergency_contact_phone', 'facebook_profile', 'notes',
-            'current_classes', 'waitlist_classes'
+            'current_classes', 'waitlist_classes', 'display_name'
         ]
 
     def get_current_classes(self, obj):
@@ -49,3 +51,52 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
     def get_contact_count(self, obj):
         return obj.contacts.count()
+
+class ActivityListSerializer(serializers.ModelSerializer):
+    students = serializers.SerializerMethodField()
+    waitlist = serializers.SerializerMethodField()
+    session_name = serializers.CharField(source='session.name', read_only=True)
+    session_id = serializers.IntegerField(source='session.id', read_only=True)
+    organization_name = serializers.CharField(source='session.organization.name', read_only=True)
+    organization_id = serializers.IntegerField(source='session.organization.id', read_only=True)
+    students_count = serializers.SerializerMethodField()
+    waitlist_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Activity
+        fields = [
+            'id', 'type', 'day_of_week', 'time', 'location',
+            'session_name', 'session_id', 'organization_name', 'organization_id',
+            'students_count', 'waitlist_count',
+            'students', 'waitlist',
+        ]
+
+    def get_students_count(self, obj):
+        return obj.enrollments.filter(status='active').count()
+
+    def get_waitlist_count(self, obj):
+        return obj.enrollments.filter(status='waiting').count()
+
+    def get_students(self, obj):
+        students = obj.enrollments.filter(status='active').select_related('student')
+        return [
+            {
+                'id': e.student.id,
+                'full_name': getattr(e.student, 'full_name', None) or f"{e.student.first_name} {e.student.last_name}",
+                'display_name': getattr(e.student, 'display_name', None) or f"{e.student.last_name}, {e.student.first_name}",
+                'email': e.student.email,
+            }
+            for e in students
+        ]
+
+    def get_waitlist(self, obj):
+        waitlist = obj.enrollments.filter(status='waiting').select_related('student')
+        return [
+            {
+                'id': e.student.id,
+                'full_name': getattr(e.student, 'full_name', None) or f"{e.student.first_name} {e.student.last_name}",
+                'display_name': getattr(e.student, 'display_name', None) or f"{e.student.last_name}, {e.student.first_name}",
+                'email': e.student.email,
+            }
+            for e in waitlist
+        ]

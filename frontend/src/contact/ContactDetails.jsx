@@ -108,7 +108,6 @@ function ContactDetails() {
           </div>
         </div>
       </div>
-*** End Patch
     </div>
   );
 }

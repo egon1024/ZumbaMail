@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { authFetch } from './utils/authFetch';
+import ClassLabel from './class/ClassLabel';
 
 function Breadcrumbs() {
   const location = useLocation();
@@ -8,7 +9,8 @@ function Breadcrumbs() {
   const [orgName, setOrgName] = useState(null);
   const [contactName, setContactName] = useState(null);
   const [sessionName, setSessionName] = useState(null);
-    const [studentName, setStudentName] = useState(null);
+  const [studentName, setStudentName] = useState(null);
+  const [classActivity, setClassActivity] = useState(null);
 
   // Detect if on organization details page
   useEffect(() => {
@@ -54,20 +56,34 @@ function Breadcrumbs() {
     } else {
       setSessionName(null);
     }
-      // Detect /students/:id route
-        if (pathnames[0] === 'students' && pathnames[1] && !isNaN(Number(pathnames[1]))) {
-          (async () => {
-            try {
-              const resp = await authFetch(`/api/students/${pathnames[1]}/details/`);
-              if (resp.ok) {
-                const data = await resp.json();
-                setStudentName(data.first_name && data.last_name ? `${data.last_name}, ${data.first_name}` : null);
-              }
-            } catch {}
-          })();
-        } else {
-          setStudentName(null);
-        }
+    // Detect /students/:id route
+    if (pathnames[0] === 'students' && pathnames[1] && !isNaN(Number(pathnames[1]))) {
+      (async () => {
+        try {
+          const resp = await authFetch(`/api/students/${pathnames[1]}/details/`);
+          if (resp.ok) {
+            const data = await resp.json();
+            setStudentName(data.display_name || (data.first_name && data.last_name ? `${data.last_name}, ${data.first_name}` : null));
+          }
+        } catch {}
+      })();
+    } else {
+      setStudentName(null);
+    }
+    // Detect /classes/:id route
+    if (pathnames[0] === 'classes' && pathnames[1] && !isNaN(Number(pathnames[1]))) {
+      (async () => {
+        try {
+          const resp = await authFetch(`/api/activity/${pathnames[1]}/`);
+          if (resp.ok) {
+            const data = await resp.json();
+            setClassActivity(data);
+          }
+        } catch {}
+      })();
+    } else {
+      setClassActivity(null);
+    }
   }, [location.pathname]);
 
   return (
@@ -92,10 +108,14 @@ function Breadcrumbs() {
           if (pathnames[0] === 'sessions' && idx === 1 && sessionName) {
             label = sessionName;
           }
-            // If on /students/:id, show student name for id segment
-            if (pathnames[0] === 'students' && idx === 1 && studentName) {
-              label = studentName;
-            }
+          // If on /students/:id, show student name for id segment
+          if (pathnames[0] === 'students' && idx === 1 && studentName) {
+            label = studentName;
+          }
+          // If on /classes/:id, show ClassLabel for id segment
+          if (pathnames[0] === 'classes' && idx === 1 && classActivity) {
+            label = <ClassLabel activity={classActivity} />;
+          }
           return isLast ? (
             <li className="breadcrumb-item active" aria-current="page" key={to}>
               {label}

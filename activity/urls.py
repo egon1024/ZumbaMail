@@ -5,4 +5,5 @@ urlpatterns = [
     path('', include('activity.routers.contact')),
     path('', include('activity.routers.session')),
     path('', include('activity.routers.student')),
+    path('', include('activity.routers.activity')),
 ]

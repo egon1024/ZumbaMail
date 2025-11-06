@@ -1,3 +1,7 @@
+# Dynamic project components
+frontend/.vite/
+frontend/node_modules/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -208,4 +212,8 @@ __marimo__/
 
 # AI
 copilot-instructions.md
+
+# Environment stuff
 token.txt
+.env
+settings_production.py
