@@ -1,0 +1,9 @@
+.class-row {
+  cursor: pointer;
+}
+.class-label {
+  transition: color 0.2s;
+}
+.class-row.hovered .class-label {
+  color: #0d6efd;
+}

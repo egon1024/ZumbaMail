@@ -63,7 +63,7 @@ function Breadcrumbs() {
           const resp = await authFetch(`/api/students/${pathnames[1]}/details/`);
           if (resp.ok) {
             const data = await resp.json();
-            setStudentName(data.first_name && data.last_name ? `${data.last_name}, ${data.first_name}` : null);
+            setStudentName(data.display_name || (data.first_name && data.last_name ? `${data.last_name}, ${data.first_name}` : null));
           }
         } catch {}
       })();

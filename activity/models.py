@@ -110,6 +110,9 @@ class Meeting(models.Model):
 		return f"{self.activity} on {self.date}"
 
 class Student(models.Model):
+	@property
+	def display_name(self):
+		return f"{self.last_name}, {self.first_name}".strip()
 	active = models.BooleanField(default=True, help_text="Is this student currently active?")
 	rochester = models.BooleanField(default=False, help_text="Rochester Resident")
 	@property

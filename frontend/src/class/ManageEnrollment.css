@@ -1,0 +1,37 @@
+/* Ensure student list items have a light background */
+.manage-list .list-group-item {
+	background: #f8f9fa !important;
+	border: none;
+	padding-top: 0.35em;
+	padding-bottom: 0.35em;
+}
+/* Rounded box for student names */
+.student-name-box {
+	display: inline-block;
+	padding: 0.25em 0.75em;
+	border-radius: 1.5em;
+	background: #f8f9fa; /* matches .global-bg or Bootstrap light bg */
+	border: 1.5px solid #6a359c; /* matches header background */
+	color: #2d1457;
+	font-weight: 500;
+	transition: background 0.2s, border 0.2s;
+}
+
+.student-name-box:hover {
+	background: #ede7f6;
+	border-color: #4b2066;
+}
+/* Sticky action row for buttons at the top of each column */
+.sticky-action-row {
+	position: sticky;
+	top: 0;
+	background: #fff;
+	z-index: 2;
+	padding-bottom: 0.5rem;
+	padding-top: 0.5rem;
+	border-bottom: 1px solid #dee2e6;
+	margin-bottom: 0.5rem;
+	display: flex;
+	gap: 0.5rem;
+}
+/* Add custom styles for ManageEnrollment here if needed */

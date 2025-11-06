@@ -66,7 +66,7 @@ function StudentDetails() {
           <div className="card-body">
             <table className="table table-sm mb-0">
               <tbody>
-                <tr><th>Name</th><td>{student.last_name}, {student.first_name}</td></tr>
+                <tr><th>Name</th><td>{student.display_name}</td></tr>
                 <tr>
                   <th>Status</th>
                   <td>

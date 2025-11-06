@@ -1,0 +1,9 @@
+.session-name-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.session-name-link:hover {
+  color: #0d6efd; /* Bootstrap primary */
+  text-decoration: none;
+}
