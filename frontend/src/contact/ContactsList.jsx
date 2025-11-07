@@ -85,7 +85,8 @@ function ContactsList() {
                     Role {sortField === 'role' ? (sortAsc ? '▲' : '▼') : ''}
                   </th>
                   <th>Email</th>
-                  <th>Phone</th>
+                  <th>Office Phone</th>
+                  <th>Cell Phone</th>
                   <th style={{ cursor: 'pointer' }} onClick={() => handleSort('organization_name')}>
                     Organization {sortField === 'organization_name' ? (sortAsc ? '▲' : '▼') : ''}
                   </th>
@@ -138,11 +139,16 @@ function ContactsList() {
                         <a href={`mailto:${contact.email}`}>{contact.email}</a>
                       </Tooltip>
                     ) : ""}</td>
-                    <td>{contact.phone ? (
-                      <Tooltip tooltip={`Call ${contact.name}`}>
-                        <a href={`tel:${contact.phone}`}>{contact.phone}</a>
+                    <td>{contact.office_phone ? (
+                      <Tooltip tooltip={`Call ${contact.name} (office)`}>
+                        <a href={`tel:${contact.office_phone}`}>{contact.office_phone}</a>
                       </Tooltip>
-                    ) : ""}</td>
+                    ) : <span className="text-muted">—</span>}</td>
+                    <td>{contact.cell_phone ? (
+                      <Tooltip tooltip={`Call ${contact.name} (cell)`}>
+                        <a href={`tel:${contact.cell_phone}`}>{contact.cell_phone}</a>
+                      </Tooltip>
+                    ) : <span className="text-muted">—</span>}</td>
                     <td>
                       {contact.organization_id ? (
                         <Tooltip tooltip={`View details for ${contact.organization_name}`}>

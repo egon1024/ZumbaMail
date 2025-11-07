@@ -7,7 +7,7 @@ function ContactCreate() {
   const navigate = useNavigate();
   const location = useLocation();
   const [organizations, setOrganizations] = useState([]);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", extension: "", role: "", organization: "" });
+  const [form, setForm] = useState({ name: "", email: "", office_phone: "", office_extension: "", cell_phone: "", role: "", organization: "" });
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -60,11 +60,11 @@ function ContactCreate() {
   }
 
   // Helper to merge phone and extension for storage
-  function getPhoneWithExt() {
-    if (form.extension && form.extension.trim() !== "") {
-      return `${form.phone} x${form.extension}`;
+  function getOfficePhoneWithExt() {
+    if (form.office_extension && form.office_extension.trim() !== "") {
+      return `${form.office_phone} x${form.office_extension}`;
     }
-    return form.phone;
+    return form.office_phone;
   }
 
   async function handleSubmit(e) {
@@ -78,8 +78,8 @@ function ContactCreate() {
     setSaving(true);
     try {
       // Ensure organization is a number if present
-      const submitData = { ...form, phone: getPhoneWithExt() };
-      delete submitData.extension;
+      const submitData = { ...form, office_phone: getOfficePhoneWithExt() };
+      delete submitData.office_extension;
       delete submitData.emailError;
       if (submitData.organization) {
         submitData.organization = Number(submitData.organization);
@@ -159,12 +159,12 @@ function ContactCreate() {
             <div className="mb-3">
               <div className="row g-2 align-items-end">
                 <div className="col-8">
-                  <label className="form-label">Phone</label>
+                  <label className="form-label">Office Phone</label>
                   <PhoneInput
                     country={'us'}
-                    value={form.phone}
-                    onChange={value => setForm(f => ({ ...f, phone: value }))}
-                    inputProps={{ name: 'phone', required: false, className: 'form-control' }}
+                    value={form.office_phone}
+                    onChange={value => setForm(f => ({ ...f, office_phone: value }))}
+                    inputProps={{ name: 'office_phone', required: false, className: 'form-control' }}
                     enableSearch
                   />
                 </div>
@@ -173,13 +173,23 @@ function ContactCreate() {
                   <input
                     type="text"
                     className="form-control"
-                    name="extension"
-                    value={form.extension}
+                    name="office_extension"
+                    value={form.office_extension}
                     onChange={handleChange}
                     aria-label="Extension"
                   />
                 </div>
               </div>
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Cell Phone</label>
+              <PhoneInput
+                country={'us'}
+                value={form.cell_phone}
+                onChange={value => setForm(f => ({ ...f, cell_phone: value }))}
+                inputProps={{ name: 'cell_phone', required: false, className: 'form-control' }}
+                enableSearch
+              />
             </div>
             <div className="text-end">
               <button type="submit" className="btn btn-primary" disabled={saving}>

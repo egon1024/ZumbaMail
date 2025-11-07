@@ -68,10 +68,12 @@ class OrganizationAdmin(admin.ModelAdmin):
 	status_display.short_description = 'Status'
 
 admin.site.register(Organization, OrganizationAdmin)
+
 class ContactAdmin(admin.ModelAdmin):
-	list_display = ('name', 'email', 'phone', 'role', 'organization')
+	list_display = ('name', 'email', 'office_phone', 'cell_phone', 'role', 'organization')
 	list_filter = ('organization',)
 	ordering = ('organization', 'name')
+	search_fields = ('name', 'email', 'office_phone', 'cell_phone', 'role', 'organization__name')
 
 admin.site.register(Contact, ContactAdmin)
 

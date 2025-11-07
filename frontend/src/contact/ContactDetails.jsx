@@ -120,11 +120,19 @@ function ContactDetails() {
                 </td>
               </tr>
               <tr className="hover-link-row">
-                <th scope="row">Phone</th>
+                <th scope="row">Office Phone</th>
                 <td>
-                  {contact.phone ? (
-                    <PhoneDisplay value={contact.phone} tooltip="Call this number" />
-                  ) : contact.phone}
+                  {contact.office_phone ? (
+                    <PhoneDisplay value={contact.office_phone} tooltip="Call this office number" />
+                  ) : <span className="text-muted">—</span>}
+                </td>
+              </tr>
+              <tr className="hover-link-row">
+                <th scope="row">Cell Phone</th>
+                <td>
+                  {contact.cell_phone ? (
+                    <PhoneDisplay value={contact.cell_phone} tooltip="Call this cell number" />
+                  ) : <span className="text-muted">—</span>}
                 </td>
               </tr>
             </tbody>

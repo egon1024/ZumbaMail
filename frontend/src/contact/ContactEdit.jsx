@@ -9,8 +9,9 @@ function ContactEdit() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [phone, setPhone] = useState("");
-  const [extension, setExtension] = useState("");
+  const [officePhone, setOfficePhone] = useState("");
+  const [officeExtension, setOfficeExtension] = useState("");
+  const [cellPhone, setCellPhone] = useState("");
   const [organizations, setOrganizations] = useState([]);
   const navigate = useNavigate();
 
@@ -29,27 +30,26 @@ function ContactEdit() {
         if (!resp.ok) throw new Error("Contact not found");
         const data = await resp.json();
         setContact(data);
-        // Parse phone and extension
-        if (data.phone) {
-          const match = data.phone.match(/^(.*?)(?:\s*(?:x|ext\.?|extension)\s*(\d+))?$/i);
-          let mainPhone = match ? match[1].trim() : data.phone;
-          // Remove all non-digit except leading +
+        // Parse office_phone and extension
+        if (data.office_phone) {
+          const match = data.office_phone.match(/^(.*?)(?:\s*(?:x|ext\.?|extension)\s*(\d+))?$/i);
+          let mainPhone = match ? match[1].trim() : data.office_phone;
           let digitsOnly = mainPhone.replace(/[^\d+]/g, '');
-          // If it starts with +, trust it as international
           if (digitsOnly.startsWith('+')) {
             mainPhone = digitsOnly;
           } else {
-            // If exactly 10 digits, treat as US number
             const justDigits = digitsOnly.replace(/\D/g, '');
             if (justDigits.length === 10) {
               mainPhone = '+1' + justDigits;
             } else {
-              // fallback: keep as is
               mainPhone = digitsOnly;
             }
           }
-          setPhone(mainPhone);
-          setExtension(match && match[2] ? match[2] : "");
+          setOfficePhone(mainPhone);
+          setOfficeExtension(match && match[2] ? match[2] : "");
+        }
+        if (data.cell_phone) {
+          setCellPhone(data.cell_phone);
         }
       } catch (err) {
         setError(err.message);
@@ -65,9 +65,9 @@ function ContactEdit() {
     setSaving(true);
     setError(null);
     try {
-      let phoneWithExt = phone;
-      if (extension && extension.trim() !== "") {
-        phoneWithExt = `${phone} x${extension}`;
+      let officeWithExt = officePhone;
+      if (officeExtension && officeExtension.trim() !== "") {
+        officeWithExt = `${officePhone} x${officeExtension}`;
       }
       const resp = await authFetch(`/api/contacts/${id}/`, {
         method: "PUT",
@@ -75,7 +75,8 @@ function ContactEdit() {
         body: JSON.stringify({
           name: contact.name,
           email: contact.email,
-          phone: phoneWithExt,
+          office_phone: officeWithExt,
+          cell_phone: cellPhone,
           role: contact.role,
           organization: contact.organization,
         }),
@@ -151,12 +152,12 @@ function ContactEdit() {
             <div className="mb-3">
               <div className="row g-2 align-items-end">
                 <div className="col-8">
-                  <label className="form-label">Phone</label>
+                  <label className="form-label">Office Phone</label>
                   <PhoneInput
                     country={'us'}
-                    value={phone}
-                    onChange={value => setPhone(value)}
-                    inputProps={{ name: 'phone', required: false, className: 'form-control' }}
+                    value={officePhone}
+                    onChange={value => setOfficePhone(value)}
+                    inputProps={{ name: 'office_phone', required: false, className: 'form-control' }}
                     enableSearch
                   />
                 </div>
@@ -165,13 +166,23 @@ function ContactEdit() {
                   <input
                     type="text"
                     className="form-control"
-                    name="extension"
-                    value={extension}
-                    onChange={e => setExtension(e.target.value)}
+                    name="office_extension"
+                    value={officeExtension}
+                    onChange={e => setOfficeExtension(e.target.value)}
                     aria-label="Extension"
                   />
                 </div>
               </div>
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Cell Phone</label>
+              <PhoneInput
+                country={'us'}
+                value={cellPhone}
+                onChange={value => setCellPhone(value)}
+                inputProps={{ name: 'cell_phone', required: false, className: 'form-control' }}
+                enableSearch
+              />
             </div>
             <div className="text-end">
               <button type="submit" className="btn btn-primary" disabled={saving}>

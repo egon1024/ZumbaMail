@@ -1,0 +1,10 @@
+.phone-display-link {
+  color: #212529;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.phone-display-link:hover, .phone-display-link:focus {
+  color: #0d6efd;
+  text-decoration: none;
+  cursor: pointer;
+}
