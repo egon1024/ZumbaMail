@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { useNavigate } from "react-router-dom";
 import { authFetch } from "../utils/authFetch";
 
@@ -7,8 +9,8 @@ function SessionCreate() {
   const [form, setForm] = useState({
     name: "",
     organization: "",
-    start_date: "",
-    end_date: "",
+    start_date: null,
+    end_date: null,
     closed: false,
     copyFromSession: ""
   });
@@ -44,20 +46,29 @@ function SessionCreate() {
     const { name, value, type, checked } = e.target;
     setForm(f => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   }
+  function handleDateChange(name, date) {
+    setForm(f => ({ ...f, [name]: date }));
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setSaving(true);
     setError(null);
+    // Client-side validation: end date after start date
+    if (form.start_date && form.end_date && form.end_date <= form.start_date) {
+      setError("End date must be after start date.");
+      setSaving(false);
+      return;
+    }
     try {
       // Create session
-      const resp = await authFetch("/api/sessions/", {
+      const resp = await authFetch("/api/sessions/new/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: form.name,
-          start_date: form.start_date,
-          end_date: form.end_date,
+          start_date: form.start_date ? form.start_date.toISOString().slice(0, 10) : "",
+          end_date: form.end_date ? form.end_date.toISOString().slice(0, 10) : "",
           closed: form.closed,
           organization: form.organization
         })
@@ -109,11 +120,27 @@ function SessionCreate() {
             </div>
             <div className="mb-3">
               <label className="form-label">Start Date</label>
-              <input type="date" name="start_date" value={form.start_date} onChange={handleChange} className="form-control" required />
+              <DatePicker
+                selected={form.start_date}
+                onChange={date => handleDateChange("start_date", date)}
+                className="form-control"
+                dateFormat="yyyy-MM-dd"
+                placeholderText="Select start date"
+                required
+              />
             </div>
             <div className="mb-3">
               <label className="form-label">End Date</label>
-              <input type="date" name="end_date" value={form.end_date} onChange={handleChange} className="form-control" required />
+              <DatePicker
+                selected={form.end_date}
+                onChange={date => handleDateChange("end_date", date)}
+                className="form-control"
+                dateFormat="yyyy-MM-dd"
+                placeholderText="Select end date"
+                required
+                popperPlacement="bottom"
+                popperModifiers={[{ name: 'flip', enabled: false }, { name: 'preventOverflow', enabled: true, options: { altAxis: true, tether: false } }]}
+              />
             </div>
             <div className="mb-3">
               <label className="form-label">Status</label>
@@ -137,7 +164,10 @@ function SessionCreate() {
               <select name="copyFromSession" value={form.copyFromSession} onChange={handleChange} className="form-select">
                 <option value="">None</option>
                 {sessions.map(s => (
-                  <option key={s.id} value={s.id}>{s.name} ({s.start_date} - {s.end_date})</option>
+                  <option key={s.id} value={s.id}>
+                    {s.name} ({s.start_date} - {s.end_date})
+                    {typeof s.activity_count === 'number' ? ` — ${s.activity_count} class${s.activity_count === 1 ? '' : 'es'}` : ''}
+                  </option>
                 ))}
               </select>
             </div>
