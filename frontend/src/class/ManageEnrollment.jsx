@@ -112,8 +112,8 @@ const ManageEnrollment = () => {
               <h6>All Students</h6>
               <input className="form-control mb-2" placeholder="Search..." value={searchAll} onChange={e => setSearchAll(e.target.value)} />
               <div className="sticky-action-row">
-                <button className="btn btn-outline-primary btn-sm me-1" onClick={() => move(available, () => {}, enrolled, setEnrolled, selectedAll, setSelectedAll)} disabled={selectedAll.length === 0}>→ Enroll</button>
-                <button className="btn btn-outline-secondary btn-sm" onClick={() => move(available, () => {}, waitlist, setWaitlist, selectedAll, setSelectedAll)} disabled={selectedAll.length === 0}>→ Waitlist</button>
+                <button className="btn-enroll btn-sm me-1" onClick={() => move(available, () => {}, enrolled, setEnrolled, selectedAll, setSelectedAll)} disabled={selectedAll.length === 0}>→ Enroll</button>
+                <button className="btn-waitlist btn-sm" onClick={() => move(available, () => {}, waitlist, setWaitlist, selectedAll, setSelectedAll)} disabled={selectedAll.length === 0}>→ Waitlist</button>
               </div>
               <ul className="list-group manage-list">
                 {filterList(available, searchAll).map(s => (
@@ -142,8 +142,8 @@ const ManageEnrollment = () => {
               <h6>Enrolled</h6>
               <input className="form-control mb-2" placeholder="Search..." value={searchEnrolled} onChange={e => setSearchEnrolled(e.target.value)} />
               <div className="sticky-action-row">
-                <button className="btn btn-outline-secondary btn-sm me-1" onClick={() => remove(enrolled, setEnrolled, available, () => {}, selectedEnrolled, setSelectedEnrolled)} disabled={selectedEnrolled.length === 0}>← Remove</button>
-                <button className="btn btn-outline-secondary btn-sm" onClick={() => move(enrolled, setEnrolled, waitlist, setWaitlist, selectedEnrolled, setSelectedEnrolled)} disabled={selectedEnrolled.length === 0}>→ Waitlist</button>
+                <button className="btn-remove btn-sm me-1" onClick={() => remove(enrolled, setEnrolled, available, () => {}, selectedEnrolled, setSelectedEnrolled)} disabled={selectedEnrolled.length === 0}>← Remove</button>
+                <button className="btn-waitlist btn-sm" onClick={() => move(enrolled, setEnrolled, waitlist, setWaitlist, selectedEnrolled, setSelectedEnrolled)} disabled={selectedEnrolled.length === 0}>→ Waitlist</button>
               </div>
               <ul className="list-group manage-list">
                 {filterList(sortedEnrolled, searchEnrolled).map(s => (
@@ -172,8 +172,8 @@ const ManageEnrollment = () => {
               <h6>Waitlist</h6>
               <input className="form-control mb-2" placeholder="Search..." value={searchWaitlist} onChange={e => setSearchWaitlist(e.target.value)} />
               <div className="sticky-action-row">
-                <button className="btn btn-outline-secondary btn-sm me-1" onClick={() => remove(waitlist, setWaitlist, available, () => {}, selectedWaitlist, setSelectedWaitlist)} disabled={selectedWaitlist.length === 0}>← Remove</button>
-                <button className="btn btn-outline-secondary btn-sm" onClick={() => move(waitlist, setWaitlist, enrolled, setEnrolled, selectedWaitlist, setSelectedWaitlist)} disabled={selectedWaitlist.length === 0}>→ Enroll</button>
+                <button className="btn-remove btn-sm me-1" onClick={() => remove(waitlist, setWaitlist, available, () => {}, selectedWaitlist, setSelectedWaitlist)} disabled={selectedWaitlist.length === 0}>← Remove</button>
+                <button className="btn-enroll btn-sm" onClick={() => move(waitlist, setWaitlist, enrolled, setEnrolled, selectedWaitlist, setSelectedWaitlist)} disabled={selectedWaitlist.length === 0}>← Enroll</button>
               </div>
               <ul className="list-group manage-list">
                 {filterList(sortedWaitlist, searchWaitlist).map(s => (
