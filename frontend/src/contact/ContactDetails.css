@@ -1,3 +1,12 @@
+/* Ensure consistent font and weight in card tables */
+.table th {
+  font-family: var(--bs-font-sans-serif, system-ui, Arial, sans-serif);
+  font-weight: 700;
+}
+.table td {
+  font-family: var(--bs-font-sans-serif, system-ui, Arial, sans-serif);
+  font-weight: 400;
+}
 /* Highlight entire row and field on hover for clickable rows */
 .hover-link-row {
   transition: background 0.2s;

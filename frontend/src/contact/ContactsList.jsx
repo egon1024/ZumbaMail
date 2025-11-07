@@ -57,8 +57,15 @@ function ContactsList() {
   return (
     <div className="container mt-4">
       <div className="card shadow-sm border-primary mb-4">
-        <div className="card-header bg-dark text-white">
+        <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center">
           <h4 className="mb-0">Contacts</h4>
+          <button
+            className="btn btn-sm btn-success"
+            onClick={() => window.location.href = '/contacts/new'}
+            title="Add New Contact"
+          >
+            <i className="bi bi-plus-lg"></i> New Contact
+          </button>
         </div>
         <div className="card-body">
           {error && (
@@ -78,7 +85,8 @@ function ContactsList() {
                     Role {sortField === 'role' ? (sortAsc ? '▲' : '▼') : ''}
                   </th>
                   <th>Email</th>
-                  <th>Phone</th>
+                  <th>Office Phone</th>
+                  <th>Cell Phone</th>
                   <th style={{ cursor: 'pointer' }} onClick={() => handleSort('organization_name')}>
                     Organization {sortField === 'organization_name' ? (sortAsc ? '▲' : '▼') : ''}
                   </th>
@@ -131,11 +139,16 @@ function ContactsList() {
                         <a href={`mailto:${contact.email}`}>{contact.email}</a>
                       </Tooltip>
                     ) : ""}</td>
-                    <td>{contact.phone ? (
-                      <Tooltip tooltip={`Call ${contact.name}`}>
-                        <a href={`tel:${contact.phone}`}>{contact.phone}</a>
+                    <td>{contact.office_phone ? (
+                      <Tooltip tooltip={`Call ${contact.name} (office)`}>
+                        <a href={`tel:${contact.office_phone}`}>{contact.office_phone}</a>
                       </Tooltip>
-                    ) : ""}</td>
+                    ) : <span className="text-muted">—</span>}</td>
+                    <td>{contact.cell_phone ? (
+                      <Tooltip tooltip={`Call ${contact.name} (cell)`}>
+                        <a href={`tel:${contact.cell_phone}`}>{contact.cell_phone}</a>
+                      </Tooltip>
+                    ) : <span className="text-muted">—</span>}</td>
                     <td>
                       {contact.organization_id ? (
                         <Tooltip tooltip={`View details for ${contact.organization_name}`}>

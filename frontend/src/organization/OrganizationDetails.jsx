@@ -11,6 +11,30 @@ import DayOfWeekDisplay from "../utils/DayOfWeekDisplay";
 
 
 function OrganizationDetails() {
+  // Contact sorting state and logic
+  const [contactSortField, setContactSortField] = useState('name');
+  const [contactSortAsc, setContactSortAsc] = useState(true);
+  function handleContactSort(field) {
+    if (contactSortField === field) {
+      setContactSortAsc(!contactSortAsc);
+    } else {
+      setContactSortField(field);
+      setContactSortAsc(true);
+    }
+  }
+  function getSortedContacts() {
+    if (!organization || !organization.contacts) return [];
+    const sorted = [...organization.contacts].sort((a, b) => {
+      let valA = a[contactSortField] || '';
+      let valB = b[contactSortField] || '';
+      valA = typeof valA === 'string' ? valA.toLowerCase() : valA;
+      valB = typeof valB === 'string' ? valB.toLowerCase() : valB;
+      if (valA < valB) return contactSortAsc ? -1 : 1;
+      if (valA > valB) return contactSortAsc ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }
   const { id } = useParams();
   const navigate = useNavigate();
   const [organization, setOrganization] = useState(null);
@@ -21,6 +45,7 @@ function OrganizationDetails() {
   const [activities, setActivities] = useState([]);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
+
 
   useEffect(() => {
     async function fetchDetails() {
@@ -83,14 +108,16 @@ function OrganizationDetails() {
               <thead>
                 <tr>
                   <th style={{ width: '1%', textAlign: 'center' }}></th>
-                  <th>Name</th>
-                  <th>Role</th>
-                  <th>Email</th>
-                  <th>Phone</th>
+                  <th style={{ cursor: 'pointer' }} onClick={() => handleContactSort('name')}>
+                    Name{contactSortField === 'name' ? (contactSortAsc ? ' ▲' : ' ▼') : ''}
+                  </th>
+                  <th style={{ cursor: 'pointer' }} onClick={() => handleContactSort('role')}>
+                    Role{contactSortField === 'role' ? (contactSortAsc ? ' ▲' : ' ▼') : ''}
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {organization.contacts.map(contact => (
+                {getSortedContacts().map(contact => (
                   <tr key={contact.id} className="reactive-contact-row">
                     <td style={{ width: '1%', textAlign: 'center' }}>
                       <Tooltip tooltip="Edit contact">
@@ -104,21 +131,11 @@ function OrganizationDetails() {
                       </Tooltip>
                     </td>
                     <td>
-                          <Tooltip tooltip={`View details for ${contact.name}`}>
-                            <a href={`/contacts/${contact.id}`}>{contact.name}</a>
-                          </Tooltip>
+                      <Tooltip tooltip={`View details for ${contact.name}`}>
+                        <a href={`/contacts/${contact.id}`}>{contact.name}</a>
+                      </Tooltip>
                     </td>
                     <td>{contact.role}</td>
-                    <td>{contact.email ? (
-                          <Tooltip tooltip={`Email ${contact.name}`}>
-                            <a href={`mailto:${contact.email}`}>{contact.email}</a>
-                          </Tooltip>
-                    ) : ''}</td>
-                    <td>{contact.phone ? (
-                          <Tooltip tooltip={`Call ${contact.name}`}>
-                            <a href={`tel:${contact.phone}`}>{contact.phone}</a>
-                          </Tooltip>
-                    ) : ''}</td>
                   </tr>
                 ))}
               </tbody>

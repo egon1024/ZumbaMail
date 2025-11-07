@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from "react";
+import PhoneDisplay from "../utils/phone/PhoneDisplay";
+import Tooltip from "../utils/Tooltip";
+import "../utils/phone/PhoneDisplay.css";
 import './ContactDetails.css';
 import { useParams, useNavigate } from "react-router-dom";
 import { authFetch } from "../utils/authFetch";
@@ -59,13 +62,22 @@ function ContactDetails() {
         <div className="card-header bg-dark text-white text-start">
           <div className="d-flex justify-content-between align-items-center">
             <h4 className="mb-0">Contact Details</h4>
-            <button
-              className="btn btn-sm btn-outline-light"
-              onClick={() => navigate(`/contacts/${id}/edit`)}
-              title="Edit Contact"
-            >
-              <i className="bi bi-pencil-square"></i> Edit
-            </button>
+            <div className="d-flex gap-2">
+              <button
+                className="btn btn-sm btn-success"
+                onClick={() => navigate(`/contacts/new${contact.organization_id ? `?organization=${contact.organization_id}` : ''}`)}
+                title="Create New Contact"
+              >
+                <i className="bi bi-plus-lg me-1"></i> New Contact
+              </button>
+              <button
+                className="btn btn-sm btn-outline-light"
+                onClick={() => navigate(`/contacts/${id}/edit`)}
+                title="Edit Contact"
+              >
+                <i className="bi bi-pencil-square"></i> Edit
+              </button>
+            </div>
           </div>
         </div>
         <div className="card-body">
@@ -75,9 +87,15 @@ function ContactDetails() {
                 <th scope="row">Organization</th>
                 <td>
                   {contact.organization_id ? (
-                    <a href={`/organization/${contact.organization_id}`} target="_blank" rel="noopener noreferrer">
-                      {contact.organization_name}
-                    </a>
+                    <Tooltip tooltip="View organization details">
+                      <a
+                        href={`/organization/${contact.organization_id}`}
+                        rel="noopener noreferrer"
+                        className="phone-display-link"
+                      >
+                        {contact.organization_name}
+                      </a>
+                    </Tooltip>
                   ) : contact.organization_name}
                 </td>
               </tr>
@@ -89,16 +107,32 @@ function ContactDetails() {
                 <th scope="row">Email</th>
                 <td>
                   {contact.email ? (
-                    <a href={`mailto:${contact.email}`} target="_blank" rel="noopener noreferrer">{contact.email}</a>
+                    <Tooltip tooltip="Send email">
+                      <a
+                        href={`mailto:${contact.email}`}
+                        rel="noopener noreferrer"
+                        className="phone-display-link"
+                      >
+                        {contact.email}
+                      </a>
+                    </Tooltip>
                   ) : contact.email}
                 </td>
               </tr>
               <tr className="hover-link-row">
-                <th scope="row">Phone</th>
+                <th scope="row">Office Phone</th>
                 <td>
-                  {contact.phone ? (
-                    <a href={`tel:${contact.phone}`} target="_blank" rel="noopener noreferrer">{contact.phone}</a>
-                  ) : contact.phone}
+                  {contact.office_phone ? (
+                    <PhoneDisplay value={contact.office_phone} tooltip="Call this office number" />
+                  ) : <span className="text-muted">—</span>}
+                </td>
+              </tr>
+              <tr className="hover-link-row">
+                <th scope="row">Cell Phone</th>
+                <td>
+                  {contact.cell_phone ? (
+                    <PhoneDisplay value={contact.cell_phone} tooltip="Call this cell number" />
+                  ) : <span className="text-muted">—</span>}
                 </td>
               </tr>
             </tbody>

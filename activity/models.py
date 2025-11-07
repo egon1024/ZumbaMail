@@ -21,7 +21,8 @@ class Contact(models.Model):
 	"""
 	organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='contacts')
 	name = models.CharField(max_length=100)
-	phone = models.CharField(max_length=30, blank=True)
+	office_phone = models.CharField(max_length=30, blank=True)
+	cell_phone = models.CharField(max_length=30, blank=True)
 	email = models.EmailField(blank=True, null=True)
 	role = models.CharField(max_length=100, blank=True)
 
