@@ -1,46 +1,104 @@
 import React, { useState, useEffect } from "react";
+import PhoneInput from 'react-phone-input-2';
 import { useNavigate, useLocation } from "react-router-dom";
 import { authFetch } from "../utils/authFetch";
 
 function ContactCreate() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [orgId, setOrgId] = useState("");
-  const [orgName, setOrgName] = useState("");
-  const [form, setForm] = useState({ name: "", email: "", phone: "", role: "", organization: "" });
+  const [organizations, setOrganizations] = useState([]);
+  const [form, setForm] = useState({ name: "", email: "", phone: "", extension: "", role: "", organization: "" });
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const org = params.get("organization");
-    if (org) {
-      setOrgId(org);
-      setForm(f => ({ ...f, organization: org }));
-      // Fetch organization name for display
-      authFetch(`/api/organizations/${org}/details/`).then(resp => {
+    async function fetchOrgsAndSetDefault() {
+      const params = new URLSearchParams(location.search);
+      const orgParam = params.get("organization");
+      let orgs = [];
+      try {
+        const resp = await authFetch("/api/organizations/");
         if (resp.ok) {
-          resp.json().then(data => setOrgName(data.name));
+          orgs = await resp.json();
+          setOrganizations(orgs);
         }
-      });
+      } catch {}
+      // If org param, select it; else if only one org, select it
+      if (orgParam && orgs.some(o => String(o.id) === String(orgParam))) {
+        setForm(f => ({ ...f, organization: orgParam }));
+      } else if (orgs.length === 1) {
+        setForm(f => ({ ...f, organization: orgs[0].id }));
+      }
     }
+    fetchOrgsAndSetDefault();
   }, [location.search]);
 
+  function isValidEmail(email) {
+    // Simple RFC 5322 compliant regex for most cases
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
   function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm(f => {
+      const updated = { ...f, [name]: value };
+      // Live email validation (only if not empty)
+      if (name === 'email' && value) {
+        if (!isValidEmail(value)) {
+          return { ...updated, emailError: 'Please enter a valid email address.' };
+        } else {
+          const { emailError, ...rest } = updated;
+          return rest;
+        }
+      }
+      if (name === 'email' && !value) {
+        const { emailError, ...rest } = updated;
+        return rest;
+      }
+      return updated;
+    });
+  }
+
+  // Helper to merge phone and extension for storage
+  function getPhoneWithExt() {
+    if (form.extension && form.extension.trim() !== "") {
+      return `${form.phone} x${form.extension}`;
+    }
+    return form.phone;
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setSaving(true);
     setError(null);
+    // Client-side email validation (only if not empty)
+    if (form.email && !isValidEmail(form.email)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+    setSaving(true);
     try {
+      // Ensure organization is a number if present
+      const submitData = { ...form, phone: getPhoneWithExt() };
+      delete submitData.extension;
+      delete submitData.emailError;
+      if (submitData.organization) {
+        submitData.organization = Number(submitData.organization);
+      }
       const resp = await authFetch("/api/contacts/new/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(submitData),
       });
-      if (!resp.ok) throw new Error("Failed to create contact");
+      if (!resp.ok) {
+        let errMsg = "Failed to create contact";
+        try {
+          const data = await resp.json();
+          if (data && typeof data === 'object') {
+            errMsg += ': ' + Object.entries(data).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`).join(' | ');
+          }
+        } catch {}
+        throw new Error(errMsg);
+      }
       const data = await resp.json();
       navigate(`/contacts/${data.id}`);
     } catch (err) {
@@ -59,13 +117,24 @@ function ContactCreate() {
         </div>
         <div className="card-body">
           <form onSubmit={handleSubmit}>
-            {orgId && (
-              <div className="mb-3">
-                <label className="form-label">Organization</label>
-                <input type="text" className="form-control" value={orgName || orgId} disabled />
-                <input type="hidden" name="organization" value={orgId} />
-              </div>
-            )}
+            <div className="mb-3">
+              <label className="form-label">Organization</label>
+              <select
+                className="form-select"
+                name="organization"
+                value={form.organization}
+                onChange={handleChange}
+                required
+                disabled={organizations.length === 0}
+              >
+                <option value="" disabled>
+                  {organizations.length === 0 ? "Loading organizations..." : "Select organization"}
+                </option>
+                {organizations.map(org => (
+                  <option key={org.id} value={org.id}>{org.name}</option>
+                ))}
+              </select>
+            </div>
             <div className="mb-3">
               <label className="form-label">Name</label>
               <input type="text" className="form-control" name="name" value={form.name} onChange={handleChange} required />
@@ -76,11 +145,41 @@ function ContactCreate() {
             </div>
             <div className="mb-3">
               <label className="form-label">Email</label>
-              <input type="email" className="form-control" name="email" value={form.email} onChange={handleChange} />
+              <input
+                type="email"
+                className={`form-control${form.emailError ? ' is-invalid' : ''}`}
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+              />
+              {form.emailError && (
+                <div className="invalid-feedback">{form.emailError}</div>
+              )}
             </div>
             <div className="mb-3">
-              <label className="form-label">Phone</label>
-              <input type="text" className="form-control" name="phone" value={form.phone} onChange={handleChange} />
+              <div className="row g-2 align-items-end">
+                <div className="col-8">
+                  <label className="form-label">Phone</label>
+                  <PhoneInput
+                    country={'us'}
+                    value={form.phone}
+                    onChange={value => setForm(f => ({ ...f, phone: value }))}
+                    inputProps={{ name: 'phone', required: false, className: 'form-control' }}
+                    enableSearch
+                  />
+                </div>
+                <div className="col-4">
+                  <label className="form-label">Ext.</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="extension"
+                    value={form.extension}
+                    onChange={handleChange}
+                    aria-label="Extension"
+                  />
+                </div>
+              </div>
             </div>
             <div className="text-end">
               <button type="submit" className="btn btn-primary" disabled={saving}>

@@ -1,15 +1,45 @@
-/* Navbar hover effect */
-.navbar-nav .nav-link:hover,
-.navbar-nav .nav-link.active {
-  background-color: #e9ecef;
-  color: #6a359c !important;
-  border-radius: 4px;
+/* Ensure links in card tables never change font weight */
+.card table a,
+.card table a:hover,
+.card table a:focus,
+.card table a:active,
+.card table a:visited {
+  font-weight: inherit !important;
 }
 
+/* Navbar and menu links: normal text by default, styled on hover/active */
+.navbar-nav .nav-link,
+.dropdown-menu .dropdown-item,
+.breadcrumb .breadcrumb-item a {
+  color: inherit;
+  font-weight: inherit;
+  text-decoration: none;
+  background: none;
+  border-radius: 0;
+  transition: color 0.15s, background 0.15s, text-decoration 0.15s, border-radius 0.15s;
+}
+
+/* Navbar, menu, and breadcrumb links: match card link hover style */
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active,
 .dropdown-menu .dropdown-item:hover,
-.dropdown-menu .dropdown-item.active {
-  background-color: #f3e6fa;
-  color: #6a359c !important;
+.dropdown-menu .dropdown-item.active,
+.breadcrumb .breadcrumb-item a:hover,
+.breadcrumb .breadcrumb-item a:focus {
+  color: #535bf2 !important;
+  text-decoration: none;
+  font-weight: inherit;
+  background-color: inherit;
+  border-radius: 0;
+}
+
+/* Prevent visited color for nav/menu/breadcrumb links */
+.navbar-nav .nav-link:visited,
+.dropdown-menu .dropdown-item:visited,
+.breadcrumb .breadcrumb-item a:visited {
+  color: inherit;
+  text-decoration: none;
+  font-weight: inherit;
 }
 #root {
   width: 100vw;
@@ -30,13 +60,17 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+
 a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+  color: inherit;
+  font-weight: inherit;
+  text-decoration: none;
+  transition: color 0.15s, text-decoration 0.15s;
 }
-a:hover {
+a:hover, a:focus {
   color: #535bf2;
+  font-weight: 500;
+  text-decoration: underline;
 }
 
 body {

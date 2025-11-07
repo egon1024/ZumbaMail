@@ -57,8 +57,15 @@ function ContactsList() {
   return (
     <div className="container mt-4">
       <div className="card shadow-sm border-primary mb-4">
-        <div className="card-header bg-dark text-white">
+        <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center">
           <h4 className="mb-0">Contacts</h4>
+          <button
+            className="btn btn-sm btn-success"
+            onClick={() => window.location.href = '/contacts/new'}
+            title="Add New Contact"
+          >
+            <i className="bi bi-plus-lg"></i> New Contact
+          </button>
         </div>
         <div className="card-body">
           {error && (
