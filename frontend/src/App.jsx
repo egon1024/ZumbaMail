@@ -14,6 +14,8 @@ import ContactDetails from './contact/ContactDetails';
 import ContactEdit from './contact/ContactEdit';
 import ContactCreate from './contact/ContactCreate';
 import SessionsList from './session/SessionsList';
+import SessionEdit from './session/SessionEdit';
+import SessionCreate from './session/SessionCreate';
 import StudentsList from './student/StudentsList';
 import SessionDetails from './session/SessionDetails';
 import StudentDetails from './student/StudentDetails';
@@ -79,6 +81,16 @@ function AppLayout() {
         <Route path="/sessions/:id" element={
           <PrivateRoute>
             <SessionDetails />
+          </PrivateRoute>
+        } />
+        <Route path="/sessions/:id/edit" element={
+          <PrivateRoute>
+            <SessionEdit />
+          </PrivateRoute>
+        } />
+        <Route path="/sessions/new" element={
+          <PrivateRoute>
+            <SessionCreate />
           </PrivateRoute>
         } />
         <Route path="/contacts/new" element={

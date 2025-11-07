@@ -1,6 +1,20 @@
 from activity.models import Activity, Session
 from rest_framework import permissions, serializers
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, UpdateAPIView
+
+# Serializer for update (shared with list/detail for now)
+from rest_framework import serializers
+from activity.models import Session
+
+class SessionUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Session
+        fields = ['id', 'name', 'start_date', 'end_date', 'closed', 'organization']
+
+class SessionUpdateView(UpdateAPIView):
+    queryset = Session.objects.all()
+    serializer_class = SessionUpdateSerializer
+    permission_classes = [permissions.IsAuthenticated]
 from rest_framework.response import Response
 
 class SessionListView(ListAPIView):
