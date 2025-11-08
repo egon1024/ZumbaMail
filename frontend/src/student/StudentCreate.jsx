@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PhoneInput from 'react-phone-input-2';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { authFetch } from "../utils/authFetch";
 
 function StudentCreate() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnUrl = searchParams.get('returnUrl');
+  const nameParam = searchParams.get('name');
+
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
@@ -19,6 +23,19 @@ function StudentCreate() {
   });
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
+
+  // Pre-fill name if provided in URL
+  useEffect(() => {
+    if (nameParam) {
+      const [firstName, ...lastNameParts] = nameParam.trim().split(/\s+/);
+      const lastName = lastNameParts.join(' ') || '';
+      setForm(f => ({
+        ...f,
+        first_name: firstName || '',
+        last_name: lastName
+      }));
+    }
+  }, [nameParam]);
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
@@ -45,7 +62,13 @@ function StudentCreate() {
         return;
       }
       const data = await resp.json();
-      navigate(`/students/${data.id}`);
+
+      // If returnUrl is provided, navigate there; otherwise go to student detail
+      if (returnUrl) {
+        navigate(returnUrl);
+      } else {
+        navigate(`/students/${data.id}`);
+      }
     } catch (err) {
       setError("Unable to connect to backend server.");
       setSaving(false);

@@ -33,7 +33,7 @@ function Navbar() {
                 Attendance
               </a>
               <ul className="dropdown-menu" aria-labelledby="attendanceDropdown">
-                <li><NavLink className="dropdown-item" to="/attendance/update" onClick={handleNavClick}>Update Attendance</NavLink></li>
+                <li><NavLink className="dropdown-item" to="/attendance" onClick={handleNavClick}>Take Attendance</NavLink></li>
                 <li><NavLink className="dropdown-item" to="/attendance/signin" onClick={handleNavClick}>Generate Sign-In Sheet</NavLink></li>
               </ul>
             </li>
@@ -73,8 +73,6 @@ function Navbar() {
               <ul className="dropdown-menu" aria-labelledby="schedulesDropdown">
                 <li><NavLink className="dropdown-item" to="/sessions" onClick={handleNavClick}>Sessions</NavLink></li>
                 <li><NavLink className="dropdown-item" to="/classes" onClick={handleNavClick}>Classes</NavLink></li>
-                <li><NavLink className="dropdown-item" to="/classes/assign" onClick={handleNavClick}>Assign Students</NavLink></li>
-                <li><NavLink className="dropdown-item" to="/classes/waitlist" onClick={handleNavClick}>Manage Waitlist</NavLink></li>
               </ul>
             </li>
             <li className="nav-item dropdown">
