@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Tooltip from "../utils/Tooltip";
+import PhoneDisplay from "../utils/phone/PhoneDisplay";
 import ContactLink from "../organization/ContactLink";
 import "../organization/OrganizationDetails.css";
 import { authFetch } from "../utils/authFetch";
@@ -140,14 +141,10 @@ function ContactsList() {
                       </Tooltip>
                     ) : ""}</td>
                     <td>{contact.office_phone ? (
-                      <Tooltip tooltip={`Call ${contact.name} (office)`}>
-                        <a href={`tel:${contact.office_phone}`}>{contact.office_phone}</a>
-                      </Tooltip>
+                      <PhoneDisplay value={contact.office_phone} tooltip={`Call ${contact.name} (office)`} />
                     ) : <span className="text-muted">—</span>}</td>
                     <td>{contact.cell_phone ? (
-                      <Tooltip tooltip={`Call ${contact.name} (cell)`}>
-                        <a href={`tel:${contact.cell_phone}`}>{contact.cell_phone}</a>
-                      </Tooltip>
+                      <PhoneDisplay value={contact.cell_phone} tooltip={`Call ${contact.name} (cell)`} />
                     ) : <span className="text-muted">—</span>}</td>
                     <td>
                       {contact.organization_id ? (

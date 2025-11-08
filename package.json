@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "bootswatch": "^5.3.8",
-    "classnames": "^2.5.1",
-    "libphonenumber-js": "^1.12.25",
-    "react-phone-input-2": "^2.15.1"
-  }
-}

@@ -44,8 +44,15 @@ function SessionDetails() {
       {/* Session Details Card */}
       <section className="mb-4">
         <div className="card shadow-sm border-primary mb-4">
-          <div className="card-header bg-dark text-white">
+          <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center">
             <h4 className="mb-0">Session Details</h4>
+            <a
+              href={`/sessions/${session.id}/edit`}
+              className="btn btn-sm btn-outline-light ms-2"
+              title="Edit session"
+            >
+              <i className="bi bi-pencil-square"></i> Edit
+            </a>
           </div>
           <div className="card-body">
             <table className="table table-sm mb-0">

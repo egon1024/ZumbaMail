@@ -2,6 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from activity.models import Enrollment, Student
+from rest_framework.permissions import IsAuthenticated
+
 # Custom API endpoint for updating enrollments and waitlist
 class ActivityEnrollmentUpdateView(APIView):
     def post(self, request, pk):
@@ -38,7 +40,7 @@ class ActivityEnrollmentUpdateView(APIView):
 
 from rest_framework import generics
 from activity.models import Activity
-from activity.serializers import ActivityListSerializer
+from activity.serializers import ActivityListSerializer, ActivitySerializer
 
 class ActivityListView(generics.ListAPIView):
     serializer_class = ActivityListSerializer
@@ -47,9 +49,43 @@ class ActivityListView(generics.ListAPIView):
         include_inactive = self.request.query_params.get('include_inactive') == 'true'
         if include_inactive:
             return Activity.objects.all()
-        return Activity.objects.filter(session__closed=False)
+        return Activity.objects.filter(session__closed=False, closed=False)
+
+# Create view for Activity
+from rest_framework import permissions
+class ActivityCreateView(generics.CreateAPIView):
+    queryset = Activity.objects.all()
+    serializer_class = ActivitySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+# Update view for Activity
+from rest_framework import permissions
+class ActivityUpdateView(generics.RetrieveUpdateAPIView):
+    queryset = Activity.objects.all()
+    serializer_class = ActivitySerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 # Detail view for Activity
 class ActivityDetailView(generics.RetrieveAPIView):
     queryset = Activity.objects.all()
     serializer_class = ActivityListSerializer
+
+class ActivityTypeChoicesView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        from activity.models import Activity
+        choices = [
+            {"value": value, "label": label}
+            for value, label in Activity.TYPE_CHOICES
+        ]
+        choices.sort(key=lambda c: c["label"].lower())
+        return Response({"choices": choices})
+
+class ActivityLocationChoicesView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        from activity.models import Activity
+        locations = Activity.objects.values_list('location', flat=True).distinct()
+        # Remove blanks and sort
+        locations = sorted(set([loc for loc in locations if loc and loc.strip()]))
+        return Response({"locations": locations})

@@ -14,6 +14,8 @@ import ContactDetails from './contact/ContactDetails';
 import ContactEdit from './contact/ContactEdit';
 import ContactCreate from './contact/ContactCreate';
 import SessionsList from './session/SessionsList';
+import SessionEdit from './session/SessionEdit';
+import SessionCreate from './session/SessionCreate';
 import StudentsList from './student/StudentsList';
 import SessionDetails from './session/SessionDetails';
 import StudentDetails from './student/StudentDetails';
@@ -26,6 +28,7 @@ import Breadcrumbs from './Breadcrumbs';
 import './roundedCards.css';
 import './globalBackground.css';
 import './utils/tooltip.css';
+import ClassEdit from './class/ClassEdit';
 
 function AppLayout() {
   const location = useLocation();
@@ -81,6 +84,16 @@ function AppLayout() {
             <SessionDetails />
           </PrivateRoute>
         } />
+        <Route path="/sessions/:id/edit" element={
+          <PrivateRoute>
+            <SessionEdit />
+          </PrivateRoute>
+        } />
+        <Route path="/sessions/new" element={
+          <PrivateRoute>
+            <SessionCreate />
+          </PrivateRoute>
+        } />
         <Route path="/contacts/new" element={
           <PrivateRoute>
             <ContactCreate />
@@ -134,6 +147,16 @@ function AppLayout() {
           <Route path="/classes/:id/enrollment" element={
             <PrivateRoute>
               <ManageEnrollment />
+            </PrivateRoute>
+          } />
+          <Route path="/classes/new" element={
+            <PrivateRoute>
+              <ClassEdit />
+            </PrivateRoute>
+          } />
+          <Route path="/classes/:id/edit" element={
+            <PrivateRoute>
+              <ClassEdit />
             </PrivateRoute>
           } />
       </Routes>

@@ -1,0 +1,45 @@
+name: Syntax Check
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  backend-syntax:
+    name: Backend Python Syntax
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Run backend syntax check
+      run: make test-backend-syntax
+
+  frontend-syntax:
+    name: Frontend JavaScript/React Syntax
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install frontend dependencies
+      run: cd frontend && npm ci
+
+    - name: Run frontend syntax check
+      run: make test-frontend-syntax

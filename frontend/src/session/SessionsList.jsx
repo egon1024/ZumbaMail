@@ -86,9 +86,18 @@ function SessionsList() {
       <div className="card shadow-sm border-primary mb-4">
         <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center">
           <h4 className="mb-0">Sessions</h4>
-          <button className="btn btn-light" onClick={() => setShowClosed(v => !v)}>
-            {showClosed ? "Hide Closed Sessions" : "Show Closed Sessions"}
-          </button>
+          <div className="d-flex align-items-center">
+            <button className="btn btn-light me-2" onClick={() => setShowClosed(v => !v)}>
+              {showClosed ? "Hide Closed Sessions" : "Show Closed Sessions"}
+            </button>
+            <button
+              className="btn btn-sm btn-success"
+              onClick={() => window.location.href = '/sessions/new'}
+              title="Create new session"
+            >
+              <i className="bi bi-plus-lg"></i> New Session
+            </button>
+          </div>
         </div>
         <div className="card-body">
           {error && (
@@ -139,7 +148,7 @@ function SessionsList() {
                     >
                       <td className="edit-col" style={{ width: 'fit-content', textAlign: 'center', padding: '0 6px' }}>
                         <Tooltip tooltip="Edit session">
-                          <Link to={`/sessions/edit/${session.id}`} className="edit-icon-link">
+                          <Link to={`/sessions/${session.id}/edit`} className="edit-icon-link">
                             <i className="bi bi-pencil-square"></i>
                           </Link>
                         </Tooltip>

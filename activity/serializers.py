@@ -6,7 +6,7 @@ from .models import Student, Activity, Enrollment
 class ActivitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Activity
-        fields = ['id', 'type', 'day_of_week', 'time', 'location']
+        fields = ['id', 'type', 'session', 'day_of_week', 'time', 'location', 'closed']
 
 class StudentDetailSerializer(serializers.ModelSerializer):
 
@@ -65,7 +65,7 @@ class ActivityListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Activity
         fields = [
-            'id', 'type', 'day_of_week', 'time', 'location',
+            'id', 'type', 'day_of_week', 'time', 'location', 'closed',
             'session_name', 'session_id', 'organization_name', 'organization_id',
             'students_count', 'waitlist_count',
             'students', 'waitlist',
