@@ -100,6 +100,10 @@ const ClassList = () => {
           valA = a.type || '';
           valB = b.type || '';
           break;
+        case 'closed':
+          valA = a.closed ? 1 : 0;
+          valB = b.closed ? 1 : 0;
+          break;
         default:
           valA = a[sortField] || '';
           valB = b[sortField] || '';
@@ -117,12 +121,21 @@ const ClassList = () => {
       <div className="card shadow-sm border-primary mb-4">
         <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center">
           <h4 className="mb-0">Classes</h4>
-          <button
-            className="btn btn-outline-light btn-sm"
-            onClick={() => setShowInactive(v => !v)}
-          >
-            {showInactive ? 'Show Active Only' : 'Show All Classes'}
-          </button>
+          <div>
+            <button
+              className="btn btn-sm btn-success me-2"
+              onClick={() => window.location.href = '/classes/new'}
+              title="Create new class"
+            >
+              <i className="bi bi-plus-lg"></i> New Class
+            </button>
+            <button
+              className="btn btn-outline-light btn-sm"
+              onClick={() => setShowInactive(v => !v)}
+            >
+              {showInactive ? 'Show Active Only' : 'Show All Classes'}
+            </button>
+          </div>
         </div>
         <div className="card-body">
           {error && (
@@ -138,6 +151,7 @@ const ClassList = () => {
               <table className="table table-sm mb-0">
                 <thead>
                   <tr>
+                    <th style={{ width: 'fit-content', textAlign: 'center', padding: 0 }}></th>
                     <th style={{cursor:'pointer'}} onClick={() => handleSort('type')}>Type</th>
                     <th style={{cursor:'pointer'}} onClick={() => handleSort('day_of_week')}>Day</th>
                     <th style={{cursor:'pointer'}} onClick={() => handleSort('time')}>Time</th>
@@ -146,13 +160,25 @@ const ClassList = () => {
                     <th style={{cursor:'pointer'}} onClick={() => handleSort('organization_name')}>Organization</th>
                     <th style={{cursor:'pointer'}} onClick={() => handleSort('students_count')}>Students</th>
                     <th style={{cursor:'pointer'}} onClick={() => handleSort('waitlist_count')}>Waitlist</th>
+                    {showInactive && <th style={{cursor:'pointer'}} onClick={() => handleSort('closed')}>Status</th>}
                   </tr>
                 </thead>
                 <tbody>
                   {getSortedClasses().map((cls, idx) => {
                     const detailUrl = `/classes/${cls.id}`;
+                    const editUrl = `/classes/${cls.id}/edit`;
                     return (
                       <tr key={cls.id} className={`class-row${hoveredIdx === idx ? ' hovered' : ''}`} tabIndex={0}>
+                        <td style={{ width: 'fit-content', textAlign: 'center', padding: '0 6px' }}>
+                          <a
+                            href={editUrl}
+                            style={{ border: 'none', background: 'none', padding: 0, outline: 'none', boxShadow: 'none' }}
+                            tabIndex={0}
+                            title="Edit"
+                          >
+                            <i className="bi bi-pencil-square" style={{ fontSize: '1.2em', color: '#6a359c', verticalAlign: 'middle' }}></i>
+                          </a>
+                        </td>
                         {/* First column: highlight if hoveredIdx matches and not session/org */}
                         <td
                           className={`class-label${hoveredIdx === idx ? ' hovered' : ''}`}
@@ -216,6 +242,17 @@ const ClassList = () => {
                         >
                           {cls.waitlist_count}
                         </td>
+                        {/* Status - only show when showInactive is true */}
+                        {showInactive && (
+                          <td
+                            onMouseEnter={() => setHoveredIdx(idx)}
+                            onMouseLeave={() => setHoveredIdx(null)}
+                            onClick={() => window.location.href = detailUrl}
+                            style={{cursor: 'pointer'}}
+                          >
+                            {!cls.closed ? <span className="text-success">Open</span> : <span className="text-danger">Closed</span>}
+                          </td>
+                        )}
                       </tr>
                     );
                   })}

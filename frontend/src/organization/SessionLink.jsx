@@ -7,7 +7,7 @@ function SessionLink({ session, className = "" }) {
   const id = session.id || session;
   const name = session.name || session;
   return (
-    <Link to={`/sessions/details/${id}`} className={`session-name-link ${className}`}>
+    <Link to={`/sessions/${id}`} className={`session-name-link ${className}`}>
       {name}
     </Link>
   );

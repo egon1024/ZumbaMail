@@ -28,6 +28,7 @@ import Breadcrumbs from './Breadcrumbs';
 import './roundedCards.css';
 import './globalBackground.css';
 import './utils/tooltip.css';
+import ClassEdit from './class/ClassEdit';
 
 function AppLayout() {
   const location = useLocation();
@@ -146,6 +147,16 @@ function AppLayout() {
           <Route path="/classes/:id/enrollment" element={
             <PrivateRoute>
               <ManageEnrollment />
+            </PrivateRoute>
+          } />
+          <Route path="/classes/new" element={
+            <PrivateRoute>
+              <ClassEdit />
+            </PrivateRoute>
+          } />
+          <Route path="/classes/:id/edit" element={
+            <PrivateRoute>
+              <ClassEdit />
             </PrivateRoute>
           } />
       </Routes>

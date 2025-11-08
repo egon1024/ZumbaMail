@@ -43,8 +43,12 @@ const ClassDetail = () => {
   return (
     <div className="container mt-4">
       <div className="card shadow-sm border-primary mb-4">
-        <div className="card-header bg-dark text-white">
+        <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center">
           <h4 className="mb-0">Class Details</h4>
+          <Link to={`/classes/${id}/edit`} className="btn btn-outline-light btn-sm">
+            <i className="bi bi-pencil-square me-1"></i>
+            Edit
+          </Link>
         </div>
         <div className="card-body">
           <table className="table table-bordered w-100">
@@ -83,7 +87,7 @@ const ClassDetail = () => {
               </tr>
               <tr>
                 <th>Status</th>
-                <td>{cls.is_open ? <span className="text-success">Open</span> : <span className="text-danger">Closed</span>}</td>
+                <td>{!cls.closed ? <span className="text-success">Open</span> : <span className="text-danger">Closed</span>}</td>
               </tr>
             </tbody>
           </table>
