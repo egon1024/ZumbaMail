@@ -26,4 +26,16 @@ collectstatic:
 deploy: npm-install python-install migrate build-react collectstatic
 	@echo "Deployment steps complete."
 
-.PHONY: all npm-install python-install migrate build-react collectstatic deploy
+# Testing targets
+test-backend-syntax:
+	@echo "Checking Python syntax..."
+	$(PYTHON) -m py_compile activity/**/*.py *.py
+
+test-frontend-syntax:
+	@echo "Checking JavaScript/React syntax..."
+	cd frontend && $(NPM) run lint
+
+test-syntax: test-backend-syntax test-frontend-syntax
+	@echo "All syntax checks passed!"
+
+.PHONY: all npm-install python-install migrate build-react collectstatic deploy test-backend-syntax test-frontend-syntax test-syntax
