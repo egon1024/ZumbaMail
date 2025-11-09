@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-from activity.models import Activity, Meeting, AttendanceRecord, Student
+from activity.models import Activity, Meeting, AttendanceRecord, Student, ClassCancellation
 from activity.serializers import MeetingSerializer, StudentBasicSerializer
 
 
@@ -174,14 +174,33 @@ class AttendanceStatsView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Get activities, optionally filtered by organization
+        # Parse the date and get the day of week
+        from datetime import datetime
+        date_obj = datetime.strptime(date, '%Y-%m-%d').date()
+        day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        day_of_week = day_names[date_obj.weekday()]
+
+        # Get activities, filtered by day of week and session date range
         activities = Activity.objects.select_related('session__organization').prefetch_related('enrollments', 'meetings')
+        activities = activities.filter(
+            day_of_week=day_of_week,
+            session__start_date__lte=date_obj,
+            session__end_date__gte=date_obj
+        )
 
         if organization_id:
             activities = activities.filter(session__organization_id=organization_id)
 
+        # Get all cancellations for this date (more efficient than checking per activity)
+        cancellations = ClassCancellation.objects.filter(date=date).values_list('activity_id', 'reason')
+        cancellation_dict = dict(cancellations)
+
         results = []
         for activity in activities:
+            # Check if this activity is cancelled
+            is_cancelled = activity.id in cancellation_dict
+            cancellation_reason = cancellation_dict.get(activity.id, None)
+
             # Get meeting for this activity and date (if it exists)
             meeting = activity.meetings.filter(date=date).first()
 
@@ -202,6 +221,8 @@ class AttendanceStatsView(APIView):
                 'enrolled_count': enrolled_count,
                 'waitlist_count': waitlist_count,
                 'has_meeting': meeting is not None,
+                'is_cancelled': is_cancelled,
+                'cancellation_reason': cancellation_reason,
             }
 
             if meeting:

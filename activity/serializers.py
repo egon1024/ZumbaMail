@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Organization, Contact
-from .models import Student, Activity, Enrollment, Meeting, AttendanceRecord
+from .models import Student, Activity, Enrollment, Meeting, AttendanceRecord, ClassCancellation
 
 
 class ActivitySerializer(serializers.ModelSerializer):
@@ -131,3 +131,22 @@ class StudentBasicSerializer(serializers.ModelSerializer):
         model = Student
         fields = ['id', 'first_name', 'last_name', 'email', 'display_name']
         read_only_fields = ['display_name']
+
+class ClassCancellationSerializer(serializers.ModelSerializer):
+    """Serializer for class cancellations"""
+    activity_type = serializers.CharField(source='activity.type', read_only=True)
+    activity_day = serializers.CharField(source='activity.day_of_week', read_only=True)
+    activity_time = serializers.TimeField(source='activity.time', read_only=True)
+    activity_location = serializers.CharField(source='activity.location', read_only=True)
+    session_name = serializers.CharField(source='activity.session.name', read_only=True)
+    organization_name = serializers.CharField(source='activity.session.organization.name', read_only=True)
+    organization_id = serializers.IntegerField(source='activity.session.organization.id', read_only=True)
+
+    class Meta:
+        model = ClassCancellation
+        fields = [
+            'id', 'activity', 'date', 'reason', 'created_at',
+            'activity_type', 'activity_day', 'activity_time', 'activity_location',
+            'session_name', 'organization_name', 'organization_id'
+        ]
+        read_only_fields = ['created_at']

@@ -113,6 +113,23 @@ class Meeting(models.Model):
 	def __str__(self):
 		return f"{self.activity} on {self.date}"
 
+class ClassCancellation(models.Model):
+	"""
+	Represents a cancellation of an Activity on a specific date.
+	Used to mark that a class won't run on a given date with an optional reason.
+	"""
+	activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name='cancellations')
+	date = models.DateField()
+	reason = models.CharField(max_length=255, blank=True, null=True, help_text="Optional reason for cancellation")
+	created_at = models.DateTimeField(auto_now_add=True)
+
+	class Meta:
+		unique_together = [['activity', 'date']]
+		ordering = ['-date']
+
+	def __str__(self):
+		return f"{self.activity} cancelled on {self.date}"
+
 class Student(models.Model):
 	@property
 	def display_name(self):

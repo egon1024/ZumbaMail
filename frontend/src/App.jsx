@@ -31,6 +31,7 @@ import './utils/tooltip.css';
 import ClassEdit from './class/ClassEdit';
 import AttendanceList from './attendance/AttendanceList';
 import AttendanceDetail from './attendance/AttendanceDetail';
+import CancellationList from './cancellations/CancellationList';
 
 function AppLayout() {
   const location = useLocation();
@@ -169,6 +170,11 @@ function AppLayout() {
           <Route path="/attendance/:id" element={
             <PrivateRoute>
               <AttendanceDetail />
+            </PrivateRoute>
+          } />
+          <Route path="/schedules" element={
+            <PrivateRoute>
+              <CancellationList />
             </PrivateRoute>
           } />
       </Routes>

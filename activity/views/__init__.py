@@ -14,3 +14,9 @@ from .contact import (
 	ContactCreateView,
 	ContactDeleteView,
 )
+from .cancellations import (
+	CancellationListView,
+	CancellationCreateView,
+	CancellationDeleteView,
+	CancellationForDateView,
+)
