@@ -5,7 +5,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { authFetch } from "../utils/authFetch";
 import { formatTime } from "../utils/formatTime";
 import { formatDate } from "../utils/formatDate";
-import DayOfWeekDisplay from "../utils/DayOfWeekDisplay";
+import DayOfWeek, { getDayTimeSortValue } from "../utils/DayOfWeek";
 
 // Custom input that uses formatDate for display
 const FormattedDateInput = forwardRef(({ value, onClick, selectedDate }, ref) => {
@@ -114,7 +114,6 @@ export default function AttendanceList() {
   }
 
   // Sorting logic for attendanceStats
-  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   function getSortedStats() {
     return [...attendanceStats].sort((a, b) => {
       let valA, valB;
@@ -128,21 +127,8 @@ export default function AttendanceList() {
           valB = `${b.organization_name || ''} / ${b.session_name || ''}`;
           break;
         case 'day_time':
-          const parseTime = t => {
-            if (!t) return 0;
-            if (/AM|PM/.test(t)) {
-              const [time, period] = t.split(' ');
-              let [h, m] = time.split(':').map(Number);
-              if (period === 'PM' && h !== 12) h += 12;
-              if (period === 'AM' && h === 12) h = 0;
-              return h * 60 + m;
-            } else {
-              let [h, m] = t.split(':').map(Number);
-              return h * 60 + m;
-            }
-          };
-          valA = days.indexOf(a.day_of_week) * 1440 + parseTime(a.time);
-          valB = days.indexOf(b.day_of_week) * 1440 + parseTime(b.time);
+          valA = getDayTimeSortValue(a.day_of_week, a.time);
+          valB = getDayTimeSortValue(b.day_of_week, b.time);
           break;
         case 'location':
           valA = a.location || '';
@@ -205,6 +191,14 @@ export default function AttendanceList() {
             <h5 className="mb-0">Classes for {formatDate(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`)}</h5>
           </div>
           <div className="card-body">
+            <div className="mb-2 small">
+              <strong>Legend:</strong>{' '}
+              <span className="text-success">Attended</span>
+              <span className="mx-1">/</span>
+              <span className="text-danger">Unexpected</span>
+              <span className="mx-1">/</span>
+              <span className="text-secondary">Expected</span>
+            </div>
             <table className="table table-sm mb-0">
               <thead>
                 <tr>
@@ -240,24 +234,28 @@ export default function AttendanceList() {
                     <td>{stat.organization_name} / {stat.session_name}</td>
                     <td>
                       <div className="d-flex align-items-center gap-2">
-                        <DayOfWeekDisplay activeDay={stat.day_of_week} />
+                        <DayOfWeek activeDay={stat.day_of_week} />
                         <span>{formatTime(stat.time)}</span>
                       </div>
                     </td>
                     <td>{stat.location}</td>
                     <td>
-                      {stat.enrolled_present}/{stat.enrolled_count}
-                      {stat.enrolled_absent > 0 && (
-                        <span className="text-danger ms-1">({stat.enrolled_absent} absent)</span>
-                      )}
+                      <span className="text-success">{stat.enrolled_present}</span>
+                      <span>/</span>
+                      <span className="text-danger">{stat.enrolled_unexpected_absent}</span>
+                      <span>/</span>
+                      <span className="text-secondary">{stat.enrolled_expected_absent}</span>
+                      <span className="text-muted ms-1">({stat.enrolled_count})</span>
                     </td>
                     <td>
                       {stat.waitlist_count > 0 ? (
                         <>
-                          {stat.waitlist_present}/{stat.waitlist_count}
-                          {stat.waitlist_absent > 0 && (
-                            <span className="text-danger ms-1">({stat.waitlist_absent} absent)</span>
-                          )}
+                          <span className="text-success">{stat.waitlist_present}</span>
+                          <span>/</span>
+                          <span className="text-danger">{stat.waitlist_unexpected_absent}</span>
+                          <span>/</span>
+                          <span className="text-secondary">{stat.waitlist_expected_absent}</span>
+                          <span className="text-muted ms-1">({stat.waitlist_count})</span>
                         </>
                       ) : (
                         '—'

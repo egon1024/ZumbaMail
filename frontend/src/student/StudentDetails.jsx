@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Tooltip from "../utils/Tooltip";
-import DayOfWeekDisplay from "../utils/DayOfWeekDisplay";
+import DayOfWeek from "../utils/DayOfWeek";
 import { formatDate } from "../utils/formatDate";
 import { authFetch } from "../utils/authFetch";
 import "./StudentsList.css";
@@ -187,7 +187,7 @@ function StudentDetails() {
                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate(`/classes/${cls.id}`); }}
                       >
                         <td><span className="reactive-link-text">{cls.type}</span></td>
-                        <td><DayOfWeekDisplay activeDay={cls.day_of_week} /></td>
+                        <td><DayOfWeek activeDay={cls.day_of_week} /></td>
                         <td>{cls.time}</td>
                         <td>{cls.location}</td>
                       </tr>
@@ -230,7 +230,7 @@ function StudentDetails() {
                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate(`/classes/${cls.id}`); }}
                       >
                         <td><span className="reactive-link-text">{cls.type}</span></td>
-                        <td><DayOfWeekDisplay activeDay={cls.day_of_week} /></td>
+                        <td><DayOfWeek activeDay={cls.day_of_week} /></td>
                         <td>{cls.time}</td>
                         <td>{cls.location}</td>
                       </tr>

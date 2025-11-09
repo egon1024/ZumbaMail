@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { authFetch } from "../utils/authFetch";
 import { formatDate } from "../utils/formatDate";
 import '../organization/OrganizationDetails.css';
-import DayOfWeekDisplay from "../utils/DayOfWeekDisplay";
+import DayOfWeek from "../utils/DayOfWeek";
 import Tooltip from "../utils/Tooltip";
 
 function SessionDetails() {
@@ -127,7 +127,7 @@ function SessionDetails() {
                       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate(`/classes/${cls.id}`); }}
                     >
                       <td><span className="reactive-link-text">{cls.type}</span></td>
-                      <td><DayOfWeekDisplay activeDay={cls.day_of_week} /></td>
+                      <td><DayOfWeek activeDay={cls.day_of_week} /></td>
                       <td>{cls.time}</td>
                       <td>{cls.location}</td>
                       <td>{cls.num_students ?? ''}</td>

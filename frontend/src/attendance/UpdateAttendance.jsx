@@ -139,10 +139,8 @@ export default function UpdateAttendance() {
       });
   }
 
-  // Toggle attendance status for a student
-  function toggleAttendance(studentId, currentStatus) {
-    const newStatus = currentStatus === 'present' ? 'absent' : 'present';
-
+  // Set attendance status for a student
+  function setAttendanceStatus(studentId, newStatus) {
     setAttendanceRecords(prev => {
       const existing = prev.find(r => r.student === studentId);
       if (existing) {
@@ -393,16 +391,23 @@ export default function UpdateAttendance() {
                           <button
                             type="button"
                             className={`btn btn-sm ${status === 'present' ? 'btn-success' : 'btn-outline-success'}`}
-                            onClick={() => toggleAttendance(student.id, status)}
+                            onClick={() => setAttendanceStatus(student.id, 'present')}
                           >
                             Present
                           </button>
                           <button
                             type="button"
-                            className={`btn btn-sm ${status === 'absent' ? 'btn-danger' : 'btn-outline-danger'}`}
-                            onClick={() => toggleAttendance(student.id, status)}
+                            className={`btn btn-sm ${status === 'unexpected_absence' ? 'btn-danger' : 'btn-outline-danger'}`}
+                            onClick={() => setAttendanceStatus(student.id, 'unexpected_absence')}
                           >
-                            Absent
+                            Unexpected
+                          </button>
+                          <button
+                            type="button"
+                            className={`btn btn-sm ${status === 'expected_absence' ? 'btn-dark' : 'btn-outline-secondary'}`}
+                            onClick={() => setAttendanceStatus(student.id, 'expected_absence')}
+                          >
+                            Expected
                           </button>
                         </div>
                       </div>
@@ -429,16 +434,23 @@ export default function UpdateAttendance() {
                             <button
                               type="button"
                               className={`btn btn-sm ${status === 'present' ? 'btn-success' : 'btn-outline-success'}`}
-                              onClick={() => toggleAttendance(student.id, status)}
+                              onClick={() => setAttendanceStatus(student.id, 'present')}
                             >
                               Present
                             </button>
                             <button
                               type="button"
-                              className={`btn btn-sm ${status === 'absent' ? 'btn-danger' : 'btn-outline-danger'}`}
-                              onClick={() => toggleAttendance(student.id, status)}
+                              className={`btn btn-sm ${status === 'unexpected_absence' ? 'btn-danger' : 'btn-outline-danger'}`}
+                              onClick={() => setAttendanceStatus(student.id, 'unexpected_absence')}
                             >
-                              Absent
+                              Unexpected
+                            </button>
+                            <button
+                              type="button"
+                              className={`btn btn-sm ${status === 'expected_absence' ? 'btn-dark' : 'btn-outline-secondary'}`}
+                              onClick={() => setAttendanceStatus(student.id, 'expected_absence')}
+                            >
+                              Expected
                             </button>
                           </div>
                         </div>
@@ -491,7 +503,6 @@ export default function UpdateAttendance() {
               {walkInStudents.length > 0 && (
                 <div className="mb-4">
                   {walkInStudents.map(student => {
-                    const status = getAttendanceStatus(student.id);
                     return (
                       <div key={student.id} className="border rounded p-2 mb-2 bg-white d-flex justify-content-between align-items-center">
                         <div>
@@ -500,20 +511,6 @@ export default function UpdateAttendance() {
                           <span className="badge bg-info text-dark ms-2">Walk-in</span>
                         </div>
                         <div className="d-flex gap-2">
-                          <button
-                            type="button"
-                            className={`btn btn-sm ${status === 'present' ? 'btn-success' : 'btn-outline-success'}`}
-                            onClick={() => toggleAttendance(student.id, status)}
-                          >
-                            Present
-                          </button>
-                          <button
-                            type="button"
-                            className={`btn btn-sm ${status === 'absent' ? 'btn-danger' : 'btn-outline-danger'}`}
-                            onClick={() => toggleAttendance(student.id, status)}
-                          >
-                            Absent
-                          </button>
                           <button
                             type="button"
                             className="btn btn-sm btn-outline-secondary"

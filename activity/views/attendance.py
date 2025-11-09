@@ -207,15 +207,19 @@ class AttendanceStatsView(APIView):
             if meeting:
                 attendance_records = meeting.attendance_records.all()
                 stats['enrolled_present'] = attendance_records.filter(status='present', student__enrollments__activity=activity, student__enrollments__status='active').distinct().count()
-                stats['enrolled_absent'] = attendance_records.filter(status='absent', student__enrollments__activity=activity, student__enrollments__status='active').distinct().count()
+                stats['enrolled_unexpected_absent'] = attendance_records.filter(status='unexpected_absence', student__enrollments__activity=activity, student__enrollments__status='active').distinct().count()
+                stats['enrolled_expected_absent'] = attendance_records.filter(status='expected_absence', student__enrollments__activity=activity, student__enrollments__status='active').distinct().count()
                 stats['waitlist_present'] = attendance_records.filter(status='present', student__enrollments__activity=activity, student__enrollments__status='waiting').distinct().count()
-                stats['waitlist_absent'] = attendance_records.filter(status='absent', student__enrollments__activity=activity, student__enrollments__status='waiting').distinct().count()
+                stats['waitlist_unexpected_absent'] = attendance_records.filter(status='unexpected_absence', student__enrollments__activity=activity, student__enrollments__status='waiting').distinct().count()
+                stats['waitlist_expected_absent'] = attendance_records.filter(status='expected_absence', student__enrollments__activity=activity, student__enrollments__status='waiting').distinct().count()
                 stats['walkin_count'] = attendance_records.exclude(student__enrollments__activity=activity).distinct().count()
             else:
                 stats['enrolled_present'] = 0
-                stats['enrolled_absent'] = 0
+                stats['enrolled_unexpected_absent'] = 0
+                stats['enrolled_expected_absent'] = 0
                 stats['waitlist_present'] = 0
-                stats['waitlist_absent'] = 0
+                stats['waitlist_unexpected_absent'] = 0
+                stats['waitlist_expected_absent'] = 0
                 stats['walkin_count'] = 0
 
             results.append(stats)
