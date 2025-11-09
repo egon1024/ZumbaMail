@@ -107,6 +107,9 @@ class Meeting(models.Model):
 	activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name='meetings')
 	date = models.DateField()
 
+	class Meta:
+		unique_together = [['activity', 'date']]
+
 	def __str__(self):
 		return f"{self.activity} on {self.date}"
 
@@ -158,12 +161,13 @@ class AttendanceRecord(models.Model):
 	"""
 	ATTENDANCE_CHOICES = [
 		('present', 'Present'),
-		('absent', 'Absent'),
+		('unexpected_absence', 'Unexpected Absence'),
+		('expected_absence', 'Expected Absence'),
 		('scheduled', 'Scheduled'),
 	]
 	student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='attendance_records')
 	meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name='attendance_records')
-	status = models.CharField(max_length=10, choices=ATTENDANCE_CHOICES)
+	status = models.CharField(max_length=20, choices=ATTENDANCE_CHOICES)
 	note = models.CharField(max_length=200, blank=True, null=True)
 
 	def __str__(self):

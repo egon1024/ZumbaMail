@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Organization, Contact
-from .models import Student, Activity, Enrollment
+from .models import Student, Activity, Enrollment, Meeting, AttendanceRecord
 
 
 class ActivitySerializer(serializers.ModelSerializer):
@@ -100,3 +100,34 @@ class ActivityListSerializer(serializers.ModelSerializer):
             }
             for e in waitlist
         ]
+
+class AttendanceRecordSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.display_name', read_only=True)
+
+    class Meta:
+        model = AttendanceRecord
+        fields = ['id', 'student', 'student_name', 'status', 'note']
+
+class MeetingSerializer(serializers.ModelSerializer):
+    activity_type = serializers.CharField(source='activity.type', read_only=True)
+    activity_time = serializers.TimeField(source='activity.time', read_only=True)
+    activity_location = serializers.CharField(source='activity.location', read_only=True)
+    session_name = serializers.CharField(source='activity.session.name', read_only=True)
+    organization_name = serializers.CharField(source='activity.session.organization.name', read_only=True)
+    attendance_records = AttendanceRecordSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Meeting
+        fields = [
+            'id', 'activity', 'date',
+            'activity_type', 'activity_time', 'activity_location',
+            'session_name', 'organization_name',
+            'attendance_records'
+        ]
+
+class StudentBasicSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for student search and quick create"""
+    class Meta:
+        model = Student
+        fields = ['id', 'first_name', 'last_name', 'email', 'display_name']
+        read_only_fields = ['display_name']

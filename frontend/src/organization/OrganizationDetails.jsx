@@ -7,7 +7,7 @@ import { authFetch } from "../utils/authFetch";
 import { formatDate } from "../utils/formatDate";
 import SessionLink from "./SessionLink";
 import './OrganizationDetails.css';
-import DayOfWeekDisplay from "../utils/DayOfWeekDisplay";
+import DayOfWeek from "../utils/DayOfWeek";
 
 
 function OrganizationDetails() {
@@ -262,7 +262,7 @@ function OrganizationDetails() {
                         <td>
                           <span className="reactive-link-text">{activity.type}</span>
                         </td>
-                        <td><DayOfWeekDisplay activeDay={activity.day_of_week} /></td>
+                        <td><DayOfWeek activeDay={activity.day_of_week} /></td>
                         <td>{activity.time}</td>
                         <td>{activity.location}</td>
                       </tr>

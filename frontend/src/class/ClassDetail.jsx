@@ -3,7 +3,7 @@ import OrganizationLink from '../organization/OrganizationLink';
 import SessionLink from '../organization/SessionLink';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { authFetch } from '../utils/authFetch';
-import DayOfWeekDisplay from '../utils/DayOfWeekDisplay';
+import DayOfWeek from '../utils/DayOfWeek';
 import { formatTime } from '../utils/formatTime';
 import './ClassDetail.css';
 
@@ -67,7 +67,7 @@ const ClassDetail = () => {
               </tr>
               <tr>
                 <th>Day</th>
-                <td><DayOfWeekDisplay activeDay={cls.day_of_week} /></td>
+                <td><DayOfWeek activeDay={cls.day_of_week} /></td>
               </tr>
               <tr>
                 <th>Time</th>

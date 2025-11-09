@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { authFetch } from '../utils/authFetch';
 import Organization from '../organization/OrganizationLink';
 import SessionLink from '../organization/SessionLink';
-import DayOfWeekDisplay from '../utils/DayOfWeekDisplay';
+import DayOfWeek, { getDayIndex, parseTimeToMinutes, compareDayTime } from '../utils/DayOfWeek';
 import { formatTime } from '../utils/formatTime';
 import './ClassList.css';
 
@@ -22,27 +22,9 @@ const ClassList = () => {
       .then(resp => resp.json())
       .then(data => {
         // Default sort: Organization, Day, Time
-        const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
         data.sort((a, b) => {
           if (a.organization_name !== b.organization_name) return a.organization_name.localeCompare(b.organization_name);
-          const dayA = days.indexOf(a.day_of_week);
-          const dayB = days.indexOf(b.day_of_week);
-          if (dayA !== dayB) return dayA - dayB;
-          // Parse time
-          const parseTime = t => {
-            if (!t) return 0;
-            if (/AM|PM/.test(t)) {
-              const [time, period] = t.split(' ');
-              let [h, m] = time.split(':').map(Number);
-              if (period === 'PM' && h !== 12) h += 12;
-              if (period === 'AM' && h === 12) h = 0;
-              return h * 60 + m;
-            } else {
-              let [h, m] = t.split(':').map(Number);
-              return h * 60 + m;
-            }
-          };
-          return parseTime(a.time) - parseTime(b.time);
+          return compareDayTime(a.day_of_week, a.time, b.day_of_week, b.time);
         });
         setClasses(data);
         setLoading(false);
@@ -63,7 +45,6 @@ const ClassList = () => {
   }
 
   function getSortedClasses() {
-    const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
     return [...classes].sort((a, b) => {
       let valA, valB;
       switch (sortField) {
@@ -72,25 +53,12 @@ const ClassList = () => {
           valB = b.organization_name || '';
           break;
         case 'day_of_week':
-          valA = days.indexOf(a.day_of_week);
-          valB = days.indexOf(b.day_of_week);
+          valA = getDayIndex(a.day_of_week);
+          valB = getDayIndex(b.day_of_week);
           break;
         case 'time':
-          const parseTime = t => {
-            if (!t) return 0;
-            if (/AM|PM/.test(t)) {
-              const [time, period] = t.split(' ');
-              let [h, m] = time.split(':').map(Number);
-              if (period === 'PM' && h !== 12) h += 12;
-              if (period === 'AM' && h === 12) h = 0;
-              return h * 60 + m;
-            } else {
-              let [h, m] = t.split(':').map(Number);
-              return h * 60 + m;
-            }
-          };
-          valA = parseTime(a.time);
-          valB = parseTime(b.time);
+          valA = parseTimeToMinutes(a.time);
+          valB = parseTimeToMinutes(b.time);
           break;
         case 'session_name':
           valA = a.session_name || '';
@@ -196,7 +164,7 @@ const ClassList = () => {
                           onClick={() => window.location.href = detailUrl}
                           style={{cursor: 'pointer'}}
                         >
-                          <DayOfWeekDisplay activeDay={cls.day_of_week} />
+                          <DayOfWeek activeDay={cls.day_of_week} />
                         </td>
                         {/* Time */}
                         <td

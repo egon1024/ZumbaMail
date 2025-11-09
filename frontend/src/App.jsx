@@ -29,6 +29,8 @@ import './roundedCards.css';
 import './globalBackground.css';
 import './utils/tooltip.css';
 import ClassEdit from './class/ClassEdit';
+import AttendanceList from './attendance/AttendanceList';
+import AttendanceDetail from './attendance/AttendanceDetail';
 
 function AppLayout() {
   const location = useLocation();
@@ -157,6 +159,16 @@ function AppLayout() {
           <Route path="/classes/:id/edit" element={
             <PrivateRoute>
               <ClassEdit />
+            </PrivateRoute>
+          } />
+          <Route path="/attendance" element={
+            <PrivateRoute>
+              <AttendanceList />
+            </PrivateRoute>
+          } />
+          <Route path="/attendance/:id" element={
+            <PrivateRoute>
+              <AttendanceDetail />
             </PrivateRoute>
           } />
       </Routes>

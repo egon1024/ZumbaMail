@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { authFetch } from "../utils/authFetch";
 import { formatTime, parseTime12hr } from "../utils/formatTime";
-import DayOfWeekDisplay from "../utils/DayOfWeekDisplay";
+import DayOfWeek from "../utils/DayOfWeek";
 
 function ClassEdit() {
   const location = useLocation();

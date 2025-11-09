@@ -213,6 +213,7 @@ __marimo__/
 # AI
 copilot-instructions.md
 .clauderc
+.claude/
 
 # Environment stuff
 token.txt

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { authFetch } from './utils/authFetch';
+import { formatDate } from './utils/formatDate';
 import ClassLabel from './class/ClassLabel';
 
 function Breadcrumbs() {
@@ -11,6 +12,7 @@ function Breadcrumbs() {
   const [sessionName, setSessionName] = useState(null);
   const [studentName, setStudentName] = useState(null);
   const [classActivity, setClassActivity] = useState(null);
+  const [attendanceActivity, setAttendanceActivity] = useState(null);
 
   // Detect if on organization details page
   useEffect(() => {
@@ -84,6 +86,20 @@ function Breadcrumbs() {
     } else {
       setClassActivity(null);
     }
+    // Detect /attendance/:id route
+    if (pathnames[0] === 'attendance' && pathnames[1] && !isNaN(Number(pathnames[1]))) {
+      (async () => {
+        try {
+          const resp = await authFetch(`/api/activity/${pathnames[1]}/`);
+          if (resp.ok) {
+            const data = await resp.json();
+            setAttendanceActivity(data);
+          }
+        } catch {}
+      })();
+    } else {
+      setAttendanceActivity(null);
+    }
   }, [location.pathname]);
 
   return (
@@ -115,6 +131,19 @@ function Breadcrumbs() {
           // If on /classes/:id, show ClassLabel for id segment
           if (pathnames[0] === 'classes' && idx === 1 && classActivity) {
             label = <ClassLabel activity={classActivity} />;
+          }
+          // If on /attendance/:id, show ClassLabel with date for id segment
+          if (pathnames[0] === 'attendance' && idx === 1 && attendanceActivity) {
+            // Extract date from query string
+            const searchParams = new URLSearchParams(location.search);
+            const dateParam = searchParams.get('date');
+            const dateDisplay = dateParam ? ` (${formatDate(dateParam)})` : '';
+            label = (
+              <>
+                <ClassLabel activity={attendanceActivity} />
+                {dateDisplay}
+              </>
+            );
           }
           return isLast ? (
             <li className="breadcrumb-item active" aria-current="page" key={to}>
