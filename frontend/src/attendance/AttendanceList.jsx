@@ -269,7 +269,14 @@ export default function AttendanceList() {
                       )}
                     </td>
                     <td>
-                      {!stat.has_meeting && (
+                      {stat.is_cancelled ? (
+                        <span className="small text-danger">
+                          <strong>CANCELLED</strong>
+                          {stat.cancellation_reason && (
+                            <><br /><em>({stat.cancellation_reason})</em></>
+                          )}
+                        </span>
+                      ) : !stat.has_meeting && (
                         <span className="small" style={{ color: '#856404' }}>
                           <em>Not taken</em>
                         </span>

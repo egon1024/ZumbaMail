@@ -7,4 +7,5 @@ urlpatterns = [
     path('', include('activity.routers.student')),
     path('', include('activity.routers.activity')),
     path('', include('activity.routers.attendance')),
+    path('', include('activity.routers.cancellations')),
 ]

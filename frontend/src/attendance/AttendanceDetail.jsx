@@ -21,6 +21,8 @@ export default function AttendanceDetail() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isCancelled, setIsCancelled] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState("");
 
   // Load meeting data on mount or when params change
   useEffect(() => {
@@ -32,53 +34,92 @@ export default function AttendanceDetail() {
     setLoading(true);
     setError("");
     setSuccessMessage("");
+    setIsCancelled(false);
+    setCancellationReason("");
 
-    // Get or create the meeting
-    authFetch("/api/meetings/get-or-create/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        activity_id: parseInt(activityId),
-        date: dateParam
-      })
-    })
+    // First check if the class is cancelled on this date
+    authFetch(`/api/cancellations/for-date/?date=${dateParam}`)
       .then(res => res.json())
-      .then(data => {
-        setMeeting(data);
-        setAttendanceRecords(data.attendance_records || []);
+      .then(cancellations => {
+        // Check if this activity is in the cancellations list
+        const cancellation = cancellations.find(c => c.activity === parseInt(activityId));
 
-        // Set activity info from meeting data
-        setActivity({
-          id: data.activity,
-          type: data.activity_type,
-          time: data.activity_time,
-          location: data.activity_location,
-          session_name: data.session_name,
-          organization_name: data.organization_name
-        });
+        if (cancellation) {
+          // Class is cancelled - set flag and don't load meeting data
+          setIsCancelled(true);
+          setCancellationReason(cancellation.reason || "");
 
-        const enrolledList = data.enrolled_students || [];
-        const waitlistList = data.waitlist_students || [];
-        setEnrolledStudents(enrolledList);
-        setWaitlistStudents(waitlistList);
+          // Still need to load basic activity info
+          authFetch(`/api/activity/${activityId}/`)
+            .then(res => res.json())
+            .then(activityData => {
+              setActivity({
+                id: activityData.id,
+                type: activityData.type,
+                time: activityData.time,
+                location: activityData.location,
+                session_name: activityData.session?.name || '',
+                organization_name: activityData.session?.organization?.name || ''
+              });
+              setLoading(false);
+            })
+            .catch(err => {
+              setError("Failed to load activity data");
+              setLoading(false);
+            });
+        } else {
+          // Class is not cancelled - proceed with normal meeting load
+          authFetch("/api/meetings/get-or-create/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              activity_id: parseInt(activityId),
+              date: dateParam
+            })
+          })
+            .then(res => res.json())
+            .then(data => {
+              setMeeting(data);
+              setAttendanceRecords(data.attendance_records || []);
 
-        // Identify walk-ins: students with attendance records who are NOT enrolled or on waitlist
-        const enrolledIds = new Set(enrolledList.map(s => s.id));
-        const waitlistIds = new Set(waitlistList.map(s => s.id));
+              // Set activity info from meeting data
+              setActivity({
+                id: data.activity,
+                type: data.activity_type,
+                time: data.activity_time,
+                location: data.activity_location,
+                session_name: data.session_name,
+                organization_name: data.organization_name
+              });
 
-        const walkIns = (data.attendance_records || [])
-          .filter(record => !enrolledIds.has(record.student) && !waitlistIds.has(record.student))
-          .map(record => ({
-            id: record.student,
-            display_name: record.student_name,
-            email: ''
-          }));
+              const enrolledList = data.enrolled_students || [];
+              const waitlistList = data.waitlist_students || [];
+              setEnrolledStudents(enrolledList);
+              setWaitlistStudents(waitlistList);
 
-        setWalkInStudents(walkIns);
-        setLoading(false);
+              // Identify walk-ins: students with attendance records who are NOT enrolled or on waitlist
+              const enrolledIds = new Set(enrolledList.map(s => s.id));
+              const waitlistIds = new Set(waitlistList.map(s => s.id));
+
+              const walkIns = (data.attendance_records || [])
+                .filter(record => !enrolledIds.has(record.student) && !waitlistIds.has(record.student))
+                .map(record => ({
+                  id: record.student,
+                  display_name: record.student_name,
+                  email: ''
+                }));
+
+              setWalkInStudents(walkIns);
+              setLoading(false);
+            })
+            .catch(err => {
+              setError("Failed to load meeting data");
+              setLoading(false);
+            });
+        }
       })
       .catch(err => {
-        setError("Failed to load meeting data");
+        setError("Failed to check cancellation status");
         setLoading(false);
       });
   }, [activityId, dateParam]);
@@ -213,7 +254,53 @@ export default function AttendanceDetail() {
     );
   }
 
-  if (!activity || !meeting) {
+  if (!activity) {
+    return (
+      <div className="container mt-4">
+        <div>Loading meeting data...</div>
+      </div>
+    );
+  }
+
+  // If the class is cancelled, show cancellation message instead of attendance interface
+  if (isCancelled) {
+    return (
+      <div className="container mt-4">
+        <div className="card shadow-sm border-primary mb-4">
+          <div className="card-header bg-danger text-white">
+            <h4 className="mb-1">Class Cancelled</h4>
+            <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+              {activity.type} - {activity.organization_name} / {activity.session_name}
+              <br />
+              {formatTime(activity.time)} • {activity.location}
+              <br />
+              Date: {formatDate(dateParam)}
+            </div>
+          </div>
+          <div className="card-body">
+            <div className="alert alert-warning mb-3">
+              <h5 className="alert-heading">This class has been cancelled for this date.</h5>
+              {cancellationReason && (
+                <p className="mb-0">
+                  <strong>Reason:</strong> {cancellationReason}
+                </p>
+              )}
+            </div>
+            <p className="text-muted">No attendance can be recorded for cancelled classes.</p>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => navigate('/attendance')}
+            >
+              ← Back to Attendance
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!meeting) {
     return (
       <div className="container mt-4">
         <div>Loading meeting data...</div>

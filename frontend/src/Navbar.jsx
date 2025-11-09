@@ -73,6 +73,7 @@ function Navbar() {
               <ul className="dropdown-menu" aria-labelledby="schedulesDropdown">
                 <li><NavLink className="dropdown-item" to="/sessions" onClick={handleNavClick}>Sessions</NavLink></li>
                 <li><NavLink className="dropdown-item" to="/classes" onClick={handleNavClick}>Classes</NavLink></li>
+                <li><NavLink className="dropdown-item" to="/schedules" onClick={handleNavClick}>Cancellations</NavLink></li>
               </ul>
             </li>
             <li className="nav-item dropdown">
