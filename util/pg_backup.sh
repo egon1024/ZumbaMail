@@ -4,7 +4,7 @@
 # --- Configuration ---
 # !! Set these variables !!
 
-DB_NAME="zumbamail"
+DB_NAME="alyssatool"
 DB_USER="postgres"
 BACKUP_DIR="/var/backups/postgres"
 PGPASS_FILE="~/.pgpass" # Path to your credential file
