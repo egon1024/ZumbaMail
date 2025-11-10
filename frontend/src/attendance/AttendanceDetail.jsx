@@ -58,8 +58,8 @@ export default function AttendanceDetail() {
                 type: activityData.type,
                 time: activityData.time,
                 location: activityData.location,
-                session_name: activityData.session?.name || '',
-                organization_name: activityData.session?.organization?.name || ''
+                session_name: activityData.session_name || '',
+                organization_name: activityData.organization_name || ''
               });
               setLoading(false);
             })

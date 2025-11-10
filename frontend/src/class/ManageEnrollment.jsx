@@ -70,15 +70,22 @@ const ManageEnrollment = () => {
       });
   }, [id]);
 
-  // Compute available students (not enrolled or waitlisted), sorted by display_name
+  // Helper function to sort students by last name, then first name
+  const sortByName = (a, b) => {
+    const lastCompare = (a.last_name || '').localeCompare(b.last_name || '');
+    if (lastCompare !== 0) return lastCompare;
+    return (a.first_name || '').localeCompare(b.first_name || '');
+  };
+
+  // Compute available students (not enrolled or waitlisted), sorted by last name
   const enrolledIds = new Set(enrolled.map(s => s.id));
   const waitlistIds = new Set(waitlist.map(s => s.id));
   const available = allStudents.filter(s => !enrolledIds.has(s.id) && !waitlistIds.has(s.id))
-    .slice().sort((a, b) => (a.display_name || '').localeCompare(b.display_name || ''));
+    .slice().sort(sortByName);
 
-  // Sort enrolled and waitlist by display_name
-  const sortedEnrolled = [...enrolled].sort((a, b) => (a.display_name || '').localeCompare(b.display_name || ''));
-  const sortedWaitlist = [...waitlist].sort((a, b) => (a.display_name || '').localeCompare(b.display_name || ''));
+  // Sort enrolled and waitlist by last name
+  const sortedEnrolled = [...enrolled].sort(sortByName);
+  const sortedWaitlist = [...waitlist].sort(sortByName);
 
   // Move functions
   const move = (from, setFrom, to, setTo, selected, setSelected) => {

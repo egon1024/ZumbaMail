@@ -5,7 +5,7 @@
 # --- Configuration ---
 # !! Set these variables !!
 
-DB_NAME="zumbamail"
+DB_NAME="alyssatool"
 DB_USER="postgres" # This user MUST have CREATE DATABASE privileges
 PGPASS_FILE="~/.pgpass" # Path to your credential file
 

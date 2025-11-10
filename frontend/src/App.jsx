@@ -32,6 +32,7 @@ import ClassEdit from './class/ClassEdit';
 import AttendanceList from './attendance/AttendanceList';
 import AttendanceDetail from './attendance/AttendanceDetail';
 import CancellationList from './cancellations/CancellationList';
+import GenerateSignInSheet from './attendance/GenerateSignInSheet';
 
 function AppLayout() {
   const location = useLocation();
@@ -170,6 +171,11 @@ function AppLayout() {
           <Route path="/attendance/:id" element={
             <PrivateRoute>
               <AttendanceDetail />
+            </PrivateRoute>
+          } />
+          <Route path="/attendance/signin" element={
+            <PrivateRoute>
+              <GenerateSignInSheet />
             </PrivateRoute>
           } />
           <Route path="/schedules" element={

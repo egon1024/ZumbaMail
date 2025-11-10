@@ -8,4 +8,5 @@ urlpatterns = [
     path('', include('activity.routers.activity')),
     path('', include('activity.routers.attendance')),
     path('', include('activity.routers.cancellations')),
+    path('', include('activity.routers.signin_sheets')),
 ]

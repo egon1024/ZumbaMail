@@ -13,6 +13,15 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 
+import environ
+import os
+
+from pathlib import Path
+from datetime import timedelta
+
+env = environ.Env()
+environ.Env.read_env(os.path.join(os.path.dirname(__file__), '..', '.env'))
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -85,7 +94,7 @@ WSGI_APPLICATION = 'zumba_site.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'zumbamail',
+        'NAME': 'alyssatool',
         'USER': 'zumbamail',
         'PASSWORD': 'rabbit',
         'HOST': '', # Use Unix socket
@@ -141,3 +150,14 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
 }
+
+#
+# Google related
+#
+
+GOOGLE_SERVICE_ACCOUNT_FILE=env('GOOGLE_SERVICE_ACCOUNT_FILE')
+GOOGLE_DRIVE_FOLDER_ID=env('GOOGLE_DRIVE_FOLDER_ID')
+GOOGLE_SHEETS_OWNER_EMAIL=env('GOOGLE_SHEETS_OWNER_EMAIL', default=None)
+
+# Path to OAuth token file (stored in same directory as service account file)
+TOKEN_FILE_PATH = os.path.join(os.path.dirname(GOOGLE_SERVICE_ACCOUNT_FILE), 'token.json')

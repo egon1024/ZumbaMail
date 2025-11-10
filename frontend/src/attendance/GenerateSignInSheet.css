@@ -1,0 +1,30 @@
+/* Style the date input fields */
+input[type="date"] {
+  max-width: 180px;
+}
+
+/* Make the calendar picker icon visible with a dark gray background */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  background-color: #495057;
+  padding: 4px;
+  border-radius: 4px;
+  opacity: 1;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  background-color: #343a40;
+}
+
+/* For Firefox */
+input[type="date"]::-moz-calendar-picker-indicator {
+  cursor: pointer;
+  background-color: #495057;
+  padding: 4px;
+  border-radius: 4px;
+  opacity: 1;
+}
+
+input[type="date"]::-moz-calendar-picker-indicator:hover {
+  background-color: #343a40;
+}
