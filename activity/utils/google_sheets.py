@@ -8,6 +8,7 @@ from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from django.conf import settings
+from django.utils import timezone
 from datetime import datetime, timedelta
 
 
@@ -146,7 +147,7 @@ def find_or_create_sheet_in_folder(file_name, folder_id, new_sheet_title):
         raise
 
 
-def create_signin_sheet(activity, start_date, num_weeks, enrolled_students, waitlist_students):
+def create_signin_sheet(activity, start_date, num_weeks, enrolled_students, waitlist_students, dropin_students=None, attendance_data=None):
     """
     Create a Google Sheets sign-in sheet for an activity
 
@@ -159,15 +160,22 @@ def create_signin_sheet(activity, start_date, num_weeks, enrolled_students, wait
         num_weeks: number of weekly date columns to create
         enrolled_students: list of Student objects (enrolled)
         waitlist_students: list of Student objects (on waitlist)
+        dropin_students: list of Student objects (drop-ins with attendance but not enrolled/waitlisted)
+        attendance_data: dict mapping {student_id: {date_str: status}} for pre-filling attendance
 
     Returns:
         str: URL of the created Google Sheet
     """
+    if attendance_data is None:
+        attendance_data = {}
+    if dropin_students is None:
+        dropin_students = []
     # Spreadsheet title based on activity - include session name
     spreadsheet_title = f"{activity.session.name} - {activity.day_of_week} {activity.type}"
 
     # Worksheet title with timestamp: "Nov 9, 2025 4:25pm" (capitalize first letter)
-    now = datetime.now()
+    # Use timezone-aware datetime in Eastern Time
+    now = timezone.now()
     timestamp = now.strftime('%b %-d, %Y %-I:%M%p').lower()
     worksheet_title = timestamp[0].upper() + timestamp[1:]
 
@@ -178,11 +186,13 @@ def create_signin_sheet(activity, start_date, num_weeks, enrolled_students, wait
         new_sheet_title=worksheet_title
     )
 
-    # Generate date headers
+    # Generate date headers and track dates for attendance lookup
     date_headers = []
+    dates = []
     current_date = start_date
     for _ in range(num_weeks):
         date_headers.append(current_date.strftime('%-m/%-d'))
+        dates.append(current_date.strftime('%Y-%m-%d'))
         current_date += timedelta(days=7)
 
     # Build the header rows
@@ -192,10 +202,22 @@ def create_signin_sheet(activity, start_date, num_weeks, enrolled_students, wait
     # Row 2: Date headers
     header_row = [''] + date_headers
 
-    # Build student rows
+    # Build student rows with attendance marks
     student_rows = []
     for student in enrolled_students:
-        row = [student.display_name] + [''] * len(date_headers)
+        row = [student.display_name]
+        # Check attendance for each date
+        for date_str in dates:
+            cell_value = ''
+            if student.id in attendance_data:
+                if date_str in attendance_data[student.id]:
+                    status = attendance_data[student.id][date_str]
+                    if status == 'expected_absence':
+                        cell_value = 'X'
+                    elif status == 'present':
+                        cell_value = '✓'
+                    # Note: 'unexpected_absence' and 'scheduled' are left blank intentionally
+            row.append(cell_value)
         student_rows.append(row)
 
     # Add waitlist section - always show header even if no waitlist students
@@ -203,9 +225,25 @@ def create_signin_sheet(activity, start_date, num_weeks, enrolled_students, wait
     waitlist_rows.append([''] * (len(date_headers) + 1))  # Blank row
     waitlist_rows.append(['Wait List/Drop Ins:'] + [''] * len(date_headers))
 
-    # Add waitlist students if any
-    for student in waitlist_students:
-        row = [student.display_name] + [''] * len(date_headers)
+    # Combine waitlist and drop-in students, sort alphabetically by last name, first name
+    waitlist_and_dropins = waitlist_students + dropin_students
+    # Already sorted from database queries, but ensure consistent order
+    waitlist_and_dropins.sort(key=lambda s: (s.last_name or '', s.first_name or ''))
+
+    # Add waitlist and drop-in students with attendance marks
+    for student in waitlist_and_dropins:
+        row = [student.display_name]
+        # Check attendance for each date
+        for date_str in dates:
+            cell_value = ''
+            if student.id in attendance_data and date_str in attendance_data[student.id]:
+                status = attendance_data[student.id][date_str]
+                if status == 'expected_absence':
+                    cell_value = 'X'
+                elif status == 'present':
+                    cell_value = '✓'
+                # Note: 'unexpected_absence' and 'scheduled' are left blank intentionally
+            row.append(cell_value)
         waitlist_rows.append(row)
 
     # Add a few blank rows at the end for walk-ins
@@ -218,12 +256,12 @@ def create_signin_sheet(activity, start_date, num_weeks, enrolled_students, wait
     worksheet.update('A1', all_rows)
 
     # Apply formatting
-    _format_signin_sheet(worksheet, len(date_headers), len(enrolled_students), len(waitlist_students))
+    _format_signin_sheet(worksheet, len(date_headers), len(enrolled_students), len(waitlist_and_dropins))
 
     return sheet_url
 
 
-def _format_signin_sheet(worksheet, num_date_columns, num_enrolled, num_waitlist):
+def _format_signin_sheet(worksheet, num_date_columns, num_enrolled, num_waitlist_and_dropins):
     """
     Apply formatting to the sign-in sheet
 
@@ -231,7 +269,7 @@ def _format_signin_sheet(worksheet, num_date_columns, num_enrolled, num_waitlist
         worksheet: gspread worksheet object
         num_date_columns: number of date columns
         num_enrolled: number of enrolled students
-        num_waitlist: number of waitlist students
+        num_waitlist_and_dropins: number of waitlist and drop-in students combined
     """
     # Format title row (row 1)
     worksheet.format('A1', {
@@ -247,6 +285,15 @@ def _format_signin_sheet(worksheet, num_date_columns, num_enrolled, num_waitlist
     worksheet.format(header_range, {
         'textFormat': {'bold': True},
         'horizontalAlignment': 'CENTER'
+    })
+
+    # Center all date column cells (from row 3 to end of data)
+    # Calculate end row: header row + enrolled students + blank row + waitlist header + waitlist/dropin students + blank rows
+    end_row = 2 + num_enrolled + 2 + num_waitlist_and_dropins + 3
+    data_range = f'B3:{chr(65 + num_date_columns)}{end_row}'
+    worksheet.format(data_range, {
+        'horizontalAlignment': 'CENTER',
+        'verticalAlignment': 'MIDDLE'
     })
 
     # Set column widths to "Fit to Data" using auto-resize
@@ -268,8 +315,8 @@ def _format_signin_sheet(worksheet, num_date_columns, num_enrolled, num_waitlist
         print(f"Warning: Could not auto-resize columns: {e}")
 
     # Add borders to the entire grid
-    # Calculate end row: header row + enrolled students + blank row + waitlist header + waitlist students + blank rows
-    end_row = 2 + num_enrolled + 2 + num_waitlist + 3
+    # Calculate end row: header row + enrolled students + blank row + waitlist header + waitlist/dropin students + blank rows
+    end_row = 2 + num_enrolled + 2 + num_waitlist_and_dropins + 3
     grid_range = f'A2:{chr(65 + num_date_columns)}{end_row}'
     worksheet.format(grid_range, {
         'borders': {
