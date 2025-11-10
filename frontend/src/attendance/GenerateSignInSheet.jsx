@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authFetch } from '../utils/authFetch';
 import { formatTime } from '../utils/formatTime';
+import { compareDayTime } from '../utils/DayOfWeek';
 import './GenerateSignInSheet.css';
 
 export default function GenerateSignInSheet() {
@@ -129,6 +130,13 @@ export default function GenerateSignInSheet() {
     acc[key].push(activity);
     return acc;
   }, {});
+
+  // Sort activities within each organization chronologically (by day and time)
+  Object.keys(activitiesByOrg).forEach(orgName => {
+    activitiesByOrg[orgName].sort((a, b) =>
+      compareDayTime(a.day_of_week, a.time, b.day_of_week, b.time)
+    );
+  });
 
   return (
     <div className="container mt-4">

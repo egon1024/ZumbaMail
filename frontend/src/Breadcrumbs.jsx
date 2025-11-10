@@ -103,11 +103,8 @@ function Breadcrumbs() {
   }, [location.pathname]);
 
   return (
-    <nav aria-label="breadcrumb" className="mt-2 mb-3">
+    <nav aria-label="breadcrumb" className="mt-2 mb-3 ms-3">
       <ol className="breadcrumb">
-        <li className="breadcrumb-item">
-          <Link to="/dashboard">Dashboard</Link>
-        </li>
         {pathnames.map((value, idx) => {
           const to = `/${pathnames.slice(0, idx + 1).join('/')}`;
           const isLast = idx === pathnames.length - 1;
