@@ -1,0 +1,28 @@
+.stat-box {
+  padding: 1rem;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive stat boxes for mobile */
+@media (max-width: 768px) {
+  .stat-number {
+    font-size: 2rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+  }
+}
