@@ -135,14 +135,38 @@ const ClassList = () => {
                   {getSortedClasses().map((cls, idx) => {
                     const detailUrl = `/classes/${cls.id}`;
                     const editUrl = `/classes/${cls.id}/edit`;
+                    const enrollmentUrl = `/classes/${cls.id}/enrollment`;
                     return (
                       <tr key={cls.id} className={`class-row${hoveredIdx === idx ? ' hovered' : ''}`} tabIndex={0}>
-                        <td style={{ width: 'fit-content', textAlign: 'center', padding: '0 6px' }}>
+                        <td style={{ width: 'fit-content', textAlign: 'center', padding: '0 10px' }}>
+                          <a
+                            href={enrollmentUrl}
+                            style={{
+                              border: 'none',
+                              background: 'none',
+                              padding: '4px 6px',
+                              marginRight: '8px',
+                              outline: 'none',
+                              boxShadow: 'none',
+                              display: 'inline-block'
+                            }}
+                            tabIndex={0}
+                            title="Manage Enrollment"
+                          >
+                            <i className="bi bi-person-plus-fill" style={{ fontSize: '1.2em', color: '#0d6efd', verticalAlign: 'middle' }}></i>
+                          </a>
                           <a
                             href={editUrl}
-                            style={{ border: 'none', background: 'none', padding: 0, outline: 'none', boxShadow: 'none' }}
+                            style={{
+                              border: 'none',
+                              background: 'none',
+                              padding: '4px 6px',
+                              outline: 'none',
+                              boxShadow: 'none',
+                              display: 'inline-block'
+                            }}
                             tabIndex={0}
-                            title="Edit"
+                            title="Edit Class"
                           >
                             <i className="bi bi-pencil-square" style={{ fontSize: '1.2em', color: '#6a359c', verticalAlign: 'middle' }}></i>
                           </a>
