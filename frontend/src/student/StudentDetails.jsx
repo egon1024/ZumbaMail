@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Tooltip from "../utils/Tooltip";
 import DayOfWeek from "../utils/DayOfWeek";
 import PhoneDisplay from "../utils/phone/PhoneDisplay";
-import { formatDate } from "../utils/formatDate";
 import { authFetch } from "../utils/authFetch";
 import "./StudentsList.css";
 
@@ -171,34 +170,74 @@ function StudentDetails() {
             {currentClasses.length === 0 ? (
               <div className="text-muted">No current classes.</div>
             ) : (
-              <table className="table table-sm mb-0">
-                <thead>
-                  <tr>
-                    <th>Type</th>
-                    <th>Day</th>
-                    <th>Time</th>
-                    <th>Location</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentClasses.map(cls => (
-                    <Tooltip tooltip={`View class: ${cls.type}`} key={cls.id}>
+              <>
+                <div className="mb-2 small">
+                  <strong>Legend:</strong>{' '}
+                  <span className="text-success">Attended</span>
+                  <span className="mx-1">/</span>
+                  <span className="text-danger">Unexpected</span>
+                  <span className="mx-1">/</span>
+                  <span className="text-secondary">Expected</span>
+                </div>
+                <table className="table table-sm mb-0">
+                  <thead>
+                    <tr>
+                      <th>Session</th>
+                      <th>Type</th>
+                      <th>Day</th>
+                      <th>Time</th>
+                      <th>Location</th>
+                      <th>Attendance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentClasses.map(cls => (
                       <tr
+                        key={cls.id}
                         className="clickable-row"
                         tabIndex={0}
                         style={{ cursor: 'pointer' }}
                         onClick={() => navigate(`/classes/${cls.id}`)}
                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate(`/classes/${cls.id}`); }}
                       >
-                        <td><span className="reactive-link-text">{cls.type}</span></td>
+                        <td onClick={(e) => e.stopPropagation()} className="session-cell">
+                          <Tooltip tooltip={`View session: ${cls.session_name}`}>
+                            <span
+                              className="session-link"
+                              onClick={() => navigate(`/sessions/${cls.session}`)}
+                              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate(`/sessions/${cls.session}`); }}
+                              tabIndex={0}
+                            >
+                              {cls.session_name}
+                            </span>
+                          </Tooltip>
+                        </td>
+                        <td>
+                          <Tooltip tooltip={`View class: ${cls.type}`}>
+                            <span className="reactive-link-text">{cls.type}</span>
+                          </Tooltip>
+                        </td>
                         <td><DayOfWeek activeDay={cls.day_of_week} /></td>
                         <td>{cls.time}</td>
                         <td>{cls.location}</td>
+                        <td>
+                          {cls.attendance_stats ? (
+                            <>
+                              <span className="text-success">{cls.attendance_stats.present}</span>
+                              <span>/</span>
+                              <span className="text-danger">{cls.attendance_stats.unexpected_absent}</span>
+                              <span>/</span>
+                              <span className="text-secondary">{cls.attendance_stats.expected_absent}</span>
+                            </>
+                          ) : (
+                            <span className="text-muted">—</span>
+                          )}
+                        </td>
                       </tr>
-                    </Tooltip>
-                  ))}
-                </tbody>
-              </table>
+                    ))}
+                  </tbody>
+                </table>
+              </>
             )}
           </div>
         </div>
@@ -214,34 +253,74 @@ function StudentDetails() {
             {waitlistClasses.length === 0 ? (
               <div className="text-muted">No waitlist classes.</div>
             ) : (
-              <table className="table table-sm mb-0">
-                <thead>
-                  <tr>
-                    <th>Type</th>
-                    <th>Day</th>
-                    <th>Time</th>
-                    <th>Location</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {waitlistClasses.map(cls => (
-                    <Tooltip tooltip={`View class: ${cls.type}`} key={cls.id}>
+              <>
+                <div className="mb-2 small">
+                  <strong>Legend:</strong>{' '}
+                  <span className="text-success">Attended</span>
+                  <span className="mx-1">/</span>
+                  <span className="text-danger">Unexpected</span>
+                  <span className="mx-1">/</span>
+                  <span className="text-secondary">Expected</span>
+                </div>
+                <table className="table table-sm mb-0">
+                  <thead>
+                    <tr>
+                      <th>Session</th>
+                      <th>Type</th>
+                      <th>Day</th>
+                      <th>Time</th>
+                      <th>Location</th>
+                      <th>Attendance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {waitlistClasses.map(cls => (
                       <tr
+                        key={cls.id}
                         className="clickable-row"
                         tabIndex={0}
                         style={{ cursor: 'pointer' }}
                         onClick={() => navigate(`/classes/${cls.id}`)}
                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate(`/classes/${cls.id}`); }}
                       >
-                        <td><span className="reactive-link-text">{cls.type}</span></td>
+                        <td onClick={(e) => e.stopPropagation()} className="session-cell">
+                          <Tooltip tooltip={`View session: ${cls.session_name}`}>
+                            <span
+                              className="session-link"
+                              onClick={() => navigate(`/sessions/${cls.session}`)}
+                              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate(`/sessions/${cls.session}`); }}
+                              tabIndex={0}
+                            >
+                              {cls.session_name}
+                            </span>
+                          </Tooltip>
+                        </td>
+                        <td>
+                          <Tooltip tooltip={`View class: ${cls.type}`}>
+                            <span className="reactive-link-text">{cls.type}</span>
+                          </Tooltip>
+                        </td>
                         <td><DayOfWeek activeDay={cls.day_of_week} /></td>
                         <td>{cls.time}</td>
                         <td>{cls.location}</td>
+                        <td>
+                          {cls.attendance_stats ? (
+                            <>
+                              <span className="text-success">{cls.attendance_stats.present}</span>
+                              <span>/</span>
+                              <span className="text-danger">{cls.attendance_stats.unexpected_absent}</span>
+                              <span>/</span>
+                              <span className="text-secondary">{cls.attendance_stats.expected_absent}</span>
+                            </>
+                          ) : (
+                            <span className="text-muted">—</span>
+                          )}
+                        </td>
                       </tr>
-                    </Tooltip>
-                  ))}
-                </tbody>
-              </table>
+                    ))}
+                  </tbody>
+                </table>
+              </>
             )}
           </div>
         </div>

@@ -20,3 +20,9 @@ from .cancellations import (
 	CancellationDeleteView,
 	CancellationForDateView,
 )
+from .reports import (
+	WeeklyReportView,
+	ResidencyReportView,
+	EndOfSessionReportView,
+	CumulativeReportView,
+)

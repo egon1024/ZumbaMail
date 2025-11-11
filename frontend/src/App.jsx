@@ -33,6 +33,10 @@ import AttendanceList from './attendance/AttendanceList';
 import AttendanceDetail from './attendance/AttendanceDetail';
 import CancellationList from './cancellations/CancellationList';
 import GenerateSignInSheet from './attendance/GenerateSignInSheet';
+import WeeklyReport from './reports/WeeklyReport';
+import CumulativeReport from './reports/CumulativeReport';
+import EndOfSessionReport from './reports/EndOfSessionReport';
+import ResidencyReport from './reports/ResidencyReport';
 
 function AppLayout() {
   const location = useLocation();
@@ -181,6 +185,26 @@ function AppLayout() {
           <Route path="/schedules" element={
             <PrivateRoute>
               <CancellationList />
+            </PrivateRoute>
+          } />
+          <Route path="/reports/weekly" element={
+            <PrivateRoute>
+              <WeeklyReport />
+            </PrivateRoute>
+          } />
+          <Route path="/reports/cumulative" element={
+            <PrivateRoute>
+              <CumulativeReport />
+            </PrivateRoute>
+          } />
+          <Route path="/reports/end-of-session" element={
+            <PrivateRoute>
+              <EndOfSessionReport />
+            </PrivateRoute>
+          } />
+          <Route path="/reports/residency" element={
+            <PrivateRoute>
+              <ResidencyReport />
             </PrivateRoute>
           } />
       </Routes>
