@@ -54,17 +54,21 @@ class MeetingGetOrCreateView(APIView):
             {
                 'id': e.student.id,
                 'display_name': e.student.display_name,
+                'first_name': e.student.first_name,
+                'last_name': e.student.last_name,
                 'email': e.student.email,
             }
-            for e in enrolled_students
+            for e in sorted(enrolled_students, key=lambda e: (e.student.last_name or '', e.student.first_name or ''))
         ]
         response_data['waitlist_students'] = [
             {
                 'id': e.student.id,
                 'display_name': e.student.display_name,
+                'first_name': e.student.first_name,
+                'last_name': e.student.last_name,
                 'email': e.student.email,
             }
-            for e in waitlist_students
+            for e in sorted(waitlist_students, key=lambda e: (e.student.last_name or '', e.student.first_name or ''))
         ]
 
         return Response(response_data)
