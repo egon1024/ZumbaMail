@@ -80,19 +80,19 @@ function Dashboard() {
         </div>
         <div className="card-body">
           <div className="d-flex flex-wrap gap-2">
-            <a href="/attendance" className="btn btn-primary">
+            <a href="/attendance" className="btn btn-outline-primary dashboard-action-btn">
               <i className="bi bi-check2-square me-2"></i>
               Take Attendance
             </a>
-            <a href="/students/new" className="btn btn-success">
+            <a href="/students/new" className="btn btn-outline-success dashboard-action-btn">
               <i className="bi bi-person-plus me-2"></i>
               Add New Student
             </a>
-            <a href="/classes/new" className="btn btn-info text-white">
+            <a href="/classes/new" className="btn btn-outline-info dashboard-action-btn">
               <i className="bi bi-calendar-plus me-2"></i>
               Create New Class
             </a>
-            <a href="/attendance/generate-signin-sheet" className="btn btn-warning text-white">
+            <a href="/attendance/generate-signin-sheet" className="btn btn-outline-warning dashboard-action-btn">
               <i className="bi bi-file-earmark-spreadsheet me-2"></i>
               Generate Sign-In Sheet
             </a>
@@ -146,46 +146,68 @@ function Dashboard() {
             <p className="text-muted mb-0">No classes scheduled for today.</p>
           ) : (
             <div className="table-responsive">
-              <table className="table table-sm table-hover mb-0">
+              <table className="table table-sm mb-0">
                 <thead>
                   <tr>
+                    <th></th>
                     <th>Type</th>
                     <th>Time</th>
                     <th>Location</th>
                     <th>Organization</th>
                     <th className="text-center">Enrolled</th>
                     <th className="text-center">Waitlist</th>
-                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {upcomingClasses.map(cls => (
-                    <tr key={cls.id}>
-                      <td>{cls.type}</td>
-                      <td>{formatTime(cls.time)}</td>
-                      <td>{cls.location}</td>
-                      <td>{cls.organization_name}</td>
-                      <td className="text-center">
-                        <span className={cls.students_count > 0 ? 'text-success fw-bold' : 'text-muted'}>
-                          {cls.students_count}
-                        </span>
-                      </td>
-                      <td className="text-center">
-                        <span className={cls.waitlist_count > 0 ? 'text-warning fw-bold' : 'text-muted'}>
-                          {cls.waitlist_count}
-                        </span>
-                      </td>
-                      <td className="text-end">
-                        <a
-                          href={`/classes/${cls.id}`}
-                          className="btn btn-sm btn-outline-primary"
-                          title="View Details"
-                        >
-                          <i className="bi bi-eye"></i>
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
+                  {upcomingClasses.map(cls => {
+                    const today = new Date();
+                    const dateStr = today.toISOString().split('T')[0];
+                    const attendanceUrl = `/attendance?activity_id=${cls.id}&date=${dateStr}`;
+
+                    return (
+                      <tr key={cls.id} className="class-row">
+                        <td className="attendance-icon-cell">
+                          <a
+                            href={attendanceUrl}
+                            className="attendance-link"
+                            title="Take Attendance"
+                          >
+                            <i className="bi bi-check2-square"></i>
+                          </a>
+                        </td>
+                        <td className="clickable-cell class-detail-group">
+                          <a href={`/classes/${cls.id}`} className="class-details-link">
+                            {cls.type}
+                          </a>
+                        </td>
+                        <td className="clickable-cell class-detail-group">
+                          <a href={`/classes/${cls.id}`} className="class-details-link">
+                            {formatTime(cls.time)}
+                          </a>
+                        </td>
+                        <td className="clickable-cell class-detail-group">
+                          <a href={`/classes/${cls.id}`} className="class-details-link">
+                            {cls.location}
+                          </a>
+                        </td>
+                        <td className="clickable-cell org-cell">
+                          <a href={`/organization/${cls.organization}`} className="org-details-link">
+                            {cls.organization_name}
+                          </a>
+                        </td>
+                        <td className="text-center">
+                          <span className={cls.students_count > 0 ? 'text-success fw-bold' : 'text-muted'}>
+                            {cls.students_count}
+                          </span>
+                        </td>
+                        <td className="text-center">
+                          <span className={cls.waitlist_count > 0 ? 'text-warning fw-bold' : 'text-muted'}>
+                            {cls.waitlist_count}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

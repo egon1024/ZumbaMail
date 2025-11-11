@@ -42,9 +42,6 @@ function Navbar() {
                 Communication
               </a>
               <ul className="dropdown-menu" aria-labelledby="commDropdown">
-                <li><NavLink className="dropdown-item" to="/communication/email-all" onClick={handleNavClick}>Email All Participants</NavLink></li>
-                <li><NavLink className="dropdown-item" to="/communication/email-waitlist" onClick={handleNavClick}>Email Waitlist</NavLink></li>
-                <li><NavLink className="dropdown-item" to="/communication/email-student" onClick={handleNavClick}>Email Individual Student</NavLink></li>
               </ul>
             </li>
             <li className="nav-item dropdown">
@@ -52,18 +49,6 @@ function Navbar() {
                 Reports
               </a>
               <ul className="dropdown-menu" aria-labelledby="reportsDropdown">
-                <li><NavLink className="dropdown-item" to="/reports/signin" onClick={handleNavClick}>Sign-In Sheets</NavLink></li>
-                <li><NavLink className="dropdown-item" to="/reports/attendance" onClick={handleNavClick}>Attendance Reports</NavLink></li>
-                <li><NavLink className="dropdown-item" to="/reports/classes" onClick={handleNavClick}>Class Reports</NavLink></li>
-                <li><NavLink className="dropdown-item" to="/reports/students" onClick={handleNavClick}>Student Reports</NavLink></li>
-              </ul>
-            </li>
-            <li className="nav-item dropdown">
-              <a className="nav-link dropdown-toggle" href="#" id="studentDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Students
-              </a>
-              <ul className="dropdown-menu" aria-labelledby="studentDropdown">
-                <li><NavLink className="dropdown-item" to="/students" onClick={handleNavClick}>Student List</NavLink></li>
               </ul>
             </li>
             <li className="nav-item dropdown">
@@ -81,8 +66,9 @@ function Navbar() {
                 People
               </a>
               <ul className="dropdown-menu" aria-labelledby="peopleDropdown">
-                <li><NavLink className="dropdown-item" to="/organization" onClick={handleNavClick}>Organizations</NavLink></li>
+                <li><NavLink className="dropdown-item" to="/students" onClick={handleNavClick}>Students</NavLink></li>
                 <li><NavLink className="dropdown-item" to="/contacts" onClick={handleNavClick}>Contacts</NavLink></li>
+                <li><NavLink className="dropdown-item" to="/organization" onClick={handleNavClick}>Organizations</NavLink></li>
               </ul>
             </li>
           </ul>
