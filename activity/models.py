@@ -144,7 +144,7 @@ class Student(models.Model):
 	"""
 	first_name = models.CharField(max_length=50)
 	last_name = models.CharField(max_length=50)
-	email = models.EmailField()
+	email = models.EmailField(blank=True, null=True)
 	phone = models.CharField(max_length=20, blank=True, null=True)
 	facebook_profile = models.URLField("Facebook profile URL", blank=True, null=True)
 	emergency_contact_name = models.CharField(max_length=100, blank=True, null=True)

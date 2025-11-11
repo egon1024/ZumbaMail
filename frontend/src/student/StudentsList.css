@@ -1,23 +1,119 @@
+/* Card body with proper overflow handling */
+.students-card-body-scrollable {
+  max-height: calc(100vh - 280px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Table wrapper with fixed header */
+.students-table-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Fixed header table */
+.students-table-wrapper .table-header-fixed {
+  width: 100%;
+  margin-bottom: 0;
+  table-layout: fixed;
+}
+
+/* Scrollable body wrapper */
+.students-table-body-wrapper {
+  overflow-y: auto;
+  overflow-x: auto;
+  flex: 1;
+}
+
+/* Body table */
+.students-table-wrapper .table-body-scrollable {
+  width: 100%;
+  margin-bottom: 0;
+  table-layout: fixed;
+}
+
+/* Remove all borders */
+.students-table-wrapper table,
+.students-table-wrapper th,
+.students-table-wrapper td {
+  border: none;
+}
+
+/* Header styling */
+.students-table-wrapper thead th {
+  background-color: white;
+  border-bottom: 2px solid #dee2e6;
+  font-weight: 600;
+  padding: 0.5rem;
+}
+
+.students-table-wrapper td {
+  padding: 0.5rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+/* Specific column widths - must match between header and body */
+.students-table-wrapper col:nth-child(1) {
+  width: 50px;
+}
+
+.students-table-wrapper col:nth-child(2) {
+  width: 200px;
+}
+
+/* Status column when visible (3rd column) */
+.students-table-wrapper col.status-col {
+  width: 80px;
+}
+
+/* Rochester column - 3rd when no status, 4th when status shown */
+.students-table-wrapper col.rochester-col {
+  width: 100px;
+}
+
+/* Email and Phone columns */
+.students-table-wrapper col.email-col {
+  width: auto;
+}
+
+.students-table-wrapper col.phone-col {
+  width: 180px;
+}
+
+/* Text alignment */
+.students-table-wrapper .rochester-column {
+  text-align: center;
+}
+
+.students-table-wrapper .status-column {
+  text-align: center;
+}
+
 .table-responsive tbody td {
   white-space: nowrap;
 }
+
+/* Student row styling - no hover effect on row itself */
 .reactive-student-row td {
   color: #222;
-  transition: color 0.2s;
 }
-.reactive-student-row:hover td {
-  color: #2456a5;
-}
+
+/* Name link hover */
 .reactive-student-link {
   color: inherit;
   text-decoration: none;
   font-weight: 600;
+  transition: color 0.2s;
 }
 .reactive-student-link:hover {
   color: #2456a5;
   text-decoration: none;
 }
 
+/* Email and Phone link hover */
 .reactive-student-contact-link {
   color: inherit;
   text-decoration: none;

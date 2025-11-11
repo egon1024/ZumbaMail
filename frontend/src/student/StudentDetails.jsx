@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Tooltip from "../utils/Tooltip";
 import DayOfWeek from "../utils/DayOfWeek";
+import PhoneDisplay from "../utils/phone/PhoneDisplay";
 import { formatDate } from "../utils/formatDate";
 import { authFetch } from "../utils/authFetch";
 import "./StudentsList.css";
@@ -41,27 +42,27 @@ function StudentDetails() {
 
   return (
     <div className="container mt-4">
-      {/* Toggle closed classes button */}
-      <div className="mb-3 text-end">
-        <button
-          className="btn btn-outline-primary"
-          onClick={() => setShowClosed(v => !v)}
-        >
-          {showClosed ? "Hide Closed Classes" : "Show Closed Classes"}
-        </button>
-      </div>
       {/* Student Details Card */}
       <section className="mb-4">
         <div className="card shadow-sm border-primary mb-4">
           <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center">
             <h4 className="mb-0">Student Details</h4>
-            <button
-              className="btn btn-sm btn-outline-light"
-              onClick={() => navigate(`/students/${id}/edit`)}
-              title="Edit Student"
-            >
-              <i className="bi bi-pencil-square"></i> Edit
-            </button>
+            <div className="d-flex gap-2">
+              <button
+                className="btn btn-sm btn-success"
+                onClick={() => navigate('/students/new')}
+                title="Create New Student"
+              >
+                <i className="bi bi-plus-lg"></i> New Student
+              </button>
+              <button
+                className="btn btn-sm btn-outline-light"
+                onClick={() => navigate(`/students/${id}/edit`)}
+                title="Edit Student"
+              >
+                <i className="bi bi-pencil-square"></i> Edit
+              </button>
+            </div>
           </div>
           <div className="card-body">
             <table className="table table-sm mb-0">
@@ -95,35 +96,32 @@ function StudentDetails() {
                     ) : <span className="text-muted">—</span>}
                   </td>
                 </tr>
-                <tr
-                  className={student.email ? "reactive-student-row clickable-row" : "reactive-student-row"}
-                  style={student.email ? { cursor: "pointer" } : undefined}
-                  tabIndex={student.email ? 0 : undefined}
-                  onClick={student.email ? () => window.location.href = `mailto:${student.email}` : undefined}
-                  onKeyDown={student.email ? (e) => { if (e.key === "Enter" || e.key === " ") window.location.href = `mailto:${student.email}`; } : undefined}
-                >
+                <tr>
                   <th>Email</th>
                   <td>
                     {student.email ? (
                       <Tooltip tooltip={`Email ${student.first_name} ${student.last_name}`}>
-                        <span className="reactive-student-contact-link">{student.email}</span>
+                        <a
+                          href={`mailto:${student.email}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="reactive-student-contact-link"
+                        >
+                          {student.email}
+                        </a>
                       </Tooltip>
                     ) : <span className="text-muted">—</span>}
                   </td>
                 </tr>
-                <tr
-                  className={student.phone ? "reactive-student-row clickable-row" : "reactive-student-row"}
-                  style={student.phone ? { cursor: "pointer" } : undefined}
-                  tabIndex={student.phone ? 0 : undefined}
-                  onClick={student.phone ? () => window.location.href = `tel:${student.phone}` : undefined}
-                  onKeyDown={student.phone ? (e) => { if (e.key === "Enter" || e.key === " ") window.location.href = `tel:${student.phone}`; } : undefined}
-                >
+                <tr>
                   <th>Phone</th>
                   <td>
                     {student.phone ? (
-                      <Tooltip tooltip={`Call ${student.first_name} ${student.last_name}`}>
-                        <span className="reactive-student-contact-link">{student.phone}</span>
-                      </Tooltip>
+                      <PhoneDisplay
+                        value={student.phone}
+                        className="reactive-student-contact-link"
+                        tooltip={`Call ${student.first_name} ${student.last_name}`}
+                      />
                     ) : <span className="text-muted">—</span>}
                   </td>
                 </tr>
@@ -131,19 +129,15 @@ function StudentDetails() {
                   <th>Emergency Contact Name</th>
                   <td>{student.emergency_contact_name ? student.emergency_contact_name : <span className="text-muted">—</span>}</td>
                 </tr>
-                <tr
-                  className={student.emergency_contact_phone ? "reactive-student-row clickable-row" : "reactive-student-row"}
-                  style={student.emergency_contact_phone ? { cursor: "pointer" } : undefined}
-                  tabIndex={student.emergency_contact_phone ? 0 : undefined}
-                  onClick={student.emergency_contact_phone ? () => window.location.href = `tel:${student.emergency_contact_phone}` : undefined}
-                  onKeyDown={student.emergency_contact_phone ? (e) => { if (e.key === "Enter" || e.key === " ") window.location.href = `tel:${student.emergency_contact_phone}`; } : undefined}
-                >
+                <tr>
                   <th>Emergency Contact Phone</th>
                   <td>
                     {student.emergency_contact_phone ? (
-                      <Tooltip tooltip={`Call Emergency Contact`}>
-                        <span className="reactive-student-contact-link">{student.emergency_contact_phone}</span>
-                      </Tooltip>
+                      <PhoneDisplay
+                        value={student.emergency_contact_phone}
+                        className="reactive-student-contact-link"
+                        tooltip={`Call Emergency Contact`}
+                      />
                     ) : <span className="text-muted">—</span>}
                   </td>
                 </tr>
@@ -157,11 +151,21 @@ function StudentDetails() {
         </div>
       </section>
 
-      {/* Current Classes Card */}
+      {/* Toggle closed classes button */}
+      <div className="mb-3 text-end">
+        <button
+          className="btn btn-outline-primary"
+          onClick={() => setShowClosed(v => !v)}
+        >
+          {showClosed ? "Hide Closed Classes" : "Show Closed Classes"}
+        </button>
+      </div>
+
+      {/* Enrolled Classes Card */}
       <section className="mb-4">
         <div className="card shadow-sm border-primary mb-4">
           <div className="card-header bg-dark text-white">
-            <h4 className="mb-0">Current Classes</h4>
+            <h4 className="mb-0">Enrolled Classes</h4>
           </div>
           <div className="card-body">
             {currentClasses.length === 0 ? (
