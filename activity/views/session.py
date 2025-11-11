@@ -56,6 +56,15 @@ from rest_framework.response import Response
 class SessionListView(ListAPIView):
     queryset = Session.objects.select_related('organization').all()
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Filter by organization if provided
+        organization_id = self.request.query_params.get('organization')
+        if organization_id:
+            queryset = queryset.filter(organization_id=organization_id)
+        return queryset
+
     def get_serializer_class(self):
         class SessionSerializer(serializers.ModelSerializer):
             organization_name = serializers.CharField(source='organization.name', read_only=True)
