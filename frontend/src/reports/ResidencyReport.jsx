@@ -131,7 +131,8 @@ function ResidencyReport() {
     if (!reportData) return '';
 
     const lines = [];
-    lines.push(`${reportData.session_name} - ${reportData.organization_name}`);
+    const dateRange = `${formatDate(reportData.session_start_date)} - ${formatDate(reportData.session_end_date)}`;
+    lines.push(`${reportData.organization_name} - ${reportData.session_name} (${dateRange})`);
     lines.push('');
 
     if (reportData.activities.length === 0) {
@@ -258,7 +259,9 @@ function ResidencyReport() {
       {reportData && (
         <div className="card shadow-sm border-primary mb-4">
           <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-            <h5 className="mb-0">{reportData.session_name} - {reportData.organization_name}</h5>
+            <h5 className="mb-0">
+              {reportData.organization_name} - {reportData.session_name} ({formatDate(reportData.session_start_date)} - {formatDate(reportData.session_end_date)})
+            </h5>
             <button
               className="btn btn-sm btn-outline-light"
               onClick={copyToClipboard}

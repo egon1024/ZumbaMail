@@ -193,6 +193,8 @@ class ResidencyReportView(APIView):
         return Response({
             'organization_name': organization.name,
             'session_name': session.name,
+            'session_start_date': session.start_date,
+            'session_end_date': session.end_date,
             'activities': report_data
         })
 
@@ -272,5 +274,7 @@ class EndOfSessionReportView(APIView):
         return Response({
             'organization_name': organization.name,
             'session_name': session.name,
+            'session_start_date': session.start_date,
+            'session_end_date': session.end_date,
             'activities': report_data
         })
