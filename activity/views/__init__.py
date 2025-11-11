@@ -24,4 +24,5 @@ from .reports import (
 	WeeklyReportView,
 	ResidencyReportView,
 	EndOfSessionReportView,
+	CumulativeReportView,
 )
