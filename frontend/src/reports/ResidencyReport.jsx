@@ -32,8 +32,15 @@ function ResidencyReport() {
     if (!selectedOrgId) {
       setSessions([]);
       setSelectedSessionId('');
+      setReportData(null);
+      setError(null);
       return;
     }
+
+    // Clear selected session when organization changes
+    setSelectedSessionId('');
+    setReportData(null);
+    setError(null);
 
     async function fetchSessions() {
       try {
@@ -41,8 +48,6 @@ function ResidencyReport() {
         if (!response.ok) throw new Error('Failed to fetch sessions');
         const data = await response.json();
         setSessions(data);
-        // Clear selected session when organization changes
-        setSelectedSessionId('');
       } catch (err) {
         setError('Failed to load sessions');
       }
@@ -54,8 +59,11 @@ function ResidencyReport() {
   useEffect(() => {
     if (!selectedOrgId || !selectedSessionId) {
       setReportData(null);
+      setError(null);
       return;
     }
+
+    let isCancelled = false;
 
     const generateReport = async () => {
       setLoading(true);
@@ -66,6 +74,8 @@ function ResidencyReport() {
           `/api/reports/residency/?organization_id=${selectedOrgId}&session_id=${selectedSessionId}`
         );
 
+        if (isCancelled) return;
+
         if (!response.ok) {
           // Try to get error message from response
           const errorData = await response.json().catch(() => ({}));
@@ -74,16 +84,26 @@ function ResidencyReport() {
         }
 
         const data = await response.json();
-        setReportData(data);
+        if (!isCancelled) {
+          setReportData(data);
+        }
       } catch (err) {
-        setError(err.message || 'Failed to generate report. Please try again.');
-        setReportData(null);
+        if (!isCancelled) {
+          setError(err.message || 'Failed to generate report. Please try again.');
+          setReportData(null);
+        }
       } finally {
-        setLoading(false);
+        if (!isCancelled) {
+          setLoading(false);
+        }
       }
     };
 
     generateReport();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [selectedOrgId, selectedSessionId]);
 
   // Filter and sort sessions

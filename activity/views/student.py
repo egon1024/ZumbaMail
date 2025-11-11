@@ -28,6 +28,13 @@ class StudentDetailView(RetrieveUpdateAPIView):
     serializer_class = StudentDetailSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # Check if include_closed parameter is in query params
+        include_closed = self.request.query_params.get('include_closed', 'false').lower() == 'true'
+        context['include_closed'] = include_closed
+        return context
+
 class StudentCreateView(CreateAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentDetailSerializer

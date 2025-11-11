@@ -4,9 +4,35 @@ from .models import Student, Activity, Enrollment, Meeting, AttendanceRecord, Cl
 
 
 class ActivitySerializer(serializers.ModelSerializer):
+    attendance_stats = serializers.SerializerMethodField()
+    session_name = serializers.CharField(source='session.name', read_only=True)
+
     class Meta:
         model = Activity
-        fields = ['id', 'type', 'session', 'day_of_week', 'time', 'location', 'closed']
+        fields = ['id', 'type', 'session', 'session_name', 'day_of_week', 'time', 'location', 'closed', 'attendance_stats']
+
+    def get_attendance_stats(self, obj):
+        # Get student_id from context if available (for student detail view)
+        student_id = self.context.get('student_id')
+        if not student_id:
+            return None
+
+        # Count attendance records for this student in this activity
+        meetings = Meeting.objects.filter(activity=obj)
+        attendance_records = AttendanceRecord.objects.filter(
+            meeting__in=meetings,
+            student_id=student_id
+        )
+
+        present_count = attendance_records.filter(status='present').count()
+        unexpected_absent_count = attendance_records.filter(status='unexpected_absence').count()
+        expected_absent_count = attendance_records.filter(status='expected_absence').count()
+
+        return {
+            'present': present_count,
+            'unexpected_absent': unexpected_absent_count,
+            'expected_absent': expected_absent_count
+        }
 
 class StudentDetailSerializer(serializers.ModelSerializer):
 
@@ -26,13 +52,15 @@ class StudentDetailSerializer(serializers.ModelSerializer):
         include_closed = self.context.get('include_closed', False)
         enrollments = obj.enrollments.filter(status='active')
         activities = [e.activity for e in enrollments if include_closed or not e.activity.closed]
-        return ActivitySerializer(activities, many=True).data
+        # Pass student_id in context for attendance stats
+        return ActivitySerializer(activities, many=True, context={'student_id': obj.id}).data
 
     def get_waitlist_classes(self, obj):
         include_closed = self.context.get('include_closed', False)
         enrollments = obj.enrollments.filter(status='waiting')
         activities = [e.activity for e in enrollments if include_closed or not e.activity.closed]
-        return ActivitySerializer(activities, many=True).data
+        # Pass student_id in context for attendance stats
+        return ActivitySerializer(activities, many=True, context={'student_id': obj.id}).data
 
 class ContactSerializer(serializers.ModelSerializer):
     organization_name = serializers.CharField(source='organization.name', read_only=True)

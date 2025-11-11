@@ -123,3 +123,20 @@
   color: #2456a5;
   text-decoration: none;
 }
+
+/* Session link - independent hover behavior */
+.session-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.session-link:hover {
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+/* Prevent row hover effect when hovering over session cell */
+.clickable-row:has(.session-cell:hover) .reactive-link-text {
+  color: inherit !important;
+}
