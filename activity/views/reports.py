@@ -195,3 +195,82 @@ class ResidencyReportView(APIView):
             'session_name': session.name,
             'activities': report_data
         })
+
+
+class EndOfSessionReportView(APIView):
+    """
+    Generate end of session report for a specific session.
+    Shows attendance count for each date for each class in the session.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        # Get query parameters
+        organization_id = request.query_params.get('organization_id')
+        session_id = request.query_params.get('session_id')
+
+        if not organization_id or not session_id:
+            return Response(
+                {"error": "organization_id and session_id are required"},
+                status=400
+            )
+
+        try:
+            organization = Organization.objects.get(pk=organization_id)
+        except Organization.DoesNotExist:
+            return Response(
+                {"error": "Organization not found"},
+                status=404
+            )
+
+        from activity.models import Session
+        try:
+            # Get session and verify it belongs to the organization in one query
+            session = Session.objects.get(pk=session_id, organization=organization)
+        except Session.DoesNotExist:
+            return Response(
+                {"error": f"Session not found or does not belong to organization '{organization.name}'"},
+                status=404
+            )
+
+        # Get all activities for this session
+        activities = Activity.objects.filter(
+            session=session
+        ).select_related('session').order_by('day_of_week', 'time')
+
+        # Build report data
+        report_data = []
+
+        for activity in activities:
+            # Get all meetings for this activity, ordered by date
+            meetings = Meeting.objects.filter(
+                activity=activity
+            ).prefetch_related('attendance_records').order_by('date')
+
+            # Build list of date/count pairs
+            date_counts = []
+            for meeting in meetings:
+                # Count present students for this meeting
+                present_count = meeting.attendance_records.filter(status='present').count()
+                date_counts.append({
+                    'date': meeting.date,
+                    'count': present_count
+                })
+
+            report_data.append({
+                'day_of_week': activity.day_of_week,
+                'class_type': activity.get_type_display(),
+                'location': activity.location,
+                'time': activity.time.strftime('%H:%M'),
+                'date_counts': date_counts
+            })
+
+        # Sort by day of week, then time
+        day_order = {'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 'Thursday': 4, 'Friday': 5, 'Saturday': 6, 'Sunday': 7}
+        report_data.sort(key=lambda x: (day_order.get(x['day_of_week'], 8), x['time']))
+
+        return Response({
+            'organization_name': organization.name,
+            'session_name': session.name,
+            'activities': report_data
+        })

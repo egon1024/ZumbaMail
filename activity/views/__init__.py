@@ -23,4 +23,5 @@ from .cancellations import (
 from .reports import (
 	WeeklyReportView,
 	ResidencyReportView,
+	EndOfSessionReportView,
 )
