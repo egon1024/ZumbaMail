@@ -10,6 +10,7 @@ function StudentsList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showInactive, setShowInactive] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     async function fetchStudents() {
@@ -33,9 +34,34 @@ function StudentsList() {
     fetchStudents();
   }, [showInactive]);
 
+  // Filter students based on search query
+  const filteredStudents = students.filter(student => {
+    if (!searchQuery.trim()) return true;
+
+    const query = searchQuery.toLowerCase();
+    const firstName = (student.first_name || '').toLowerCase();
+    const lastName = (student.last_name || '').toLowerCase();
+    const fullName = `${firstName} ${lastName}`;
+    const email = (student.email || '').toLowerCase();
+
+    return firstName.includes(query) ||
+           lastName.includes(query) ||
+           fullName.includes(query) ||
+           email.includes(query);
+  });
+
   return (
     <div className="container mt-4">
-      <div className="mb-3 text-end">
+      <div className="mb-3 d-flex justify-content-between align-items-center">
+        <div className="flex-grow-1 me-3">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search students by name or email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
         <button
           className="btn btn-outline-primary"
           onClick={() => setShowInactive(v => !v)}
@@ -56,126 +82,149 @@ function StudentsList() {
             </button>
           </div>
         </div>
-        <div className="card-body">
+        <div className="card-body students-card-body-scrollable">
           {error && (
             <div className="alert alert-danger" role="alert">
               {error}
             </div>
           )}
           {!error && (
-            <div className="table-responsive">
-              <table className="table table-sm mb-0">
+            <div className="students-table-wrapper">
+              {/* Fixed Header Table */}
+              <table className="table table-sm table-header-fixed">
+                <colgroup>
+                  <col />
+                  <col />
+                  {showInactive && <col className="status-col" />}
+                  <col className="rochester-col" />
+                  <col className="email-col" />
+                  <col className="phone-col" />
+                </colgroup>
                 <thead>
                   <tr>
-                    <th style={{ width: '1%', whiteSpace: 'nowrap' }}></th>
-                    <th style={{ width: '1%', whiteSpace: 'nowrap' }}>Name</th>
+                    <th></th>
+                    <th>Name</th>
                     {showInactive && (
-                      <th style={{ width: '1%', whiteSpace: 'nowrap', textAlign: 'center' }}>Status</th>
+                      <th className="status-column">Status</th>
                     )}
-                    <th style={{ width: '1%', whiteSpace: 'nowrap', textAlign: 'center' }}>
+                    <th className="rochester-column">
                       Rochester<br />Resident
                     </th>
-                    <th>Email</th>
-                    <th>Phone</th>
+                    <th className="email-column">Email</th>
+                    <th className="phone-column">Phone</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {students
-                    .slice()
-                    .sort((a, b) => {
-                      const lastA = (a.last_name || '').toLowerCase();
-                      const lastB = (b.last_name || '').toLowerCase();
-                      if (lastA < lastB) return -1;
-                      if (lastA > lastB) return 1;
-                      const firstA = (a.first_name || '').toLowerCase();
-                      const firstB = (b.first_name || '').toLowerCase();
-                      if (firstA < firstB) return -1;
-                      if (firstA > firstB) return 1;
-                      return 0;
-                    })
-                    .map(student => (
-                      <tr key={student.id} className="reactive-student-row">
-                        <td style={{ width: '1%', textAlign: 'center' }}>
-                          <Tooltip tooltip="Edit student">
-                            <a
-                              href={`/students/${student.id}/edit`}
-                              style={{ border: 'none', background: 'none', padding: 0, outline: 'none', boxShadow: 'none' }}
-                              tabIndex={0}
-                            >
-                              <i className="bi bi-pencil-square" style={{ fontSize: '1.2em', color: '#6a359c', verticalAlign: 'middle' }}></i>
-                            </a>
-                          </Tooltip>
-                        </td>
-                        <td style={{ whiteSpace: 'nowrap', width: '1%' }}>
-                          <Tooltip tooltip={`View details for ${student.last_name}, ${student.first_name}`}>
-                            <a
-                              href={`/students/${student.id}`}
-                              className="reactive-student-link"
-                            >
-                              {student.last_name}, {student.first_name}
-                            </a>
-                          </Tooltip>
-                        </td>
-                        {showInactive && (
-                          <td style={{ textAlign: 'center', width: '1%' }}>
-                            {student.active !== false ? (
-                              <Tooltip tooltip="Active">
+              </table>
+
+              {/* Scrollable Body */}
+              <div className="students-table-body-wrapper">
+                <table className="table table-sm table-body-scrollable">
+                  <colgroup>
+                    <col />
+                    <col />
+                    {showInactive && <col className="status-col" />}
+                    <col className="rochester-col" />
+                    <col className="email-col" />
+                    <col className="phone-col" />
+                  </colgroup>
+                  <tbody>
+                    {filteredStudents
+                      .slice()
+                      .sort((a, b) => {
+                        const lastA = (a.last_name || '').toLowerCase();
+                        const lastB = (b.last_name || '').toLowerCase();
+                        if (lastA < lastB) return -1;
+                        if (lastA > lastB) return 1;
+                        const firstA = (a.first_name || '').toLowerCase();
+                        const firstB = (b.first_name || '').toLowerCase();
+                        if (firstA < firstB) return -1;
+                        if (firstA > firstB) return 1;
+                        return 0;
+                      })
+                      .map(student => (
+                        <tr key={student.id} className="reactive-student-row">
+                          <td style={{ textAlign: 'center' }}>
+                            <Tooltip tooltip="Edit student">
+                              <a
+                                href={`/students/${student.id}/edit`}
+                                style={{ border: 'none', background: 'none', padding: 0, outline: 'none', boxShadow: 'none' }}
+                                tabIndex={0}
+                              >
+                                <i className="bi bi-pencil-square" style={{ fontSize: '1.2em', color: '#6a359c', verticalAlign: 'middle' }}></i>
+                              </a>
+                            </Tooltip>
+                          </td>
+                          <td>
+                            <Tooltip tooltip={`View details for ${student.last_name}, ${student.first_name}`}>
+                              <a
+                                href={`/students/${student.id}`}
+                                className="reactive-student-link"
+                              >
+                                {student.last_name}, {student.first_name}
+                              </a>
+                            </Tooltip>
+                          </td>
+                          {showInactive && (
+                            <td>
+                              {student.active !== false ? (
+                                <Tooltip tooltip="Active">
+                                  <span style={{ color: 'green', fontSize: '1.2em' }}>
+                                    &#10003;
+                                  </span>
+                                </Tooltip>
+                              ) : (
+                                <Tooltip tooltip="Inactive">
+                                  <span style={{ color: 'red', fontSize: '1.2em' }}>
+                                    &#10007;
+                                  </span>
+                                </Tooltip>
+                              )}
+                            </td>
+                          )}
+                          <td className="rochester-column">
+                            {student.rochester ? (
+                              <Tooltip tooltip="Rochester Resident">
                                 <span style={{ color: 'green', fontSize: '1.2em' }}>
                                   &#10003;
                                 </span>
                               </Tooltip>
                             ) : (
-                              <Tooltip tooltip="Inactive">
+                              <Tooltip tooltip="Not a Rochester Resident">
                                 <span style={{ color: 'red', fontSize: '1.2em' }}>
                                   &#10007;
                                 </span>
                               </Tooltip>
                             )}
                           </td>
-                        )}
-                        <td style={{ textAlign: 'center', width: '1%' }}>
-                          {student.rochester ? (
-                            <Tooltip tooltip="Rochester Resident">
-                              <span style={{ color: 'green', fontSize: '1.2em' }}>
-                                &#10003;
-                              </span>
-                            </Tooltip>
-                          ) : (
-                            <Tooltip tooltip="Not a Rochester Resident">
-                              <span style={{ color: 'red', fontSize: '1.2em' }}>
-                                &#10007;
-                              </span>
-                            </Tooltip>
-                          )}
-                        </td>
-                        <td>
-                          {student.email ? (
-                            <Tooltip tooltip={`Email ${student.first_name} ${student.last_name}`}>
-                              <a
-                                href={`mailto:${student.email}`}
-                                className="reactive-student-contact-link"
-                              >
-                                {student.email}
-                              </a>
-                            </Tooltip>
-                          ) : <span className="text-muted">—</span>}
-                        </td>
-                        <td>
-                          {student.phone ? (
-                            <Tooltip tooltip={`Call ${student.first_name} ${student.last_name}`}>
-                              <a
-                                href={`tel:${student.phone}`}
-                                className="reactive-student-contact-link"
-                              >
-                                {parsePhoneNumberFromString(student.phone, 'US')?.formatNational() || student.phone}
-                              </a>
-                            </Tooltip>
-                          ) : <span className="text-muted">—</span>}
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
+                          <td className="email-column">
+                            {student.email ? (
+                              <Tooltip tooltip={`Email ${student.first_name} ${student.last_name}`}>
+                                <a
+                                  href={`mailto:${student.email}`}
+                                  className="reactive-student-contact-link"
+                                >
+                                  {student.email}
+                                </a>
+                              </Tooltip>
+                            ) : <span className="text-muted">—</span>}
+                          </td>
+                          <td className="phone-column">
+                            {student.phone ? (
+                              <Tooltip tooltip={`Call ${student.first_name} ${student.last_name}`}>
+                                <a
+                                  href={`tel:${student.phone}`}
+                                  className="reactive-student-contact-link"
+                                >
+                                  {parsePhoneNumberFromString(student.phone, 'US')?.formatNational() || student.phone}
+                                </a>
+                              </Tooltip>
+                            ) : <span className="text-muted">—</span>}
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>

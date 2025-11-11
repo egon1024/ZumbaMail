@@ -103,10 +103,12 @@ class ActivityListSerializer(serializers.ModelSerializer):
 
 class AttendanceRecordSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.display_name', read_only=True)
+    student_first_name = serializers.CharField(source='student.first_name', read_only=True)
+    student_last_name = serializers.CharField(source='student.last_name', read_only=True)
 
     class Meta:
         model = AttendanceRecord
-        fields = ['id', 'student', 'student_name', 'status', 'note']
+        fields = ['id', 'student', 'student_name', 'student_first_name', 'student_last_name', 'status', 'note']
 
 class MeetingSerializer(serializers.ModelSerializer):
     activity_type = serializers.CharField(source='activity.type', read_only=True)

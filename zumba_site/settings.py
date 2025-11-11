@@ -161,3 +161,27 @@ GOOGLE_SHEETS_OWNER_EMAIL=env('GOOGLE_SHEETS_OWNER_EMAIL', default=None)
 
 # Path to OAuth token file (stored in same directory as service account file)
 TOKEN_FILE_PATH = os.path.join(os.path.dirname(GOOGLE_SERVICE_ACCOUNT_FILE), 'token.json')
+
+# settings.py
+
+# --- EMAIL CONFIGURATION ---
+# Use Django's built-in SMTP email backend
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# Yahoo's SMTP server host and port
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587 # Standard port for TLS/STARTTLS
+
+# Your Yahoo Mail address and password
+# IMPORTANT: This should be an "App Password" (see Step 2 below), NOT your main account password.
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+
+# Use STARTTLS to secure the connection (recommended standard practice)
+EMAIL_USE_TLS = True
+
+# The email address that will appear in the 'From' field of the emails
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
+
+# Optional: If you want to see emails in the console during development, use:
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

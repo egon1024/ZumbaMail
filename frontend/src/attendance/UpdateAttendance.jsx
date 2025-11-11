@@ -113,8 +113,18 @@ export default function UpdateAttendance() {
         setMeeting(data);
         setAttendanceRecords(data.attendance_records || []);
 
-        const enrolledList = data.enrolled_students || [];
-        const waitlistList = data.waitlist_students || [];
+        const enrolledList = (data.enrolled_students || []).sort((a, b) => {
+          const lastNameCompare = (a.last_name || '').localeCompare(b.last_name || '');
+          if (lastNameCompare !== 0) return lastNameCompare;
+          return (a.first_name || '').localeCompare(b.first_name || '');
+        });
+
+        const waitlistList = (data.waitlist_students || []).sort((a, b) => {
+          const lastNameCompare = (a.last_name || '').localeCompare(b.last_name || '');
+          if (lastNameCompare !== 0) return lastNameCompare;
+          return (a.first_name || '').localeCompare(b.first_name || '');
+        });
+
         setEnrolledStudents(enrolledList);
         setWaitlistStudents(waitlistList);
 
@@ -127,8 +137,15 @@ export default function UpdateAttendance() {
           .map(record => ({
             id: record.student,
             display_name: record.student_name,
+            first_name: record.student_first_name,
+            last_name: record.student_last_name,
             email: ''
-          }));
+          }))
+          .sort((a, b) => {
+            const lastNameCompare = (a.last_name || '').localeCompare(b.last_name || '');
+            if (lastNameCompare !== 0) return lastNameCompare;
+            return (a.first_name || '').localeCompare(b.first_name || '');
+          });
 
         setWalkInStudents(walkIns);
         setLoading(false);
@@ -193,7 +210,14 @@ export default function UpdateAttendance() {
       return;
     }
 
-    setWalkInStudents(prev => [...prev, student]);
+    setWalkInStudents(prev => {
+      const updated = [...prev, student];
+      return updated.sort((a, b) => {
+        const lastNameCompare = (a.last_name || '').localeCompare(b.last_name || '');
+        if (lastNameCompare !== 0) return lastNameCompare;
+        return (a.first_name || '').localeCompare(b.first_name || '');
+      });
+    });
 
     // Automatically mark walk-in as present
     setAttendanceRecords(prev => {
@@ -229,7 +253,14 @@ export default function UpdateAttendance() {
     })
       .then(res => res.json())
       .then(student => {
-        setWalkInStudents(prev => [...prev, student]);
+        setWalkInStudents(prev => {
+          const updated = [...prev, student];
+          return updated.sort((a, b) => {
+            const lastNameCompare = (a.last_name || '').localeCompare(b.last_name || '');
+            if (lastNameCompare !== 0) return lastNameCompare;
+            return (a.first_name || '').localeCompare(b.first_name || '');
+          });
+        });
 
         // Automatically mark newly created walk-in as present
         setAttendanceRecords(prev => {
