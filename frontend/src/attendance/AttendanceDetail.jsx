@@ -124,15 +124,40 @@ export default function AttendanceDetail() {
       });
   }, [activityId, dateParam]);
 
-  // Set attendance status for a student
+  // Set attendance status for a student with auto-save
   function setAttendanceStatus(studentId, newStatus) {
     setAttendanceRecords(prev => {
       const existing = prev.find(r => r.student === studentId);
+      let updatedRecords;
       if (existing) {
-        return prev.map(r => r.student === studentId ? { ...r, status: newStatus } : r);
+        updatedRecords = prev.map(r => r.student === studentId ? { ...r, status: newStatus } : r);
       } else {
-        return [...prev, { student: studentId, status: newStatus, note: '' }];
+        updatedRecords = [...prev, { student: studentId, status: newStatus, note: '' }];
       }
+
+      // Auto-save immediately with the updated records
+      if (meeting) {
+        authFetch(`/api/meetings/${meeting.id}/attendance/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            attendance: updatedRecords.map(r => ({
+              student_id: r.student,
+              status: r.status,
+              note: r.note || ''
+            }))
+          })
+        })
+          .then(res => res.json())
+          .then(() => {
+            // Silent save - no success message
+          })
+          .catch(() => {
+            setError("Failed to save attendance");
+          });
+      }
+
+      return updatedRecords;
     });
   }
 
@@ -180,13 +205,39 @@ export default function AttendanceDetail() {
 
     setWalkInStudents(prev => [...prev, student]);
 
-    // Automatically mark walk-in as present
+    // Automatically mark walk-in as present and auto-save
     setAttendanceRecords(prev => {
       const existing = prev.find(r => r.student === student.id);
+      let updatedRecords;
       if (!existing) {
-        return [...prev, { student: student.id, status: 'present', note: '' }];
+        updatedRecords = [...prev, { student: student.id, status: 'present', note: '' }];
+      } else {
+        updatedRecords = prev;
       }
-      return prev;
+
+      // Auto-save the new walk-in
+      if (meeting && updatedRecords !== prev) {
+        authFetch(`/api/meetings/${meeting.id}/attendance/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            attendance: updatedRecords.map(r => ({
+              student_id: r.student,
+              status: r.status,
+              note: r.note || ''
+            }))
+          })
+        })
+          .then(res => res.json())
+          .then(() => {
+            // Silent save
+          })
+          .catch(() => {
+            setError("Failed to save attendance");
+          });
+      }
+
+      return updatedRecords;
     });
 
     setSearchQuery("");
@@ -200,24 +251,61 @@ export default function AttendanceDetail() {
     navigate(`/students/new?returnUrl=${encodeURIComponent(returnUrl)}&name=${encodeURIComponent(searchQuery)}`);
   }
 
-  // Remove walk-in student
+  // Remove walk-in student with auto-save
   function removeWalkIn(studentId) {
     setWalkInStudents(prev => prev.filter(s => s.id !== studentId));
-    setAttendanceRecords(prev => prev.filter(r => r.student !== studentId));
+
+    setAttendanceRecords(prev => {
+      const updatedRecords = prev.filter(r => r.student !== studentId);
+
+      // Auto-save the removal
+      if (meeting) {
+        authFetch(`/api/meetings/${meeting.id}/attendance/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            attendance: updatedRecords.map(r => ({
+              student_id: r.student,
+              status: r.status,
+              note: r.note || ''
+            }))
+          })
+        })
+          .then(res => res.json())
+          .then(() => {
+            // Silent save
+          })
+          .catch(() => {
+            setError("Failed to save attendance");
+          });
+      }
+
+      return updatedRecords;
+    });
   }
 
-  // Save attendance
-  function handleSave() {
+  // Clear all attendance (reset to scheduled)
+  function handleClearAttendance() {
     if (!meeting) return;
+
+    if (!window.confirm("Are you sure you want to clear all attendance for this class? This will reset all students to 'Scheduled' status.")) {
+      return;
+    }
 
     setLoading(true);
     setError("");
+
+    // Set all records to 'scheduled'
+    const clearedRecords = attendanceRecords.map(r => ({
+      ...r,
+      status: 'scheduled'
+    }));
 
     authFetch(`/api/meetings/${meeting.id}/attendance/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        attendance: attendanceRecords.map(r => ({
+        attendance: clearedRecords.map(r => ({
           student_id: r.student,
           status: r.status,
           note: r.note || ''
@@ -225,12 +313,13 @@ export default function AttendanceDetail() {
       })
     })
       .then(res => res.json())
-      .then(data => {
-        setSuccessMessage("Attendance saved successfully!");
+      .then(() => {
+        setAttendanceRecords(clearedRecords);
+        setSuccessMessage("Attendance cleared successfully!");
         setLoading(false);
       })
-      .catch(err => {
-        setError("Failed to save attendance");
+      .catch(() => {
+        setError("Failed to clear attendance");
         setLoading(false);
       });
   }
@@ -311,6 +400,21 @@ export default function AttendanceDetail() {
   return (
     <div className="container mt-4">
       {successMessage && <div className="alert alert-success">{successMessage}</div>}
+
+      <div className="mb-3 d-flex justify-content-between align-items-center">
+        <button type="button" className="btn btn-secondary" onClick={() => navigate('/attendance')}>
+          ← Back to Attendance
+        </button>
+        <button
+          type="button"
+          className="btn btn-sm btn-outline-danger"
+          onClick={handleClearAttendance}
+          disabled={loading}
+        >
+          <i className="bi bi-x-circle me-1"></i>
+          Clear All Attendance
+        </button>
+      </div>
 
       <div className="card shadow-sm border-primary mb-4">
         <div className="card-header bg-dark text-white">
@@ -474,17 +578,6 @@ export default function AttendanceDetail() {
                   })}
                 </div>
               )}
-
-              <div className="d-flex gap-2">
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleSave}
-                  disabled={loading}
-                >
-                  {loading ? "Saving..." : "Save Attendance"}
-                </button>
-              </div>
             </div>
           </div>
     </div>

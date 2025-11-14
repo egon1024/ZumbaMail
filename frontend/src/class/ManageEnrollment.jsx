@@ -26,8 +26,9 @@ const ManageEnrollment = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
-  // Save handler
-  const handleSave = async () => {
+
+  // Auto-save handler
+  const autoSave = async (enrolledList, waitlistList) => {
     setSaving(true);
     setError(null);
     try {
@@ -38,13 +39,11 @@ const ManageEnrollment = () => {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
         body: JSON.stringify({
-          enrolled: enrolled.map(s => s.id),
-          waitlist: waitlist.map(s => s.id),
+          enrolled: enrolledList.map(s => s.id),
+          waitlist: waitlistList.map(s => s.id),
         }),
       });
       if (!resp.ok) throw new Error('Failed to save enrollment');
-      // On success, go back to class detail page
-      navigate(`/classes/${id}`);
     } catch (err) {
       setError('Failed to save enrollment. Please try again.');
     } finally {
@@ -87,24 +86,40 @@ const ManageEnrollment = () => {
   const sortedEnrolled = [...enrolled].sort(sortByName);
   const sortedWaitlist = [...waitlist].sort(sortByName);
 
-  // Move functions
+  // Move functions with auto-save
   const move = (from, setFrom, to, setTo, selected, setSelected) => {
     const toMove = from.filter(s => selected.includes(s.id));
-    setFrom(from.filter(s => !selected.includes(s.id)));
-    setTo([...to, ...toMove]);
+    const newFrom = from.filter(s => !selected.includes(s.id));
+    const newTo = [...to, ...toMove];
+    setFrom(newFrom);
+    setTo(newTo);
     setSelected([]);
+
+    // Auto-save based on which list is being updated
+    if (setTo === setEnrolled) {
+      autoSave(newTo, waitlist);
+    } else if (setTo === setWaitlist) {
+      autoSave(enrolled, newTo);
+    }
   };
 
-  // Remove functions (move back to available)
+  // Remove functions (move back to available) with auto-save
   const remove = (from, setFrom, to, setTo, selected, setSelected) => {
     const toRemove = from.filter(s => selected.includes(s.id));
-    setFrom(from.filter(s => !selected.includes(s.id)));
+    const newFrom = from.filter(s => !selected.includes(s.id));
+    setFrom(newFrom);
     setTo([...to, ...toRemove]);
     setSelected([]);
+
+    // Auto-save - we're removing from enrolled or waitlist
+    if (setFrom === setEnrolled) {
+      autoSave(newFrom, waitlist);
+    } else if (setFrom === setWaitlist) {
+      autoSave(enrolled, newFrom);
+    }
   };
 
   if (loading) return <div>Loading enrollment...</div>;
-  if (error) return <div className="alert alert-danger">{error}</div>;
 
   return (
     <div className="container mt-4">
@@ -205,20 +220,24 @@ const ManageEnrollment = () => {
               </ul>
             </div>
           </div>
-          <div className="mt-4 d-flex justify-content-end">
-            <button
-              className="btn btn-primary me-2"
-              onClick={handleSave}
-              disabled={saving}
-            >
-              {saving ? 'Saving...' : 'Save'}
-            </button>
+          <div className="mt-4">
+            {saving && (
+              <div className="alert alert-info">
+                <i className="bi bi-arrow-repeat spin me-2"></i>
+                Saving changes...
+              </div>
+            )}
+            {error && (
+              <div className="alert alert-danger">
+                {error}
+              </div>
+            )}
             <button
               className="btn btn-secondary"
               onClick={() => navigate(`/classes/${id}`)}
-              disabled={saving}
             >
-              Cancel
+              <i className="bi bi-arrow-left me-2"></i>
+              Back to Class Details
             </button>
           </div>
         </div>

@@ -92,6 +92,9 @@ class AttendanceUpdateView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Collect student IDs from the submitted attendance data
+        submitted_student_ids = set()
+
         # Update or create attendance records
         for record in attendance_data:
             student_id = record.get('student_id')
@@ -101,6 +104,8 @@ class AttendanceUpdateView(APIView):
             if not student_id or not record_status:
                 continue  # Skip invalid records
 
+            submitted_student_ids.add(student_id)
+
             AttendanceRecord.objects.update_or_create(
                 meeting=meeting,
                 student_id=student_id,
@@ -109,6 +114,11 @@ class AttendanceUpdateView(APIView):
                     'note': note
                 }
             )
+
+        # Delete attendance records for students not in the submitted list
+        AttendanceRecord.objects.filter(meeting=meeting).exclude(
+            student_id__in=submitted_student_ids
+        ).delete()
 
         return Response({"success": True, "message": "Attendance updated successfully"})
 
