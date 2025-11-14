@@ -47,6 +47,32 @@ class SessionUpdateSerializer(serializers.ModelSerializer):
         model = Session
         fields = ['id', 'name', 'start_date', 'end_date', 'closed', 'organization']
 
+    def validate(self, data):
+        # Get the instance being updated
+        instance = self.instance
+
+        # Validate end_date > start_date
+        start_date = data.get('start_date', instance.start_date)
+        end_date = data.get('end_date', instance.end_date)
+
+        if end_date <= start_date:
+            raise serializers.ValidationError({
+                'end_date': 'End date must be after start date.'
+            })
+
+        # Validate that dates can only be expanded (not shrunk)
+        if 'start_date' in data and data['start_date'] > instance.start_date:
+            raise serializers.ValidationError({
+                'start_date': f'Start date can only be moved earlier. Current start date is {instance.start_date}. You cannot move it forward to {data["start_date"]}.'
+            })
+
+        if 'end_date' in data and data['end_date'] < instance.end_date:
+            raise serializers.ValidationError({
+                'end_date': f'End date can only be moved later. Current end date is {instance.end_date}. You cannot move it backward to {data["end_date"]}.'
+            })
+
+        return data
+
 class SessionUpdateView(UpdateAPIView):
     queryset = Session.objects.all()
     serializer_class = SessionUpdateSerializer
