@@ -1,5 +1,5 @@
 import { useState, useEffect, forwardRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { authFetch } from "../utils/authFetch";
@@ -27,7 +27,17 @@ FormattedDateInput.displayName = 'FormattedDateInput';
 
 export default function AttendanceList() {
   const navigate = useNavigate();
-  const [date, setDate] = useState(new Date());
+  const [searchParams] = useSearchParams();
+  const dateParam = searchParams.get('date');
+
+  // Initialize date from URL parameter if present, otherwise use today
+  const [date, setDate] = useState(() => {
+    if (dateParam) {
+      const [year, month, day] = dateParam.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+    return new Date();
+  });
   const [organizations, setOrganizations] = useState([]);
   const [selectedOrganization, setSelectedOrganization] = useState("");
   const [sessions, setSessions] = useState([]);
@@ -39,6 +49,16 @@ export default function AttendanceList() {
   const [maxDate, setMaxDate] = useState(null);
   const [sortField, setSortField] = useState('class');
   const [sortAsc, setSortAsc] = useState(true);
+
+  // Update date when URL parameter changes
+  useEffect(() => {
+    if (dateParam) {
+      // Parse the date string properly to avoid timezone issues
+      // dateParam format is YYYY-MM-DD
+      const [year, month, day] = dateParam.split('-').map(Number);
+      setDate(new Date(year, month - 1, day));
+    }
+  }, [dateParam]);
 
   // Load organizations and sessions on mount
   useEffect(() => {
@@ -156,6 +176,7 @@ export default function AttendanceList() {
           <div className="mb-3">
             <label className="form-label d-block mb-3">Date</label>
             <DatePicker
+              key={date.toISOString()}
               selected={date}
               onChange={setDate}
               inline

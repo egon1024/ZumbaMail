@@ -1,4 +1,5 @@
 import { useState, useEffect, forwardRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { authFetch } from "../utils/authFetch";
@@ -24,7 +25,17 @@ const FormattedDateInput = forwardRef(({ value, onClick, selectedDate }, ref) =>
 FormattedDateInput.displayName = 'FormattedDateInput';
 
 export default function UpdateAttendance() {
-  const [date, setDate] = useState(new Date());
+  const [searchParams] = useSearchParams();
+  const dateParam = searchParams.get('date');
+
+  // Initialize date from URL parameter if present, otherwise use today
+  const [date, setDate] = useState(() => {
+    if (dateParam) {
+      const [year, month, day] = dateParam.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+    return new Date();
+  });
   const [organizations, setOrganizations] = useState([]);
   const [selectedOrganization, setSelectedOrganization] = useState("");
   const [sessions, setSessions] = useState([]);
@@ -44,6 +55,16 @@ export default function UpdateAttendance() {
   const [successMessage, setSuccessMessage] = useState("");
   const [minDate, setMinDate] = useState(null);
   const [maxDate, setMaxDate] = useState(null);
+
+  // Update date when URL parameter changes
+  useEffect(() => {
+    if (dateParam) {
+      // Parse the date string properly to avoid timezone issues
+      // dateParam format is YYYY-MM-DD
+      const [year, month, day] = dateParam.split('-').map(Number);
+      setDate(new Date(year, month - 1, day));
+    }
+  }, [dateParam]);
 
   // Load organizations and sessions on mount
   useEffect(() => {
@@ -444,6 +465,7 @@ export default function UpdateAttendance() {
             <div className="mb-3">
               <label htmlFor="date" className="form-label">Date</label>
               <DatePicker
+                key={date.toISOString()}
                 selected={date}
                 onChange={setDate}
                 customInput={<FormattedDateInput selectedDate={date} />}
@@ -545,6 +567,13 @@ export default function UpdateAttendance() {
                         <div className="d-flex gap-2">
                           <button
                             type="button"
+                            className={`btn btn-sm ${status === 'scheduled' ? 'btn-outline-secondary active' : 'btn-outline-secondary'}`}
+                            onClick={() => setAttendanceStatus(student.id, 'scheduled')}
+                          >
+                            Enrolled
+                          </button>
+                          <button
+                            type="button"
                             className={`btn btn-sm ${status === 'present' ? 'btn-success' : 'btn-outline-success'}`}
                             onClick={() => setAttendanceStatus(student.id, 'present')}
                           >
@@ -586,6 +615,13 @@ export default function UpdateAttendance() {
                             <span className="badge bg-warning text-dark ms-2">Waitlist</span>
                           </div>
                           <div className="d-flex gap-2">
+                            <button
+                              type="button"
+                              className={`btn btn-sm ${status === 'scheduled' ? 'btn-outline-secondary active' : 'btn-outline-secondary'}`}
+                              onClick={() => setAttendanceStatus(student.id, 'scheduled')}
+                            >
+                              Waitlist
+                            </button>
                             <button
                               type="button"
                               className={`btn btn-sm ${status === 'present' ? 'btn-success' : 'btn-outline-success'}`}
