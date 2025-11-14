@@ -185,3 +185,7 @@ DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
 
 # Optional: If you want to see emails in the console during development, use:
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# --- COMMUNICATION SETTINGS ---
+# Default "To" email address for session enrollment emails
+DEFAULT_EMAIL_TO_ADDRESS = env('DEFAULT_EMAIL_TO_ADDRESS', default='noreply@example.com')

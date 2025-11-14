@@ -37,6 +37,9 @@ import WeeklyReport from './reports/WeeklyReport';
 import CumulativeReport from './reports/CumulativeReport';
 import EndOfSessionReport from './reports/EndOfSessionReport';
 import ResidencyReport from './reports/ResidencyReport';
+import CommunicationHome from './communication/CommunicationHome';
+import SessionEmailList from './communication/SessionEmailList';
+import SessionEmailComposer from './communication/SessionEmailComposer';
 
 function AppLayout() {
   const location = useLocation();
@@ -205,6 +208,21 @@ function AppLayout() {
           <Route path="/reports/residency" element={
             <PrivateRoute>
               <ResidencyReport />
+            </PrivateRoute>
+          } />
+          <Route path="/communication" element={
+            <PrivateRoute>
+              <CommunicationHome />
+            </PrivateRoute>
+          } />
+          <Route path="/communication/session-emails" element={
+            <PrivateRoute>
+              <SessionEmailList />
+            </PrivateRoute>
+          } />
+          <Route path="/communication/session-email-composer/:combinationId" element={
+            <PrivateRoute>
+              <SessionEmailComposer />
             </PrivateRoute>
           } />
       </Routes>

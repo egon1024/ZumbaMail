@@ -3,6 +3,7 @@ from django.urls import path, include
 urlpatterns = [
     path('', include('activity.routers.organization')),
     path('', include('activity.routers.contact')),
+    path('', include('activity.routers.location')),
     path('', include('activity.routers.session')),
     path('', include('activity.routers.student')),
     path('', include('activity.routers.activity')),
@@ -10,4 +11,5 @@ urlpatterns = [
     path('', include('activity.routers.cancellations')),
     path('', include('activity.routers.signin_sheets')),
     path('reports/', include('activity.routers.reports')),
+    path('communication/', include('activity.routers.communication')),
 ]

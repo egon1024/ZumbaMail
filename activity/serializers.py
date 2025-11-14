@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Organization, Contact
+from .models import Organization, Contact, Location
 from .models import Student, Activity, Enrollment, Meeting, AttendanceRecord, ClassCancellation
 
 
@@ -68,6 +68,14 @@ class ContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
         fields = ['id', 'name', 'office_phone', 'cell_phone', 'email', 'role', 'organization', 'organization_name', 'organization_id']
+
+class LocationSerializer(serializers.ModelSerializer):
+    organization_name = serializers.CharField(source='organization.name', read_only=True)
+    organization_id = serializers.IntegerField(source='organization.id', read_only=True)
+
+    class Meta:
+        model = Location
+        fields = ['id', 'name', 'address', 'description', 'organization', 'organization_name', 'organization_id']
 
 class OrganizationSerializer(serializers.ModelSerializer):
     contacts = ContactSerializer(many=True, read_only=True)
