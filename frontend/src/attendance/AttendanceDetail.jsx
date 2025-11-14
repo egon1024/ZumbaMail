@@ -336,7 +336,7 @@ export default function AttendanceDetail() {
     return (
       <div className="container mt-4">
         <div className="alert alert-danger">{error}</div>
-        <button type="button" className="btn btn-secondary" onClick={() => navigate('/attendance')}>
+        <button type="button" className="btn btn-secondary" onClick={() => navigate(`/attendance?date=${dateParam}`)}>
           ← Back to Attendance
         </button>
       </div>
@@ -379,7 +379,7 @@ export default function AttendanceDetail() {
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => navigate('/attendance')}
+              onClick={() => navigate(`/attendance?date=${dateParam}`)}
             >
               ← Back to Attendance
             </button>
@@ -402,7 +402,7 @@ export default function AttendanceDetail() {
       {successMessage && <div className="alert alert-success">{successMessage}</div>}
 
       <div className="mb-3 d-flex justify-content-between align-items-center">
-        <button type="button" className="btn btn-secondary" onClick={() => navigate('/attendance')}>
+        <button type="button" className="btn btn-secondary" onClick={() => navigate(`/attendance?date=${dateParam}`)}>
           ← Back to Attendance
         </button>
         <button
@@ -445,6 +445,13 @@ export default function AttendanceDetail() {
                         <div className="d-flex gap-2">
                           <button
                             type="button"
+                            className={`btn btn-sm ${status === 'scheduled' ? 'btn-outline-secondary active' : 'btn-outline-secondary'}`}
+                            onClick={() => setAttendanceStatus(student.id, 'scheduled')}
+                          >
+                            Enrolled
+                          </button>
+                          <button
+                            type="button"
                             className={`btn btn-sm ${status === 'present' ? 'btn-success' : 'btn-outline-success'}`}
                             onClick={() => setAttendanceStatus(student.id, 'present')}
                           >
@@ -485,6 +492,13 @@ export default function AttendanceDetail() {
                             <span className="badge bg-warning text-dark ms-2">Waitlist</span>
                           </div>
                           <div className="d-flex gap-2">
+                            <button
+                              type="button"
+                              className={`btn btn-sm ${status === 'scheduled' ? 'btn-outline-secondary active' : 'btn-outline-secondary'}`}
+                              onClick={() => setAttendanceStatus(student.id, 'scheduled')}
+                            >
+                              Waitlist
+                            </button>
                             <button
                               type="button"
                               className={`btn btn-sm ${status === 'present' ? 'btn-success' : 'btn-outline-success'}`}
