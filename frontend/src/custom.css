@@ -1,0 +1,22 @@
+/* For links that activate themselves on hover (e.g., Organization) */
+.clickable-text {
+  color: black !important;
+  text-decoration: none !important;
+}
+.clickable-text:hover {
+  color: #007bff !important;
+  cursor: pointer;
+}
+
+/* For links that should look like plain black text and have no hover effect */
+.plain-link {
+  color: black !important;
+  text-decoration: none !important;
+  cursor: pointer;
+}
+
+/* For the Name link, activated by parent row hover */
+.active-name {
+  color: #007bff !important;
+  text-decoration: none !important;
+}

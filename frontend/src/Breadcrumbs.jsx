@@ -11,6 +11,7 @@ function Breadcrumbs() {
   const [contactName, setContactName] = useState(null);
   const [sessionName, setSessionName] = useState(null);
   const [studentName, setStudentName] = useState(null);
+  const [locationName, setLocationName] = useState(null);
   const [classActivity, setClassActivity] = useState(null);
   const [attendanceActivity, setAttendanceActivity] = useState(null);
   const [emailComboName, setEmailComboName] = useState(null);
@@ -72,6 +73,20 @@ function Breadcrumbs() {
       })();
     } else {
       setStudentName(null);
+    }
+    // Detect /locations/:id route
+    if (pathnames[0] === 'locations' && pathnames[1] && !isNaN(Number(pathnames[1]))) {
+      (async () => {
+        try {
+          const resp = await authFetch(`/api/locations/${pathnames[1]}/`);
+          if (resp.ok) {
+            const data = await resp.json();
+            setLocationName(data.name);
+          }
+        } catch {}
+      })();
+    } else {
+      setLocationName(null);
     }
     // Detect /classes/:id route
     if (pathnames[0] === 'classes' && pathnames[1] && !isNaN(Number(pathnames[1]))) {
@@ -143,6 +158,10 @@ function Breadcrumbs() {
           // If on /students/:id, show student name for id segment
           if (pathnames[0] === 'students' && idx === 1 && studentName) {
             label = studentName;
+          }
+          // If on /locations/:id, show location name for id segment
+          if (pathnames[0] === 'locations' && idx === 1 && locationName) {
+            label = locationName;
           }
           // If on /classes/:id, show ClassLabel for id segment
           if (pathnames[0] === 'classes' && idx === 1 && classActivity) {
