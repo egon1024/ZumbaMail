@@ -73,7 +73,16 @@ function Navbar() {
               <ul className="dropdown-menu" aria-labelledby="peopleDropdown">
                 <li><NavLink className="dropdown-item" to="/students" onClick={handleNavClick}>Students</NavLink></li>
                 <li><NavLink className="dropdown-item" to="/contacts" onClick={handleNavClick}>Contacts</NavLink></li>
+              </ul>
+            </li>
+            <li className="nav-item dropdown">
+              <a className="nav-link dropdown-toggle" href="#" id="organizationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Organizations
+              </a>
+              <ul className="dropdown-menu" aria-labelledby="organizationsDropdown">
                 <li><NavLink className="dropdown-item" to="/organization" onClick={handleNavClick}>Organizations</NavLink></li>
+                <li><NavLink className="dropdown-item" to="/locations" onClick={handleNavClick}>Locations</NavLink></li>
+                <li><NavLink className="dropdown-item" to="/contacts" onClick={handleNavClick}>Contacts</NavLink></li>
               </ul>
             </li>
           </ul>
