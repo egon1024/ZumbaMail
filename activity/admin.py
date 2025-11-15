@@ -1,6 +1,6 @@
 from django.contrib.admin import SimpleListFilter
 from django.contrib import admin
-from .models import Organization, Session, Activity, Meeting, Student, Enrollment, AttendanceRecord, Contact
+from .models import Organization, Session, Activity, Meeting, Student, Enrollment, AttendanceRecord, Contact, Location
 from django.db import models
 from django.shortcuts import render, get_object_or_404
 from django.utils.html import format_html
@@ -68,6 +68,13 @@ class OrganizationAdmin(admin.ModelAdmin):
 	status_display.short_description = 'Status'
 
 admin.site.register(Organization, OrganizationAdmin)
+
+class LocationAdmin(admin.ModelAdmin):
+	list_display = ('name', 'address', 'organization')
+	search_fields = ('name', 'organization__name')
+	list_filter = ('organization',)
+
+admin.site.register(Location, LocationAdmin)
 
 class ContactAdmin(admin.ModelAdmin):
 	list_display = ('name', 'email', 'office_phone', 'cell_phone', 'role', 'organization')

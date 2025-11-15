@@ -9,6 +9,7 @@ import OrganizationDetails from './organization/OrganizationDetails';
 import OrganizationForm from './organization/OrganizationForm';
 import OrganizationCreate from './organization/OrganizationCreate';
 import OrganizationEdit from './organization/OrganizationEdit';
+import LocationList from './location/LocationList';
 import ContactsList from './contact/ContactsList';
 import ContactDetails from './contact/ContactDetails';
 import ContactEdit from './contact/ContactEdit';
@@ -78,6 +79,11 @@ function AppLayout() {
         <Route path="/organization/:id/edit" element={
           <PrivateRoute>
             <OrganizationEdit />
+          </PrivateRoute>
+        } />
+        <Route path="/locations" element={
+          <PrivateRoute>
+            <LocationList />
           </PrivateRoute>
         } />
         <Route path="/contacts" element={
