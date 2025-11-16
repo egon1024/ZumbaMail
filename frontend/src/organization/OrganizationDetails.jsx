@@ -46,6 +46,36 @@ function OrganizationDetails() {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
 
+  // Location sorting state and logic
+  const [locations, setLocations] = useState([]);
+  const [locationsLoading, setLocationsLoading] = useState(true);
+  const [locationsError, setLocationsError] = useState(null);
+  const [locationSortField, setLocationSortField] = useState('name');
+  const [locationSortAsc, setLocationSortAsc] = useState(true);
+  const [hoveredLocId, setHoveredLocId] = useState(null);
+
+  function handleLocationSort(field) {
+    if (locationSortField === field) {
+      setLocationSortAsc(!locationSortAsc);
+    } else {
+      setLocationSortField(field);
+      setLocationSortAsc(true);
+    }
+  }
+
+  function getSortedLocations() {
+    if (!locations) return [];
+    const sorted = [...locations].sort((a, b) => {
+      let valA = a[locationSortField] || '';
+      let valB = b[locationSortField] || '';
+      valA = typeof valA === 'string' ? valA.toLowerCase() : valA;
+      valB = typeof valB === 'string' ? valB.toLowerCase() : valB;
+      if (valA < valB) return locationSortAsc ? -1 : 1;
+      if (valA > valB) return locationSortAsc ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }
 
   useEffect(() => {
     async function fetchDetails() {
@@ -59,7 +89,25 @@ function OrganizationDetails() {
         setActivities(data.current_activities);
       }
     }
+    async function fetchLocations() {
+      setLocationsLoading(true);
+      setLocationsError(null);
+      try {
+        const resp = await authFetch(`/api/locations/?organization=${id}`);
+        if (resp.ok) {
+          const data = await resp.json();
+          setLocations(data);
+        } else {
+          setLocationsError("Failed to fetch locations.");
+        }
+      } catch (err) {
+        setLocationsError(err.message);
+      } finally {
+        setLocationsLoading(false);
+      }
+    }
     fetchDetails();
+    fetchLocations();
   }, [id, deleting]);
 
   async function handleSoftDelete() {
@@ -140,6 +188,94 @@ function OrganizationDetails() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      {/* Locations Section */}
+      <section className="mb-4">
+        <div className="card shadow-sm border-primary mb-4">
+          <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h4 className="mb-0">Locations</h4>
+            <button
+              className="btn btn-sm btn-success"
+              onClick={() => navigate(`/locations/new?organization=${organization.id}`)}
+            >
+              <i className="bi bi-plus-lg me-1"></i> New Location
+            </button>
+          </div>
+          <div className="card-body">
+            {locationsLoading && <p>Loading locations...</p>}
+            {locationsError && <div className="alert alert-danger">{locationsError}</div>}
+            {!locationsLoading && !locationsError && (
+              <div className="table-responsive">
+                <table className="table table-striped table-sm mb-0">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '1%', textAlign: 'center' }}></th>
+                      <th>Name</th> {/* No sorting on Name */}
+                      <th style={{ cursor: 'pointer' }} onClick={() => handleLocationSort('address')}>
+                        Address{locationSortField === 'address' ? (locationSortAsc ? ' ▲' : ' ▼') : ''}
+                      </th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {getSortedLocations().map(loc => (
+                      <tr
+                        key={loc.id}
+                        className="reactive-contact-row"
+                      >
+                        <td className="align-top" style={{ width: '1%', textAlign: 'center' }}>
+                          <Tooltip tooltip="Edit location">
+                            <a
+                              href={`/locations/${loc.id}/edit`}
+                              style={{ border: 'none', background: 'none', padding: 0, outline: 'none', boxShadow: 'none' }}
+                              tabIndex={0}
+                            >
+                              <i className="bi bi-pencil-square" style={{ fontSize: '1.2em', color: '#6a359c', verticalAlign: 'middle' }}></i>
+                            </a>
+                          </Tooltip>
+                        </td>
+                        <td
+                          className="align-top"
+                          onMouseEnter={() => setHoveredLocId(loc.id)}
+                          onMouseLeave={() => setHoveredLocId(null)}
+                        >
+                          <Tooltip tooltip={`View details for ${loc.name}`}>
+                            <a href={`/locations/${loc.id}`} className={hoveredLocId === loc.id ? 'active-name' : 'plain-link'}>
+                              {loc.name}
+                            </a>
+                          </Tooltip>
+                        </td>
+                        <td
+                          className="align-top"
+                          onMouseEnter={() => setHoveredLocId(loc.id)}
+                          onMouseLeave={() => setHoveredLocId(null)}
+                        >
+                          <Tooltip tooltip={`View details for ${loc.name}`}>
+                            <a href={`/locations/${loc.id}`} className="plain-link">
+                              {loc.address}
+                            </a>
+                          </Tooltip>
+                        </td>
+                        <td
+                          className="align-top text-wrap"
+                          onMouseEnter={() => setHoveredLocId(loc.id)}
+                          onMouseLeave={() => setHoveredLocId(null)}
+                        >
+                          <Tooltip tooltip={`View details for ${loc.name}`}>
+                            <a href={`/locations/${loc.id}`} className="plain-link">
+                              {loc.description}
+                            </a>
+                          </Tooltip>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       </section>
