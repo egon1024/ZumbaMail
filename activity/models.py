@@ -64,6 +64,18 @@ def close_related_activities(sender, instance, **kwargs):
 	def __str__(self):
 		return f"{self.name} ({self.organization.name})"
 
+class Location(models.Model):
+	"""
+	Represents a physical location where activities can take place.
+	"""
+	organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='locations')
+	name = models.CharField(max_length=100, help_text="Name of the location (e.g., 'Community Center Gym')")
+	address = models.CharField(max_length=255, blank=True, help_text="Physical address of the location")
+	description = models.TextField(blank=True, help_text="Additional details about the location")
+
+	def __str__(self):
+		return f"{self.name} ({self.organization.name})"
+
 class Activity(models.Model):
 	class Meta:
 		verbose_name_plural = "Activities"
@@ -94,6 +106,11 @@ class Activity(models.Model):
 	day_of_week = models.CharField(max_length=10, choices=DAY_CHOICES)  # e.g., "Monday"
 	time = models.TimeField()
 	location = models.CharField(max_length=100)
+	max_capacity = models.PositiveIntegerField(
+		null=True,
+		blank=True,
+		help_text="Maximum number of students (advisory only)"
+	)
 	closed = models.BooleanField(default=False, help_text="Mark this activity as closed when it has completed.")
 
 	def __str__(self):

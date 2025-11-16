@@ -40,3 +40,27 @@
 .read-the-docs {
   color: #888;
 }
+
+/* For self-activating links that handle their own hover */
+.clickable-text {
+  color: black;
+  text-decoration: none !important;
+}
+.clickable-text:hover {
+  color: #007bff;
+  cursor: pointer;
+}
+
+/* For links that should look like plain text and not have a hover effect */
+.plain-link {
+  color: black;
+  text-decoration: none !important;
+  cursor: pointer; /* Still show it's clickable */
+}
+
+/* For a link that is activated externally (e.g., by a parent row hover) */
+.active-name {
+  color: #007bff !important;
+  text-decoration: none !important;
+}
+

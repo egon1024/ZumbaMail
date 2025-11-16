@@ -122,7 +122,7 @@ class SessionDetailView(RetrieveAPIView):
             num_waitlist = serializers.SerializerMethodField()
             class Meta:
                 model = Activity
-                fields = ['id', 'type', 'day_of_week', 'time', 'location', 'num_students', 'num_waitlist']
+                fields = ['id', 'type', 'day_of_week', 'time', 'location', 'max_capacity', 'num_students', 'num_waitlist']
 
             def get_num_students(self, obj):
                 return obj.enrollments.filter(status='active').count()

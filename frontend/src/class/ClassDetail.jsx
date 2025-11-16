@@ -78,8 +78,29 @@ const ClassDetail = () => {
                 <td>{cls.location}</td>
               </tr>
               <tr>
+                <th>Max Capacity</th>
+                <td>{cls.max_capacity ? cls.max_capacity : 'No limit'}</td>
+              </tr>
+              <tr>
                 <th>Students</th>
-                <td>{cls.students_count}</td>
+                <td>
+                  {cls.max_capacity ? (
+                    <span
+                      style={{
+                        color: cls.students_count > cls.max_capacity
+                          ? '#dc3545'  // red for overfull
+                          : cls.students_count === cls.max_capacity
+                            ? '#ffc107'  // yellow/amber for full
+                            : '#28a745',  // green for not full
+                        fontWeight: cls.students_count >= cls.max_capacity ? 'bold' : 'normal'
+                      }}
+                    >
+                      {cls.students_count}
+                    </span>
+                  ) : (
+                    cls.students_count
+                  )}
+                </td>
               </tr>
               <tr>
                 <th>Waitlist</th>

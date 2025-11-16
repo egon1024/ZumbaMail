@@ -86,6 +86,7 @@ function ClassEdit() {
     day_of_week: "Monday",
     time: "",
     location: "",
+    max_capacity: "",
     closed: false,
     session: "", // Will be populated in edit mode
   });
@@ -108,6 +109,7 @@ function ClassEdit() {
             day_of_week: data.day_of_week || "Monday",
             time: formatTime(data.time),
             location: data.location || "",
+            max_capacity: data.max_capacity || "",
             closed: data.closed || false,
             session: data.session_id || "", // Store session ID for update
           });
@@ -171,8 +173,12 @@ function ClassEdit() {
     setSaving(true);
     setError(null);
     try {
-      // Convert time to backend format
-      const submitForm = { ...form, time: parseTime12hr(form.time) };
+      // Convert time to backend format and handle max_capacity
+      const submitForm = {
+        ...form,
+        time: parseTime12hr(form.time),
+        max_capacity: form.max_capacity === "" ? null : parseInt(form.max_capacity, 10)
+      };
       let resp;
       if (id) {
         resp = await authFetch(`/api/activity/${id}/edit/`, {
@@ -311,6 +317,19 @@ function ClassEdit() {
               </datalist>
               {locationLoading && <div className="form-text">Loading locations...</div>}
               {locationError && <div className="form-text text-danger">{locationError}</div>}
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Max Capacity</label>
+              <input
+                type="number"
+                name="max_capacity"
+                value={form.max_capacity}
+                onChange={handleChange}
+                className="form-control"
+                min="1"
+                placeholder="Leave empty for no limit"
+              />
+              <div className="form-text">Advisory only - you can still enroll more students than this limit</div>
             </div>
             <div className="mb-3">
               <label className="form-label">Status</label>

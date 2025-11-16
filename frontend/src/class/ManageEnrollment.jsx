@@ -17,6 +17,7 @@ const ManageEnrollment = () => {
   const [allStudents, setAllStudents] = useState([]);
   const [enrolled, setEnrolled] = useState([]);
   const [waitlist, setWaitlist] = useState([]);
+  const [classData, setClassData] = useState(null);
   const [selectedAll, setSelectedAll] = useState([]);
   const [selectedEnrolled, setSelectedEnrolled] = useState([]);
   const [selectedWaitlist, setSelectedWaitlist] = useState([]);
@@ -61,6 +62,7 @@ const ManageEnrollment = () => {
         setAllStudents(students);
         setEnrolled(activity.students || []);
         setWaitlist(activity.waitlist || []);
+        setClassData(activity);
         setLoading(false);
       })
       .catch(() => {
@@ -74,6 +76,14 @@ const ManageEnrollment = () => {
     const lastCompare = (a.last_name || '').localeCompare(b.last_name || '');
     if (lastCompare !== 0) return lastCompare;
     return (a.first_name || '').localeCompare(b.first_name || '');
+  };
+
+  // Helper function to get color based on enrollment status
+  const getEnrollmentColor = (count, maxCapacity) => {
+    if (!maxCapacity) return '#000000'; // black if no limit
+    if (count > maxCapacity) return '#dc3545'; // red for overfull
+    if (count === maxCapacity) return '#ffc107'; // yellow/amber for full
+    return '#28a745'; // green for not full
   };
 
   // Compute available students (not enrolled or waitlisted), sorted by last name
@@ -131,7 +141,7 @@ const ManageEnrollment = () => {
           <div className="row">
             {/* All Students */}
             <div className="col-md-4">
-              <h6>All Students</h6>
+              <h6>All Students ({available.length})</h6>
               <input className="form-control mb-2" placeholder="Search..." value={searchAll} onChange={e => setSearchAll(e.target.value)} />
               <div className="sticky-action-row">
                 <button className="btn-enroll btn-sm me-1" onClick={() => move(available, () => {}, enrolled, setEnrolled, selectedAll, setSelectedAll)} disabled={selectedAll.length === 0}>→ Enroll</button>
@@ -161,7 +171,21 @@ const ManageEnrollment = () => {
             </div>
             {/* Enrolled */}
             <div className="col-md-4">
-              <h6>Enrolled</h6>
+              <h6>
+                Enrolled{' '}
+                {classData?.max_capacity ? (
+                  <span
+                    style={{
+                      color: getEnrollmentColor(enrolled.length, classData.max_capacity),
+                      fontWeight: enrolled.length >= classData.max_capacity ? 'bold' : 'normal'
+                    }}
+                  >
+                    ({enrolled.length}/{classData.max_capacity})
+                  </span>
+                ) : (
+                  `(${enrolled.length})`
+                )}
+              </h6>
               <input className="form-control mb-2" placeholder="Search..." value={searchEnrolled} onChange={e => setSearchEnrolled(e.target.value)} />
               <div className="sticky-action-row">
                 <button className="btn-remove btn-sm me-1" onClick={() => remove(enrolled, setEnrolled, available, () => {}, selectedEnrolled, setSelectedEnrolled)} disabled={selectedEnrolled.length === 0}>← Remove</button>
@@ -191,7 +215,7 @@ const ManageEnrollment = () => {
             </div>
             {/* Waitlist */}
             <div className="col-md-4">
-              <h6>Waitlist</h6>
+              <h6>Waitlist ({waitlist.length})</h6>
               <input className="form-control mb-2" placeholder="Search..." value={searchWaitlist} onChange={e => setSearchWaitlist(e.target.value)} />
               <div className="sticky-action-row">
                 <button className="btn-remove btn-sm me-1" onClick={() => remove(waitlist, setWaitlist, available, () => {}, selectedWaitlist, setSelectedWaitlist)} disabled={selectedWaitlist.length === 0}>← Remove</button>

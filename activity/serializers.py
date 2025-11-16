@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Organization, Contact
+from .models import Organization, Contact, Location
 from .models import Student, Activity, Enrollment, Meeting, AttendanceRecord, ClassCancellation
 
 
@@ -9,7 +9,7 @@ class ActivitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Activity
-        fields = ['id', 'type', 'session', 'session_name', 'day_of_week', 'time', 'location', 'closed', 'attendance_stats']
+        fields = ['id', 'type', 'session', 'session_name', 'day_of_week', 'time', 'location', 'max_capacity', 'closed', 'attendance_stats']
 
     def get_attendance_stats(self, obj):
         # Get student_id from context if available (for student detail view)
@@ -69,16 +69,28 @@ class ContactSerializer(serializers.ModelSerializer):
         model = Contact
         fields = ['id', 'name', 'office_phone', 'cell_phone', 'email', 'role', 'organization', 'organization_name', 'organization_id']
 
+class LocationSerializer(serializers.ModelSerializer):
+    organization_name = serializers.CharField(source='organization.name', read_only=True)
+    organization_id = serializers.IntegerField(source='organization.id', read_only=True)
+
+    class Meta:
+        model = Location
+        fields = ['id', 'name', 'address', 'description', 'organization', 'organization_name', 'organization_id']
+
 class OrganizationSerializer(serializers.ModelSerializer):
     contacts = ContactSerializer(many=True, read_only=True)
     contact_count = serializers.SerializerMethodField()
+    num_locations = serializers.SerializerMethodField()
 
     class Meta:
         model = Organization
-        fields = ['id', 'name', 'contacts', 'contact_count']
+        fields = ['id', 'name', 'contacts', 'contact_count', 'num_locations']
 
     def get_contact_count(self, obj):
         return obj.contacts.count()
+
+    def get_num_locations(self, obj):
+        return obj.locations.count()
 
 class ActivityListSerializer(serializers.ModelSerializer):
     students = serializers.SerializerMethodField()
@@ -93,7 +105,7 @@ class ActivityListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Activity
         fields = [
-            'id', 'type', 'day_of_week', 'time', 'location', 'closed',
+            'id', 'type', 'day_of_week', 'time', 'location', 'max_capacity', 'closed',
             'session_name', 'session_id', 'organization_name', 'organization_id',
             'students_count', 'waitlist_count',
             'students', 'waitlist',

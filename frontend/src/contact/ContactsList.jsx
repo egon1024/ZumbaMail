@@ -4,34 +4,51 @@ import PhoneDisplay from "../utils/phone/PhoneDisplay";
 import ContactLink from "../organization/ContactLink";
 import "../organization/OrganizationDetails.css";
 import { authFetch } from "../utils/authFetch";
-
+import { useLocation } from "react-router-dom";
 
 
 function ContactsList() {
+  const location = useLocation();
   const [contacts, setContacts] = useState([]);
+  const [organizations, setOrganizations] = useState([]); // New state for organizations
+  const [selectedOrg, setSelectedOrg] = useState(() => { // New state for selected organization
+    const searchParams = new URLSearchParams(location.search);
+    return searchParams.get('organization') || '';
+  });
   const [sortField, setSortField] = useState('name');
   const [sortAsc, setSortAsc] = useState(true);
   const [error, setError] = useState(null);
   const [hoveredContactId, setHoveredContactId] = useState(null);
 
   useEffect(() => {
-    function fetchContacts() {
-      (async () => {
-        try {
-          const resp = await authFetch("/api/contacts/");
-          if (resp.ok) {
-            const data = await resp.json();
-            setContacts(Array.isArray(data) ? data : data.contacts || []);
-          } else {
-            setError("Failed to retrieve contacts from backend.");
-          }
-        } catch (err) {
-          setError("Unable to connect to backend server. Please check that the backend is running.");
+    const fetchData = async () => {
+      try {
+        let contactsUrl = "/api/contacts/";
+        if (selectedOrg) {
+          contactsUrl += `?organization=${selectedOrg}`;
         }
-      })();
-    }
-    fetchContacts();
-  }, []);
+
+        const [contactsRes, orgsRes] = await Promise.all([
+          authFetch(contactsUrl),
+          authFetch('/api/organizations/')
+        ]);
+
+        if (!contactsRes.ok) throw new Error('Failed to fetch contacts');
+        if (!orgsRes.ok) throw new Error('Failed to fetch organizations');
+
+        const contactsData = await contactsRes.json();
+        const orgsData = await orgsRes.json();
+
+        setContacts(Array.isArray(contactsData) ? contactsData : contactsData.contacts || []);
+        setOrganizations(orgsData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        // setLoading(false); // No loading state in this component yet
+      }
+    };
+    fetchData();
+  }, [selectedOrg]); // Re-fetch when selectedOrg changes
 
   function handleSort(field) {
     if (sortField === field) {
@@ -69,6 +86,20 @@ function ContactsList() {
           </button>
         </div>
         <div className="card-body">
+          <div className="mb-3">
+            <label htmlFor="organizationFilter" className="form-label">Filter by Organization</label>
+            <select 
+              id="organizationFilter" 
+              className="form-select" 
+              value={selectedOrg} 
+              onChange={e => setSelectedOrg(e.target.value)}
+            >
+              <option value="">All Organizations</option>
+              {organizations.map(org => (
+                <option key={org.id} value={org.id}>{org.name}</option>
+              ))}
+            </select>
+          </div>
           {error && (
             <div className="alert alert-danger" role="alert">
               {error}

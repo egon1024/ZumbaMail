@@ -14,6 +14,12 @@ from .contact import (
 	ContactCreateView,
 	ContactDeleteView,
 )
+from .location import (
+	LocationListView,
+	LocationDetailView,
+	LocationCreateView,
+	LocationDeleteView,
+)
 from .cancellations import (
 	CancellationListView,
 	CancellationCreateView,
@@ -25,4 +31,8 @@ from .reports import (
 	ResidencyReportView,
 	EndOfSessionReportView,
 	CumulativeReportView,
+)
+from .communication import (
+	SessionEnrollmentCombinationsView,
+	EmailDetailsView,
 )

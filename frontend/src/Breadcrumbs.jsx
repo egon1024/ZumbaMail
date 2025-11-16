@@ -11,8 +11,10 @@ function Breadcrumbs() {
   const [contactName, setContactName] = useState(null);
   const [sessionName, setSessionName] = useState(null);
   const [studentName, setStudentName] = useState(null);
+  const [locationName, setLocationName] = useState(null);
   const [classActivity, setClassActivity] = useState(null);
   const [attendanceActivity, setAttendanceActivity] = useState(null);
+  const [emailComboName, setEmailComboName] = useState(null);
 
   // Detect if on organization details page
   useEffect(() => {
@@ -72,6 +74,20 @@ function Breadcrumbs() {
     } else {
       setStudentName(null);
     }
+    // Detect /locations/:id route
+    if (pathnames[0] === 'locations' && pathnames[1] && !isNaN(Number(pathnames[1]))) {
+      (async () => {
+        try {
+          const resp = await authFetch(`/api/locations/${pathnames[1]}/`);
+          if (resp.ok) {
+            const data = await resp.json();
+            setLocationName(data.name);
+          }
+        } catch {}
+      })();
+    } else {
+      setLocationName(null);
+    }
     // Detect /classes/:id route
     if (pathnames[0] === 'classes' && pathnames[1] && !isNaN(Number(pathnames[1]))) {
       (async () => {
@@ -100,7 +116,25 @@ function Breadcrumbs() {
     } else {
       setAttendanceActivity(null);
     }
-  }, [location.pathname]);
+    // Detect /communication/session-email-composer/:combinationId route
+    if (pathnames[0] === 'communication' && pathnames[1] === 'session-email-composer' && pathnames[2]) {
+      (async () => {
+        try {
+          const searchParams = new URLSearchParams(location.search);
+          const sessionId = searchParams.get('session_id');
+          if (sessionId) {
+            const resp = await authFetch(`/api/communication/email-details/${pathnames[2]}/?session_id=${sessionId}`);
+            if (resp.ok) {
+              const data = await resp.json();
+              setEmailComboName(`${data.organization_name} - ${data.session_name} - ${data.combination_name}`);
+            }
+          }
+        } catch {}
+      })();
+    } else {
+      setEmailComboName(null);
+    }
+  }, [location.pathname, location.search]);
 
   return (
     <nav aria-label="breadcrumb" className="mt-2 mb-3 ms-3">
@@ -125,6 +159,10 @@ function Breadcrumbs() {
           if (pathnames[0] === 'students' && idx === 1 && studentName) {
             label = studentName;
           }
+          // If on /locations/:id, show location name for id segment
+          if (pathnames[0] === 'locations' && idx === 1 && locationName) {
+            label = locationName;
+          }
           // If on /classes/:id, show ClassLabel for id segment
           if (pathnames[0] === 'classes' && idx === 1 && classActivity) {
             label = <ClassLabel activity={classActivity} />;
@@ -141,6 +179,24 @@ function Breadcrumbs() {
                 {dateDisplay}
               </>
             );
+          }
+          // If on /communication/session-email-composer/:combinationId, show custom name
+          if (pathnames[0] === 'communication' && pathnames[1] === 'session-email-composer' && idx === 2 && emailComboName) {
+            label = emailComboName;
+          }
+          // Rename "session-email-composer" to "Session Emails" and link to session-emails page
+          if (pathnames[0] === 'communication' && idx === 1 && value === 'session-email-composer') {
+            label = 'Session Emails';
+            // Override the link to point to session-emails instead
+            return (
+              <li className="breadcrumb-item" key={to}>
+                <Link to="/communication/session-emails">{label}</Link>
+              </li>
+            );
+          }
+          // Rename "session-emails" to "Session Emails"
+          if (pathnames[0] === 'communication' && idx === 1 && value === 'session-emails') {
+            label = 'Session Emails';
           }
           return isLast ? (
             <li className="breadcrumb-item active" aria-current="page" key={to}>
