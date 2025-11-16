@@ -45,10 +45,16 @@ const ClassDetail = () => {
       <div className="card shadow-sm border-primary mb-4">
         <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center">
           <h4 className="mb-0">Class Details</h4>
-          <Link to={`/classes/${id}/edit`} className="btn btn-outline-light btn-sm">
-            <i className="bi bi-pencil-square me-1"></i>
-            Edit
-          </Link>
+          <div>
+            <Link to={`/classes/new`} className="btn btn-success btn-sm rounded me-2 no-link-hover">
+              <i className="bi bi-plus-circle me-1"></i>
+              New Class
+            </Link>
+            <Link to={`/classes/${id}/edit`} className="btn btn-outline-light btn-sm">
+              <i className="bi bi-pencil-square me-1"></i>
+              Edit
+            </Link>
+          </div>
         </div>
         <div className="card-body">
           <table className="table table-bordered w-100">
@@ -75,7 +81,7 @@ const ClassDetail = () => {
               </tr>
               <tr>
                 <th>Location</th>
-                <td>{cls.location}</td>
+                <td>{cls.location_name}</td>
               </tr>
               <tr>
                 <th>Max Capacity</th>

@@ -90,7 +90,7 @@ class OrganizationDetailsView(APIView):
                 'type': a.type,
                 'day_of_week': a.day_of_week,
                 'time': a.time.strftime('%I:%M %p'),
-                'location': a.location,
+                'location_name': a.location.name if a.location else None,
             }
             for a in current_activities
         ]

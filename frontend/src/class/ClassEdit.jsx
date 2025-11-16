@@ -19,26 +19,9 @@ function ClassEdit() {
   const [sessionLoading, setSessionLoading] = useState(false);
   const [orgError, setOrgError] = useState(null);
   const [sessionError, setSessionError] = useState(null);
-  const [locationOptions, setLocationOptions] = useState([]);
-  const [locationLoading, setLocationLoading] = useState(true);
-  const [locationError, setLocationError] = useState(null);
-
-  useEffect(() => {
-    async function fetchLocationOptions() {
-      setLocationLoading(true);
-      try {
-        const resp = await authFetch('/api/activity/location_choices/');
-        if (!resp.ok) throw new Error('Failed to fetch location options');
-        const data = await resp.json();
-        setLocationOptions(data.locations || []);
-      } catch (err) {
-        setLocationError(err.message);
-      } finally {
-        setLocationLoading(false);
-      }
-    }
-    fetchLocationOptions();
-  }, []);
+  const [locationsForOrg, setLocationsForOrg] = useState([]);
+  const [locationsLoading, setLocationsLoading] = useState(false);
+  const [locationsError, setLocationsError] = useState(null);
   // Helper to format time from backend (HH:MM:SS or HH:MM) to 12-hour am/pm
 
   function handleTimeChange(e) {
@@ -93,6 +76,7 @@ function ClassEdit() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [organizationId, setOrganizationId] = useState(null);
 
   useEffect(() => {
     // Only treat id as edit mode if it's a valid number
@@ -115,6 +99,7 @@ function ClassEdit() {
           });
           setOrgName(data.organization_name || "");
           setSessionName(data.session_name || "");
+          setOrganizationId(data.organization_id); // Explicitly set org ID for edit mode
         } catch (err) {
           setError(err.message);
         } finally {
@@ -147,9 +132,12 @@ function ClassEdit() {
         }
         setOrganizations(orgs);
         setSessions(sess);
-        // Set org/session name for display
-        const orgObj = orgDefault ? orgs.find(o => String(o.id) === String(orgDefault)) : null;
-        setOrgName(orgObj ? orgObj.name : "");
+        // Set org/session name for display and org ID for fetching locations
+        if (orgDefault) {
+          const orgObj = orgs.find(o => String(o.id) === String(orgDefault));
+          setOrgName(orgObj ? orgObj.name : "");
+          setOrganizationId(orgDefault); // Set org ID from query param
+        }
         const sessObj = sessionDefault ? sess.find(s => String(s.id) === String(sessionDefault)) : null;
         setSessionName(sessObj ? sessObj.name : "");
       }).catch(err => {
@@ -162,6 +150,31 @@ function ClassEdit() {
       });
     }
   }, [id, orgDefault, sessionDefault]);
+
+  // This useEffect fetches locations based on the determined organization
+  useEffect(() => {
+    if (!organizationId) {
+      setLocationsForOrg([]);
+      return;
+    }
+
+    async function fetchLocations() {
+      setLocationsLoading(true);
+      setLocationsError(null);
+      try {
+        const resp = await authFetch(`/api/locations/?organization=${organizationId}`);
+        if (!resp.ok) throw new Error('Failed to fetch locations for the organization');
+        const data = await resp.json();
+        setLocationsForOrg(data || []);
+      } catch (err) {
+        setLocationsError(err.message);
+      } finally {
+        setLocationsLoading(false);
+      }
+    }
+
+    fetchLocations();
+  }, [organizationId]);
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
@@ -239,7 +252,9 @@ function ClassEdit() {
                   name="organization"
                   value={form.organization || orgDefault || ""}
                   onChange={e => {
-                    setForm(f => ({ ...f, organization: e.target.value, session: "" }));
+                    const newOrgId = e.target.value;
+                    setForm(f => ({ ...f, organization: newOrgId, session: "" }));
+                    setOrganizationId(newOrgId);
                   }}
                   required
                   disabled={organizations.length === 0}
@@ -300,23 +315,22 @@ function ClassEdit() {
             </div>
             <div className="mb-3">
               <label className="form-label">Location</label>
-              <input
-                type="text"
+              <select
                 name="location"
                 value={form.location}
                 onChange={handleChange}
-                className="form-control"
-                list="location-list"
-                autoComplete="off"
+                className="form-select"
                 required
-              />
-              <datalist id="location-list">
-                {locationOptions.map(loc => (
-                  <option key={loc} value={loc} />
+                disabled={locationsLoading || !organizationId}
+              >
+                <option value="" disabled>
+                  {locationsLoading ? "Loading locations..." : (!organizationId ? "Select an organization first" : "Select a location")}
+                </option>
+                {locationsForOrg.map(loc => (
+                  <option key={loc.id} value={loc.id}>{loc.name}</option>
                 ))}
-              </datalist>
-              {locationLoading && <div className="form-text">Loading locations...</div>}
-              {locationError && <div className="form-text text-danger">{locationError}</div>}
+              </select>
+              {locationsError && <div className="form-text text-danger">{locationsError}</div>}
             </div>
             <div className="mb-3">
               <label className="form-label">Max Capacity</label>

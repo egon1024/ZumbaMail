@@ -105,7 +105,7 @@ class Activity(models.Model):
 	]
 	day_of_week = models.CharField(max_length=10, choices=DAY_CHOICES)  # e.g., "Monday"
 	time = models.TimeField()
-	location = models.CharField(max_length=100)
+	location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True, related_name='activities')
 	max_capacity = models.PositiveIntegerField(
 		null=True,
 		blank=True,
@@ -114,7 +114,8 @@ class Activity(models.Model):
 	closed = models.BooleanField(default=False, help_text="Mark this activity as closed when it has completed.")
 
 	def __str__(self):
-		return f"{self.session.name}: {self.get_type_display()} on {self.day_of_week} at {self.time.strftime('%I:%M %p')}"
+		location_name = self.location.name if self.location else "No Location"
+		return f"{self.get_type_display()} on {self.day_of_week} at {self.time.strftime('%-I:%M %p')}"
 
 class Meeting(models.Model):
 	"""
@@ -128,7 +129,7 @@ class Meeting(models.Model):
 		unique_together = [['activity', 'date']]
 
 	def __str__(self):
-		return f"{self.activity} on {self.date}"
+		return f"{self.activity.get_type_display()} on {self.date}"
 
 class ClassCancellation(models.Model):
 	"""

@@ -259,7 +259,7 @@ export default function AttendanceList() {
                         <span>{formatTime(stat.time)}</span>
                       </div>
                     </td>
-                    <td>{stat.location}</td>
+                    <td>{stat.location_name}</td>
                     <td>
                       <span className="text-success">{stat.enrolled_present}</span>
                       <span>/</span>

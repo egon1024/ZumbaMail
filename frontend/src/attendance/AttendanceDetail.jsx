@@ -57,7 +57,7 @@ export default function AttendanceDetail() {
                 id: activityData.id,
                 type: activityData.type,
                 time: activityData.time,
-                location: activityData.location,
+                location: activityData.location_name,
                 session_name: activityData.session_name || '',
                 organization_name: activityData.organization_name || ''
               });
@@ -405,13 +405,12 @@ export default function AttendanceDetail() {
         <button type="button" className="btn btn-secondary" onClick={() => navigate(`/attendance?date=${dateParam}`)}>
           ← Back to Attendance
         </button>
-        <button
-          type="button"
-          className="btn btn-sm btn-outline-danger"
-          onClick={handleClearAttendance}
-          disabled={loading}
-        >
-          <i className="bi bi-x-circle me-1"></i>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-danger"
+                      onClick={handleClearAttendance}
+                      disabled={loading}
+                    >          <i className="bi bi-x-circle me-1"></i>
           Clear All Attendance
         </button>
       </div>

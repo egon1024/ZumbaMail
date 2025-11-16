@@ -187,7 +187,7 @@ function Dashboard() {
                         </td>
                         <td className="clickable-cell class-detail-group">
                           <a href={`/classes/${cls.id}`} className="class-details-link">
-                            {cls.location}
+                            {cls.location_name}
                           </a>
                         </td>
                         <td className="clickable-cell org-cell">

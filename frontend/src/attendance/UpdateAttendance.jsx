@@ -543,7 +543,7 @@ export default function UpdateAttendance() {
               <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
                 {selectedClass.organization_name} / {selectedClass.session_name}
                 <br />
-                {selectedClass.day_of_week} at {formatTime(selectedClass.time)} • {selectedClass.location}
+                {selectedClass.day_of_week} at {formatTime(selectedClass.time)} • {selectedClass.location_name}
                 <br />
                 Date: {formatDate(date.toISOString().split('T')[0])}
               </div>
