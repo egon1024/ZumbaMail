@@ -72,6 +72,7 @@ function Login({ onLogin }) {
               disabled={loading}
               autoCapitalize="none"
               autoComplete="username"
+              autoFocus
             />
           </div>
           <div className="mb-3">
