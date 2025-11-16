@@ -42,7 +42,7 @@ class WeeklyReportView(APIView):
         activities = Activity.objects.filter(
             session__organization=organization,
             closed=False
-        ).select_related('session').order_by('day_of_week', 'time')
+        ).select_related('session', 'location').order_by('day_of_week', 'time')
 
         # Build report data
         report_data = []
@@ -76,7 +76,7 @@ class WeeklyReportView(APIView):
                     'date': meeting.date,
                     'day_of_week': activity.day_of_week,
                     'class_type': activity.get_type_display(),
-                    'location': activity.location,
+                    'location_name': activity.location.name if activity.location else None,
                     'time': activity.time.strftime('%H:%M'),
                     'present_count': present_count,
                     'unexpected_absences': [
@@ -149,7 +149,7 @@ class ResidencyReportView(APIView):
         # Get all activities for this session
         activities = Activity.objects.filter(
             session=session
-        ).select_related('session').order_by('day_of_week', 'time')
+        ).select_related('session', 'location').order_by('day_of_week', 'time')
 
         # Build report data - aggregate across all meetings for each activity
         report_data = []
@@ -180,7 +180,7 @@ class ResidencyReportView(APIView):
             report_data.append({
                 'day_of_week': activity.day_of_week,
                 'class_type': activity.get_type_display(),
-                'location': activity.location,
+                'location_name': activity.location.name if activity.location else None,
                 'time': activity.time.strftime('%H:%M'),
                 'rochester_count': total_rochester,
                 'non_rochester_count': total_non_rochester,
@@ -238,7 +238,7 @@ class EndOfSessionReportView(APIView):
         # Get all activities for this session
         activities = Activity.objects.filter(
             session=session
-        ).select_related('session').order_by('day_of_week', 'time')
+        ).select_related('session', 'location').order_by('day_of_week', 'time')
 
         # Build report data
         report_data = []
@@ -262,7 +262,7 @@ class EndOfSessionReportView(APIView):
             report_data.append({
                 'day_of_week': activity.day_of_week,
                 'class_type': activity.get_type_display(),
-                'location': activity.location,
+                'location_name': activity.location.name if activity.location else None,
                 'time': activity.time.strftime('%H:%M'),
                 'date_counts': date_counts
             })
@@ -321,7 +321,7 @@ class CumulativeReportView(APIView):
         # Get all activities for this session
         activities = Activity.objects.filter(
             session=session
-        ).select_related('session').order_by('day_of_week', 'time')
+        ).select_related('session', 'location').order_by('day_of_week', 'time')
 
         # Build report data
         report_data = []
@@ -352,7 +352,7 @@ class CumulativeReportView(APIView):
             report_data.append({
                 'day_of_week': activity.day_of_week,
                 'class_type': activity.get_type_display(),
-                'location': activity.location,
+                'location_name': activity.location.name if activity.location else None,
                 'time': activity.time.strftime('%H:%M'),
                 'no_shows': no_shows
             })

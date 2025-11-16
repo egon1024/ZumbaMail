@@ -111,7 +111,7 @@ class SessionDetailView(RetrieveAPIView):
     def get(self, request, *args, **kwargs):
         session = self.get_object()
         organization = session.organization
-        classes = Activity.objects.filter(session=session)
+        classes = Activity.objects.filter(session=session).select_related('location')
         # Serializers
         class OrgSerializer(serializers.ModelSerializer):
             class Meta:
@@ -120,9 +120,10 @@ class SessionDetailView(RetrieveAPIView):
         class ClassSerializer(serializers.ModelSerializer):
             num_students = serializers.SerializerMethodField()
             num_waitlist = serializers.SerializerMethodField()
+            location_name = serializers.CharField(source='location.name', read_only=True)
             class Meta:
                 model = Activity
-                fields = ['id', 'type', 'day_of_week', 'time', 'location', 'max_capacity', 'num_students', 'num_waitlist']
+                fields = ['id', 'type', 'day_of_week', 'time', 'location_name', 'max_capacity', 'num_students', 'num_waitlist']
 
             def get_num_students(self, obj):
                 return obj.enrollments.filter(status='active').count()

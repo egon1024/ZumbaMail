@@ -20,3 +20,9 @@
   color: #007bff !important;
   text-decoration: none !important;
 }
+
+/* Utility to disable link-like hover effects on elements styled as buttons */
+.btn.no-link-hover:hover, .btn.no-link-hover:focus {
+  text-decoration: none !important;
+  font-weight: 400 !important; /* Keep font weight consistent with base */
+}

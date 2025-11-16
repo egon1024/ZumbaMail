@@ -211,7 +211,7 @@ const ClassList = () => {
                           onClick={() => window.location.href = detailUrl}
                           style={{cursor: 'pointer'}}
                         >
-                          {cls.location}
+                          {cls.location_name}
                         </td>
                         {/* Session: only link, no hover effect */}
                         <td>

@@ -34,7 +34,7 @@ class SessionEnrollmentCombinationsView(APIView):
             )
 
         # Get all activities for this session
-        activities = Activity.objects.filter(
+        activities = Activity.objects.select_related('location').filter(
             session=session
         ).order_by('day_of_week', 'time')
 
@@ -94,7 +94,7 @@ class SessionEnrollmentCombinationsView(APIView):
                     'day_of_week': act.day_of_week,
                     'type': act.get_type_display(),
                     'time': act.time.strftime('%I:%M %p'),
-                    'location': act.location
+                    'location_name': act.location.name if act.location else None
                 })
 
             waitlisted_activities = []
@@ -105,7 +105,7 @@ class SessionEnrollmentCombinationsView(APIView):
                     'day_of_week': act.day_of_week,
                     'type': act.get_type_display(),
                     'time': act.time.strftime('%I:%M %p'),
-                    'location': act.location
+                    'location_name': act.location.name if act.location else None
                 })
 
             result.append({
@@ -127,6 +127,7 @@ class SessionEnrollmentCombinationsView(APIView):
         })
 
 
+from activity.models import Meeting
 class EmailDetailsView(APIView):
     """
     Get email composition details for a specific enrollment combination.
@@ -134,153 +135,164 @@ class EmailDetailsView(APIView):
     """
     permission_classes = [permissions.IsAuthenticated]
 
+    def _build_subject(self, activities, organization):
+        """Builds the email subject line."""
+        if not activities:
+            return f"{organization.name} Class Information"
+
+        class_descs = [f"{act.get_type_display()} {act.day_of_week}" for act in activities]
+        
+        subject = " and ".join(class_descs)
+        subject += f" {organization.name} Classes With Alyssa"
+        return subject
+
+    def _build_body(self, enrolled_activities, waitlisted_activities, session):
+        """Builds the email body."""
+        body_lines = ["Hello-", "You are currently signed up for:", ""]
+
+        # --- Enrolled Classes ---
+        for i, act in enumerate(enrolled_activities):
+            # Class name, day, and time
+            time_str = act.time.strftime('%-I:%M').replace(':00', '')
+            end_time = (act.time.hour + 1) % 24
+            end_time_str = f"{end_time}"
+            time_range = f"{time_str}-{end_time_str}"
+            body_lines.append(f"{act.get_type_display()} {act.day_of_week} {time_range}")
+
+            # Class dates
+            meeting_dates = act.meetings.order_by('date').values_list('date', flat=True)
+            date_str = ", ".join([d.strftime('%-m/%-d') for d in meeting_dates])
+            day_abbr = act.day_of_week[:4] if act.day_of_week == "Thursday" else act.day_of_week[:3]
+            body_lines.append(f"{act.get_type_display()} {day_abbr} dates: {date_str}")
+            
+            if i < len(enrolled_activities) - 1 or waitlisted_activities:
+                body_lines.append("")
+                body_lines.append("and")
+                body_lines.append("")
+
+        # --- Waitlisted Classes (simplified) ---
+        for act in waitlisted_activities:
+            time_str = act.time.strftime('%-I:%M %p')
+            body_lines.append(f"Waitlist: {act.get_type_display()} {act.day_of_week} at {time_str}")
+            body_lines.append("")
+
+        # --- Location Information ---
+        unique_locations = set()
+        for act in enrolled_activities:
+            try:
+                # This works for valid FKs
+                if act.location:
+                    unique_locations.add(act.location)
+            except AttributeError:
+                # This handles the case where act.location is a string
+                pass
+
+        if len(unique_locations) == 1:
+            location = unique_locations.pop()
+            body_lines.append(f"Class takes place at the {location.name}, located at {location.address}.")
+            if location.description:
+                body_lines.append(location.description)
+            body_lines.append("")
+
+        # --- Closing Paragraph ---
+        is_full = any(
+            act.max_capacity and act.enrollments.filter(status='active').count() >= act.max_capacity
+            for act in enrolled_activities
+        )
+        if is_full:
+            body_lines.append("This class is currently full, and there is a wait list. Please let me know any dates that you will not be able to attend class.")
+        else:
+            body_lines.append("As a reminder, if you are aware that you will be away for certain days, please let me know which classes you will miss so I can open those spots to people on the waiting list. Please be sure to include your name and the dates you will be absent.")
+        
+        body_lines.append("I look forward to seeing you in class soon!")
+        body_lines.append("~ Alyssa")
+
+        return "\n".join(body_lines)
+
     def get(self, request, combination_id):
         session_id = request.query_params.get('session_id')
-
         if not session_id:
-            return Response(
-                {"error": "session_id is required"},
-                status=400
-            )
+            return Response({"error": "session_id is required"}, status=400)
 
         try:
-            session = Session.objects.get(pk=session_id)
+            session = Session.objects.select_related('organization').get(pk=session_id)
         except Session.DoesNotExist:
-            return Response(
-                {"error": "Session not found"},
-                status=404
-            )
+            return Response({"error": "Session not found"}, status=404)
 
-        # Re-generate combinations to find the one matching this ID
-        # (In a production app, we might cache this data)
-        activities = Activity.objects.filter(
-            session=session
+        activities = Activity.objects.filter(session=session).prefetch_related(
+            'meetings',
+            'enrollments__student'
         ).order_by('day_of_week', 'time')
 
         student_classes = defaultdict(lambda: {'enrolled': set(), 'waitlisted': set(), 'student': None})
-
         for activity in activities:
-            # Get enrolled students
-            enrolled = Enrollment.objects.filter(
-                activity=activity,
-                status='active'
-            ).select_related('student')
-
-            for enrollment in enrolled:
-                student_classes[enrollment.student.id]['enrolled'].add(activity.id)
+            for enrollment in activity.enrollments.all():
+                if enrollment.status == 'active':
+                    student_classes[enrollment.student.id]['enrolled'].add(activity.id)
+                elif enrollment.status == 'waiting':
+                    student_classes[enrollment.student.id]['waitlisted'].add(activity.id)
                 student_classes[enrollment.student.id]['student'] = enrollment.student
 
-            # Get waitlisted students
-            waitlisted = Enrollment.objects.filter(
-                activity=activity,
-                status='waiting'
-            ).select_related('student')
-
-            for enrollment in waitlisted:
-                student_classes[enrollment.student.id]['waitlisted'].add(activity.id)
-                student_classes[enrollment.student.id]['student'] = enrollment.student
-
-        # Find the combination matching the provided ID
         activity_map = {act.id: act for act in activities}
         target_students = []
-        enrolled_activities = []
-        waitlisted_activities = []
+        target_enrolled_ids = set()
+        target_waitlisted_ids = set()
 
         for student_id, classes in student_classes.items():
-            enrolled_tuple = tuple(sorted(classes['enrolled']))
-            waitlisted_tuple = tuple(sorted(classes['waitlisted']))
-
             combo_string = json.dumps({
-                'enrolled': sorted(classes['enrolled']),
-                'waitlisted': sorted(classes['waitlisted'])
+                'enrolled': sorted(list(classes['enrolled'])),
+                'waitlisted': sorted(list(classes['waitlisted']))
             }, sort_keys=True)
             combo_id = hashlib.md5(combo_string.encode()).hexdigest()
 
             if combo_id == combination_id:
                 target_students.append(classes['student'])
-
-                # Build activity lists (only once)
-                if not enrolled_activities:
-                    for act_id in sorted(classes['enrolled']):
-                        act = activity_map[act_id]
-                        enrolled_activities.append({
-                            'day_of_week': act.day_of_week,
-                            'type': act.get_type_display(),
-                            'time': act.time.strftime('%I:%M %p'),
-                            'location': act.location
-                        })
-
-                if not waitlisted_activities:
-                    for act_id in sorted(classes['waitlisted']):
-                        act = activity_map[act_id]
-                        waitlisted_activities.append({
-                            'day_of_week': act.day_of_week,
-                            'type': act.get_type_display(),
-                            'time': act.time.strftime('%I:%M %p'),
-                            'location': act.location
-                        })
-
+                if not target_enrolled_ids:
+                    target_enrolled_ids = classes['enrolled']
+                    target_waitlisted_ids = classes['waitlisted']
+        
         if not target_students:
-            return Response(
-                {"error": "Combination not found"},
-                status=404
-            )
+            return Response({"error": "Combination not found"}, status=404)
 
-        # Sort students by last name, first name
         target_students.sort(key=lambda s: (s.last_name, s.first_name))
+        bcc_list = [s.email for s in target_students if s.email]
 
-        # Build BCC list (comma-separated emails)
-        bcc_list = []
-        for student in target_students:
-            if student.email:
-                bcc_list.append(student.email)
+        enrolled_activities = sorted([activity_map[id] for id in target_enrolled_ids], key=lambda x: (x.day_of_week, x.time))
+        waitlisted_activities = sorted([activity_map[id] for id in target_waitlisted_ids], key=lambda x: (x.day_of_week, x.time))
 
-        # Build email subject
-        subject = f'{session.organization.name}: "{session.name}" session Class Registration'
+        subject = self._build_subject(enrolled_activities, session.organization)
+        body = self._build_body(enrolled_activities, waitlisted_activities, session)
 
-        # Build email body
-        body_lines = [
-            f"Hello!",
-            "",
-            f'Thank you for enrolling in classes for the "{session.name}" session with {session.organization.name}.',
-            "",
-        ]
+        # For the frontend summary
+        enrolled_activities_summary = []
+        for act in enrolled_activities:
+            location_name = "N/A"
+            try:
+                if act.location:
+                    location_name = act.location.name
+            except AttributeError:
+                location_name = act.location # old string value
+            enrolled_activities_summary.append({
+                'day_of_week': act.day_of_week,
+                'type': act.get_type_display(),
+                'time': act.time.strftime('%-I:%M %p'),
+                'location': location_name
+            })
 
-        if enrolled_activities:
-            body_lines.append("You are enrolled in the following classes:")
-            body_lines.append("")
-            for act in enrolled_activities:
-                body_lines.append(f"  {act['day_of_week']} {act['type']}")
-                body_lines.append(f"  Time: {act['time']}")
-                body_lines.append(f"  Location: {act['location']}")
-                body_lines.append("")
-
-        if waitlisted_activities:
-            body_lines.append("You are on the waitlist for the following classes:")
-            body_lines.append("")
-            for act in waitlisted_activities:
-                body_lines.append(f"  {act['day_of_week']} {act['type']}")
-                body_lines.append(f"  Time: {act['time']}")
-                body_lines.append(f"  Location: {act['location']}")
-                body_lines.append("")
-
-        body_lines.extend([
-            "We look forward to seeing you!",
-            "",
-            f"Best regards,",
-            f"{session.organization.name}"
-        ])
-
-        body = "\n".join(body_lines)
-
-        # Build a readable combination name for breadcrumb
-        class_names = []
-        if enrolled_activities:
-            class_names.extend([f"{act['day_of_week']} {act['type']}" for act in enrolled_activities])
-        if waitlisted_activities:
-            class_names.extend([f"{act['day_of_week']} {act['type']} (Waitlist)" for act in waitlisted_activities])
-
-        combination_name = " + ".join(class_names) if class_names else "No Classes"
+        waitlisted_activities_summary = []
+        for act in waitlisted_activities:
+            location_name = "N/A"
+            try:
+                if act.location:
+                    location_name = act.location.name
+            except AttributeError:
+                location_name = act.location # old string value
+            waitlisted_activities_summary.append({
+                'day_of_week': act.day_of_week,
+                'type': act.get_type_display(),
+                'time': act.time.strftime('%-I:%M %p'),
+                'location': location_name
+            })
 
         return Response({
             'to_email': settings.DEFAULT_EMAIL_TO_ADDRESS,
@@ -288,9 +300,8 @@ class EmailDetailsView(APIView):
             'subject': subject,
             'body': body,
             'student_count': len(target_students),
-            'enrolled_classes': enrolled_activities,
-            'waitlisted_classes': waitlisted_activities,
+            'enrolled_classes': enrolled_activities_summary,
+            'waitlisted_classes': waitlisted_activities_summary,
             'organization_name': session.organization.name,
             'session_name': session.name,
-            'combination_name': combination_name
         })

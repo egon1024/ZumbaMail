@@ -228,7 +228,7 @@ class AttendanceStatsView(APIView):
                 'type': activity.type,
                 'day_of_week': activity.day_of_week,
                 'time': activity.time.strftime('%H:%M') if activity.time else None,
-                'location': activity.location,
+                'location_name': activity.location.name if activity.location else None,
                 'session_name': activity.session.name,
                 'organization_name': activity.session.organization.name,
                 'organization_id': activity.session.organization.id,

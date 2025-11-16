@@ -129,7 +129,7 @@ function SessionDetails() {
                       <td><span className="reactive-link-text">{cls.type}</span></td>
                       <td><DayOfWeek activeDay={cls.day_of_week} /></td>
                       <td>{cls.time}</td>
-                      <td>{cls.location}</td>
+                      <td>{cls.location_name}</td>
                       <td>{cls.num_students ?? ''}</td>
                       <td>{cls.num_waitlist ?? ''}</td>
                     </tr>

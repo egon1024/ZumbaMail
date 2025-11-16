@@ -6,10 +6,11 @@ from .models import Student, Activity, Enrollment, Meeting, AttendanceRecord, Cl
 class ActivitySerializer(serializers.ModelSerializer):
     attendance_stats = serializers.SerializerMethodField()
     session_name = serializers.CharField(source='session.name', read_only=True)
+    location_name = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Activity
-        fields = ['id', 'type', 'session', 'session_name', 'day_of_week', 'time', 'location', 'max_capacity', 'closed', 'attendance_stats']
+        fields = ['id', 'type', 'session', 'session_name', 'day_of_week', 'time', 'location', 'location_name', 'max_capacity', 'closed', 'attendance_stats']
 
     def get_attendance_stats(self, obj):
         # Get student_id from context if available (for student detail view)
@@ -33,6 +34,9 @@ class ActivitySerializer(serializers.ModelSerializer):
             'unexpected_absent': unexpected_absent_count,
             'expected_absent': expected_absent_count
         }
+
+    def get_location_name(self, obj):
+        return obj.location.name if obj.location else None
 
 class StudentDetailSerializer(serializers.ModelSerializer):
 
@@ -101,11 +105,12 @@ class ActivityListSerializer(serializers.ModelSerializer):
     organization_id = serializers.IntegerField(source='session.organization.id', read_only=True)
     students_count = serializers.SerializerMethodField()
     waitlist_count = serializers.SerializerMethodField()
+    location_name = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Activity
         fields = [
-            'id', 'type', 'day_of_week', 'time', 'location', 'max_capacity', 'closed',
+            'id', 'type', 'day_of_week', 'time', 'location', 'location_name', 'max_capacity', 'closed',
             'session_name', 'session_id', 'organization_name', 'organization_id',
             'students_count', 'waitlist_count',
             'students', 'waitlist',
@@ -141,6 +146,9 @@ class ActivityListSerializer(serializers.ModelSerializer):
             for e in waitlist
         ]
 
+    def get_location_name(self, obj):
+        return obj.location.name if obj.location else None
+
 class AttendanceRecordSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.display_name', read_only=True)
     student_first_name = serializers.CharField(source='student.first_name', read_only=True)
@@ -153,7 +161,7 @@ class AttendanceRecordSerializer(serializers.ModelSerializer):
 class MeetingSerializer(serializers.ModelSerializer):
     activity_type = serializers.CharField(source='activity.type', read_only=True)
     activity_time = serializers.TimeField(source='activity.time', read_only=True)
-    activity_location = serializers.CharField(source='activity.location', read_only=True)
+    activity_location = serializers.CharField(source='activity.location.name', read_only=True)
     session_name = serializers.CharField(source='activity.session.name', read_only=True)
     organization_name = serializers.CharField(source='activity.session.organization.name', read_only=True)
     attendance_records = AttendanceRecordSerializer(many=True, read_only=True)
@@ -179,7 +187,7 @@ class ClassCancellationSerializer(serializers.ModelSerializer):
     activity_type = serializers.CharField(source='activity.type', read_only=True)
     activity_day = serializers.CharField(source='activity.day_of_week', read_only=True)
     activity_time = serializers.TimeField(source='activity.time', read_only=True)
-    activity_location = serializers.CharField(source='activity.location', read_only=True)
+    activity_location = serializers.CharField(source='activity.location.name', read_only=True)
     session_name = serializers.CharField(source='activity.session.name', read_only=True)
     organization_name = serializers.CharField(source='activity.session.organization.name', read_only=True)
     organization_id = serializers.IntegerField(source='activity.session.organization.id', read_only=True)

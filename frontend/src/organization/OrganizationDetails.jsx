@@ -400,7 +400,7 @@ function OrganizationDetails() {
                         </td>
                         <td><DayOfWeek activeDay={activity.day_of_week} /></td>
                         <td>{activity.time}</td>
-                        <td>{activity.location}</td>
+                        <td>{activity.location_name}</td>
                       </tr>
                     </Tooltip>
                   ))}
