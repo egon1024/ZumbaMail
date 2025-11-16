@@ -106,6 +106,11 @@ class Activity(models.Model):
 	day_of_week = models.CharField(max_length=10, choices=DAY_CHOICES)  # e.g., "Monday"
 	time = models.TimeField()
 	location = models.CharField(max_length=100)
+	max_capacity = models.PositiveIntegerField(
+		null=True,
+		blank=True,
+		help_text="Maximum number of students (advisory only)"
+	)
 	closed = models.BooleanField(default=False, help_text="Mark this activity as closed when it has completed.")
 
 	def __str__(self):

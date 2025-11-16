@@ -82,6 +82,9 @@ const ClassList = () => {
     });
   }
 
+  // Check if any class has max_capacity set
+  const hasMaxCapacity = classes.some(cls => cls.max_capacity != null);
+
   if (loading) return <div>Loading classes...</div>;
 
   return (
@@ -126,7 +129,9 @@ const ClassList = () => {
                     <th style={{cursor:'pointer'}} onClick={() => handleSort('location')}>Location</th>
                     <th style={{cursor:'pointer'}} onClick={() => handleSort('session_name')}>Session</th>
                     <th style={{cursor:'pointer'}} onClick={() => handleSort('organization_name')}>Organization</th>
-                    <th style={{cursor:'pointer'}} onClick={() => handleSort('students_count')}>Students</th>
+                    <th style={{cursor:'pointer'}} onClick={() => handleSort('students_count')}>
+                      {hasMaxCapacity ? 'Students/Max' : 'Students'}
+                    </th>
                     <th style={{cursor:'pointer'}} onClick={() => handleSort('waitlist_count')}>Waitlist</th>
                     {showInactive && <th style={{cursor:'pointer'}} onClick={() => handleSort('closed')}>Status</th>}
                   </tr>
@@ -223,7 +228,22 @@ const ClassList = () => {
                           onClick={() => window.location.href = detailUrl}
                           style={{cursor: 'pointer'}}
                         >
-                          {cls.students_count}
+                          {cls.max_capacity ? (
+                            <span
+                              style={{
+                                color: cls.students_count > cls.max_capacity
+                                  ? '#dc3545'  // red for overfull
+                                  : cls.students_count === cls.max_capacity
+                                    ? '#ffc107'  // yellow/amber for full
+                                    : '#28a745',  // green for not full
+                                fontWeight: cls.students_count >= cls.max_capacity ? 'bold' : 'normal'
+                              }}
+                            >
+                              {cls.students_count} / {cls.max_capacity}
+                            </span>
+                          ) : (
+                            cls.students_count
+                          )}
                         </td>
                         {/* Waitlist */}
                         <td

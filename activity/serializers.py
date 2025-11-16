@@ -9,7 +9,7 @@ class ActivitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Activity
-        fields = ['id', 'type', 'session', 'session_name', 'day_of_week', 'time', 'location', 'closed', 'attendance_stats']
+        fields = ['id', 'type', 'session', 'session_name', 'day_of_week', 'time', 'location', 'max_capacity', 'closed', 'attendance_stats']
 
     def get_attendance_stats(self, obj):
         # Get student_id from context if available (for student detail view)
@@ -105,7 +105,7 @@ class ActivityListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Activity
         fields = [
-            'id', 'type', 'day_of_week', 'time', 'location', 'closed',
+            'id', 'type', 'day_of_week', 'time', 'location', 'max_capacity', 'closed',
             'session_name', 'session_id', 'organization_name', 'organization_id',
             'students_count', 'waitlist_count',
             'students', 'waitlist',
