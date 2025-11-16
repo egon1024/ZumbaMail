@@ -1,25 +1,23 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
+import { checkTokenExpiration } from './utils/authFetch';
 
 function PrivateRoute({ children }) {
-  const token = localStorage.getItem('access_token');
-  if (!token) {
-    return <Navigate to="/" replace />;
+  const [isValid, setIsValid] = React.useState(null);
+
+  React.useEffect(() => {
+    const validateToken = async () => {
+      const result = await checkTokenExpiration();
+      setIsValid(result);
+    };
+    validateToken();
+  }, []);
+
+  if (isValid === null) {
+    return <div>Loading...</div>; // Or a spinner
   }
 
-  try {
-    const decodedToken = jwtDecode(token);
-    const currentTime = Date.now() / 1000; // to get in seconds
-
-    if (decodedToken.exp < currentTime) {
-      // Token is expired
-      localStorage.clear(); // Clear all session data
-      return <Navigate to="/" replace />;
-    }
-  } catch (error) {
-    // Error decoding token, treat as invalid
-    localStorage.clear();
+  if (!isValid) {
     return <Navigate to="/" replace />;
   }
 

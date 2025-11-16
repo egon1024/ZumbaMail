@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Login from './Login';
 import Dashboard from './Dashboard';
@@ -12,6 +13,7 @@ import OrganizationEdit from './organization/OrganizationEdit';
 import LocationList from './location/LocationList';
 import LocationDetail from './location/LocationDetail';
 import LocationCreate from './location/LocationCreate';
+import { checkTokenExpiration } from './utils/authFetch';
 import ContactsList from './contact/ContactsList';
 import ContactDetails from './contact/ContactDetails';
 import ContactEdit from './contact/ContactEdit';
@@ -47,6 +49,53 @@ import SessionEmailComposer from './communication/SessionEmailComposer';
 function AppLayout() {
   const location = useLocation();
   const isLoginPage = location.pathname === '/';
+  let lastKeystrokeCheckTime = 0;
+
+  useEffect(() => {
+    const handleKeyDown = async (event) => {
+      const targetTagName = event.target.tagName;
+      const isInputField = ['INPUT', 'TEXTAREA', 'SELECT'].includes(targetTagName);
+
+      if (isInputField) {
+        const currentTime = Date.now();
+        // Check JWT expiration at most once every 2 seconds on keystroke in an input field
+        if (currentTime - lastKeystrokeCheckTime > 2000) {
+          lastKeystrokeCheckTime = currentTime;
+          if (!(await checkTokenExpiration())) {
+            // If token is expired, redirect to login
+            window.location.href = '/';
+          }
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [location.pathname]); // Re-attach listener if path changes
+
+  let lastClickCheckTime = 0;
+  useEffect(() => {
+    const handleClick = async () => {
+      const currentTime = Date.now();
+      // Check JWT expiration at most once every 2 seconds on any click
+      if (currentTime - lastClickCheckTime > 2000) {
+        lastClickCheckTime = currentTime;
+        if (!(await checkTokenExpiration())) {
+          // If token is expired, redirect to login
+          window.location.href = '/';
+        }
+      }
+    };
+
+    document.addEventListener('click', handleClick);
+
+    return () => {
+      document.removeEventListener('click', handleClick);
+    };
+  }, [location.pathname]); // Re-attach listener if path changes
   return (
     <div className="global-bg">
       {!isLoginPage && <Header />}
