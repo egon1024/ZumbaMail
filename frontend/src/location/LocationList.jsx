@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { authFetch } from '../utils/authFetch';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function LocationList() {
   const [locations, setLocations] = useState([]);
@@ -11,6 +11,7 @@ function LocationList() {
   const [hoveredRowId, setHoveredRowId] = useState(null);
   const [sortField, setSortField] = useState('name');
   const [sortAsc, setSortAsc] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,7 +61,7 @@ function LocationList() {
       const strB = String(valB).toLowerCase();
 
       if (strA < strB) return sortAsc ? -1 : 1;
-      if (strA > strB) return sortAsc ? 1 : -1;
+      if (strA > strB) return strB < strA ? 1 : -1;
       return 0;
     });
     return sorted;
@@ -75,9 +76,13 @@ function LocationList() {
       <div className="card shadow-sm border-primary mb-4">
         <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center">
           <h4 className="mb-0">All Locations</h4>
-          <Link to="/locations/new" className="btn btn-success btn-sm">
+          <button
+            className="btn btn-success btn-sm"
+            onClick={() => navigate('/locations/new')}
+            title="Add New Location"
+          >
             <i className="bi bi-plus-lg me-1"></i> New Location
-          </Link>
+          </button>
         </div>
         <div className="card-body">
           <div className="mb-3">
@@ -103,10 +108,10 @@ function LocationList() {
                 <thead>
                   <tr>
                     <th style={{ width: 'fit-content', textAlign: 'center', padding: 0 }}></th>
-                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('organization')}>
+                    <th onClick={() => handleSort('organization')} style={{cursor: 'pointer'}}>
                       Organization {sortField === 'organization' ? (sortAsc ? '▲' : '▼') : ''}
                     </th>
-                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('name')}>
+                    <th onClick={() => handleSort('name')} style={{cursor: 'pointer'}}>
                       Name {sortField === 'name' ? (sortAsc ? '▲' : '▼') : ''}
                     </th>
                     <th>Address</th>

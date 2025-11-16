@@ -11,6 +11,7 @@ import OrganizationCreate from './organization/OrganizationCreate';
 import OrganizationEdit from './organization/OrganizationEdit';
 import LocationList from './location/LocationList';
 import LocationDetail from './location/LocationDetail';
+import LocationCreate from './location/LocationCreate';
 import ContactsList from './contact/ContactsList';
 import ContactDetails from './contact/ContactDetails';
 import ContactEdit from './contact/ContactEdit';
@@ -90,6 +91,11 @@ function AppLayout() {
         <Route path="/locations/:id" element={
           <PrivateRoute>
             <LocationDetail />
+          </PrivateRoute>
+        } />
+        <Route path="/locations/new" element={
+          <PrivateRoute>
+            <LocationCreate />
           </PrivateRoute>
         } />
         <Route path="/contacts" element={
