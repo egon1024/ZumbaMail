@@ -80,13 +80,17 @@ class LocationSerializer(serializers.ModelSerializer):
 class OrganizationSerializer(serializers.ModelSerializer):
     contacts = ContactSerializer(many=True, read_only=True)
     contact_count = serializers.SerializerMethodField()
+    num_locations = serializers.SerializerMethodField()
 
     class Meta:
         model = Organization
-        fields = ['id', 'name', 'contacts', 'contact_count']
+        fields = ['id', 'name', 'contacts', 'contact_count', 'num_locations']
 
     def get_contact_count(self, obj):
         return obj.contacts.count()
+
+    def get_num_locations(self, obj):
+        return obj.locations.count()
 
 class ActivityListSerializer(serializers.ModelSerializer):
     students = serializers.SerializerMethodField()

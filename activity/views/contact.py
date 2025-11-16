@@ -17,7 +17,11 @@ class ContactListView(ListAPIView):
     serializer_class = ContactSerializer
     permission_classes = [permissions.IsAuthenticated]
     def get_queryset(self):
-        return Contact.objects.select_related('organization').filter(organization__is_deleted=False)
+        queryset = Contact.objects.select_related('organization').filter(organization__is_deleted=False)
+        organization_id = self.request.query_params.get('organization')
+        if organization_id:
+            queryset = queryset.filter(organization_id=organization_id)
+        return queryset
 
 class ContactDeleteView(DestroyAPIView):
     queryset = Contact.objects.all()

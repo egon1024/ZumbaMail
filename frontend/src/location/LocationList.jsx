@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { authFetch } from '../utils/authFetch';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 function LocationList() {
   const [locations, setLocations] = useState([]);
   const [organizations, setOrganizations] = useState([]);
-  const [selectedOrg, setSelectedOrg] = useState('');
+  const location = useLocation();
+  const [selectedOrg, setSelectedOrg] = useState(() => {
+    const searchParams = new URLSearchParams(location.search);
+    return searchParams.get('organization') || '';
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [hoveredRowId, setHoveredRowId] = useState(null);
@@ -14,12 +18,20 @@ function LocationList() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const organizationId = searchParams.get('organization');
+
     const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
+        let locationsUrl = '/api/locations/';
+        if (organizationId) {
+          locationsUrl += `?organization=${organizationId}`;
+        }
+
         const [locationsRes, orgsRes] = await Promise.all([
-          authFetch('/api/locations/'),
+          authFetch(locationsUrl),
           authFetch('/api/organizations/')
         ]);
         if (!locationsRes.ok) throw new Error('Failed to fetch locations');
@@ -37,7 +49,7 @@ function LocationList() {
       }
     };
     fetchData();
-  }, []);
+  }, [location.search]);
 
   const filteredLocations = selectedOrg
     ? locations.filter(loc => loc.organization === parseInt(selectedOrg))

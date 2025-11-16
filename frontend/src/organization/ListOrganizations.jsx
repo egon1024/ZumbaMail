@@ -27,45 +27,53 @@ function ListOrganizations() {
   }, []);
   return (
     <div className="container mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 style={{ color: '#6a359c' }}>Organizations</h2>
-        <button className="btn btn-success" onClick={() => window.location.href = '/organization/new'}>
-          <i className="bi bi-plus-lg me-1"></i> New Organization
-        </button>
-      </div>
+      <h2 style={{ color: '#6a359c' }} className="mb-4">Organizations</h2>
       <div className="card shadow-sm border-primary mb-4">
-        <div className="card-header bg-dark text-white">
+        <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center">
           <h4 className="mb-0">Organizations</h4>
+          <button className="btn btn-sm btn-success" onClick={() => window.location.href = '/organization/new'}>
+            <i className="bi bi-plus-lg me-1"></i> New Organization
+          </button>
         </div>
         <div className="card-body">
           {loading && <p>Loading...</p>}
           {error && <div className="alert alert-danger">{error}</div>}
           {!loading && !error && (
-            <table className="table table-striped table-sm" style={{ width: 'auto', minWidth: '0', margin: '0 auto' }}>
+            <table className="table table-striped table-sm mb-0">
               <thead>
                 <tr>
-                  <th style={{ width: 'fit-content', textAlign: 'center', padding: 0 }}></th>
-                  <th style={{ textAlign: 'left', padding: '0.25rem' }}>Name</th>
-                  <th style={{ textAlign: 'left', padding: '0.25rem' }}>Contacts</th>
+                  <th className="text-center" style={{ width: '1%' }}></th>
+                  <th>Name</th>
+                  <th>Contacts</th>
+                  <th>Locations</th>
                 </tr>
               </thead>
               <tbody>
                 {[...organizations].sort((a, b) => a.name.localeCompare(b.name)).map(org => (
-                  <tr key={org.id}>
-                    <td style={{ width: 'fit-content', textAlign: 'center', padding: '0 6px' }}>
+                  <tr key={org.id} className="reactive-contact-row">
+                    <td className="align-top text-center" style={{ width: '1%' }}>
                       <Link
                         to={`/organization/${org.id}/edit`}
-                        style={{ border: 'none', background: 'none', padding: 0, outline: 'none', boxShadow: 'none' }}
+                        className="plain-link"
                         tabIndex={0}
                         title="Edit"
                       >
                         <i className="bi bi-pencil-square" style={{ fontSize: '1.2em', color: '#6a359c', verticalAlign: 'middle' }}></i>
                       </Link>
                     </td>
-                    <td style={{ textAlign: 'left', padding: '0.25rem' }}>
+                    <td className="align-top">
                       <Organization organization={org} />
                     </td>
-                    <td style={{ textAlign: 'left', padding: '0.25rem' }}>{org.contact_count ?? (org.contacts ? org.contacts.length : 0)}</td>
+                    <td className="align-top">
+                      <Link to={`/contacts?organization=${org.id}`} className="clickable-text">
+                        {org.contact_count ?? (org.contacts ? org.contacts.length : 0)}
+                      </Link>
+                    </td>
+                    <td className="align-top">
+                      <Link to={`/locations?organization=${org.id}`} className="clickable-text">
+                        {org.num_locations}
+                      </Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>

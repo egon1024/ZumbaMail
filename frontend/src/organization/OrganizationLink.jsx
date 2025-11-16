@@ -10,7 +10,7 @@ function Organization({ organization, className = "" }) {
   // Future: add badges, tooltips, menus, etc.
   return (
     <Tooltip tooltip={`View details for ${name}`}>
-      <Link to={`/organization/${id}`} className={`org-name-link ${className}`}>
+      <Link to={`/organization/${id}`} className={`clickable-text ${className}`}>
         {name}
       </Link>
     </Tooltip>
