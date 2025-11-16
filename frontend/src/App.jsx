@@ -52,6 +52,9 @@ function AppLayout() {
   let lastKeystrokeCheckTime = 0;
 
   useEffect(() => {
+    // Don't check session activity on the login page
+    if (isLoginPage) return;
+
     const handleKeyDown = async (event) => {
       const targetTagName = event.target.tagName;
       const isInputField = ['INPUT', 'TEXTAREA', 'SELECT'].includes(targetTagName);
@@ -74,10 +77,13 @@ function AppLayout() {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [location.pathname]); // Re-attach listener if path changes
+  }, [location.pathname, isLoginPage]); // Re-attach listener if path changes
 
   let lastClickCheckTime = 0;
   useEffect(() => {
+    // Don't check session activity on the login page
+    if (isLoginPage) return;
+
     const handleClick = async () => {
       const currentTime = Date.now();
       // Check JWT expiration at most once every 2 seconds on any click
@@ -95,7 +101,7 @@ function AppLayout() {
     return () => {
       document.removeEventListener('click', handleClick);
     };
-  }, [location.pathname]); // Re-attach listener if path changes
+  }, [location.pathname, isLoginPage]); // Re-attach listener if path changes
   return (
     <div className="global-bg">
       {!isLoginPage && <Header />}
