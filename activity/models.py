@@ -117,6 +117,25 @@ class Activity(models.Model):
 		location_name = self.location.name if self.location else "No Location"
 		return f"{self.get_type_display()} on {self.day_of_week} at {self.time.strftime('%-I:%M %p')}"
 
+	def get_possible_dates(self):
+		"""
+		Returns a list of all possible dates for the activity within its session.
+		"""
+		from datetime import timedelta
+		possible_dates = []
+		current_date = self.session.start_date
+		while current_date <= self.session.end_date:
+			if current_date.strftime('%A') == self.day_of_week:
+				possible_dates.append(current_date)
+			current_date += timedelta(days=1)
+		return possible_dates
+
+	def get_cancelled_dates(self):
+		"""
+		Returns a list of dates on which the class has been cancelled.
+		"""
+		return list(self.cancellations.values_list('date', flat=True))
+
 class Meeting(models.Model):
 	"""
 	Represents a single scheduled occurrence (date) of an Activity.

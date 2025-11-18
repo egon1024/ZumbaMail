@@ -1,0 +1,41 @@
+.attendance-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  background-color: #fff;
+}
+
+.attendance-row .student-name {
+  font-weight: bold;
+}
+
+.attendance-row .button-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap; /* Allow buttons to wrap if needed */
+}
+
+/* Medium Narrow: Stack name and buttons, and make buttons 2x2 */
+@media (max-width: 768px) {
+  .attendance-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .attendance-row .button-group {
+    margin-top: 0.75rem;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-between; /* Distribute space for 2x2 grid */
+  }
+
+  .attendance-row .button-group .btn {
+    width: calc(50% - 0.25rem); /* 2 buttons per row, accounting for gap */
+    margin-bottom: 0.5rem; /* Space between rows */
+  }
+}

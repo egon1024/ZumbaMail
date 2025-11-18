@@ -81,7 +81,15 @@ const ClassDetail = () => {
               </tr>
               <tr>
                 <th>Location</th>
-                <td>{cls.location_name}</td>
+                <td>
+                  {cls.location ? (
+                    <Link to={`/locations/${cls.location}`} className="clickable-text">
+                      {cls.location_name}
+                    </Link>
+                  ) : (
+                    "N/A"
+                  )}
+                </td>
               </tr>
               <tr>
                 <th>Max Capacity</th>

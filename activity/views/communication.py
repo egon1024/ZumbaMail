@@ -1,12 +1,15 @@
+import hashlib
+import json
+from datetime import timedelta
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions
 from django.shortcuts import get_object_or_404
 from django.conf import settings
-from activity.models import Organization, Session, Activity, Enrollment, Student
 from collections import defaultdict
-import hashlib
-import json
+from activity.models import Organization, Session, Activity, Enrollment, Student
+from activity.models import Meeting
 
 
 class SessionEnrollmentCombinationsView(APIView):
@@ -127,13 +130,27 @@ class SessionEnrollmentCombinationsView(APIView):
         })
 
 
-from activity.models import Meeting
 class EmailDetailsView(APIView):
     """
     Get email composition details for a specific enrollment combination.
     Returns the BCC list, subject, and body text for the email.
     """
     permission_classes = [permissions.IsAuthenticated]
+
+    def _format_time_for_email(self, time_obj):
+        # Format as h:mm AM/PM (e.g., 7:00AM, 11:30PM)
+        formatted = time_obj.strftime('%-I:%M%p')
+        # Remove :00 if present
+        formatted = formatted.replace(':00', '')
+        # Convert AM/PM to lowercase
+        formatted = formatted.lower()
+        return formatted
+
+    def _get_time_range(self, time_obj):
+        start_time_formatted = self._format_time_for_email(time_obj)
+        end_time_obj = time_obj.replace(hour=(time_obj.hour + 1) % 24) # Assuming 1-hour classes
+        end_time_formatted = self._format_time_for_email(end_time_obj)
+        return f"{start_time_formatted} - {end_time_formatted}"
 
     def _build_subject(self, activities, organization):
         """Builds the email subject line."""
@@ -153,32 +170,60 @@ class EmailDetailsView(APIView):
         # --- Enrolled Classes ---
         for i, act in enumerate(enrolled_activities):
             # Class name, day, and time
-            time_str = act.time.strftime('%-I:%M').replace(':00', '')
-            end_time = (act.time.hour + 1) % 24
-            end_time_str = f"{end_time}"
-            time_range = f"{time_str}-{end_time_str}"
+            time_range = self._get_time_range(act.time)
             body_lines.append(f"{act.get_type_display()} {act.day_of_week} {time_range}")
 
             # Class dates
-            meeting_dates = act.meetings.order_by('date').values_list('date', flat=True)
-            date_str = ", ".join([d.strftime('%-m/%-d') for d in meeting_dates])
+            possible_dates = act.get_possible_dates()
+            cancelled_dates_objs = act.get_cancelled_dates()
+            
+            display_meeting_dates = [d for d in possible_dates if d not in cancelled_dates_objs]
+
+            date_str = ", ".join([d.strftime('%-m/%-d') for d in display_meeting_dates])
             day_abbr = act.day_of_week[:4] if act.day_of_week == "Thursday" else act.day_of_week[:3]
-            body_lines.append(f"{act.get_type_display()} {day_abbr} dates: {date_str}")
+            body_lines.append(f"  {act.get_type_display()} {day_abbr} dates: {date_str}")
+
+            if cancelled_dates_objs:
+                cancelled_dates_str = ", ".join([d.strftime('%-m/%-d') for d in sorted(cancelled_dates_objs)])
+                body_lines.append(f"  Cancelled dates: {cancelled_dates_str}")
             
             if i < len(enrolled_activities) - 1 or waitlisted_activities:
                 body_lines.append("")
                 body_lines.append("and")
                 body_lines.append("")
 
-        # --- Waitlisted Classes (simplified) ---
-        for act in waitlisted_activities:
-            time_str = act.time.strftime('%-I:%M %p')
-            body_lines.append(f"Waitlist: {act.get_type_display()} {act.day_of_week} at {time_str}")
+        # --- Waitlisted Classes ---
+        for i, act in enumerate(waitlisted_activities):
+            # Class name, day, and time (consistent format)
+            time_range = self._get_time_range(act.time)
+            body_lines.append(f"Waitlist: {act.get_type_display()} {act.day_of_week} {time_range}")
+
+            # Class dates (including cancellations)
+            possible_dates = act.get_possible_dates()
+            cancelled_dates_objs = act.get_cancelled_dates()
+            
+            display_meeting_dates = [d for d in possible_dates if d not in cancelled_dates_objs]
+
+            date_str = ", ".join([d.strftime('%-m/%-d') for d in display_meeting_dates])
+            day_abbr = act.day_of_week[:4] if act.day_of_week == "Thursday" else act.day_of_week[:3]
+            body_lines.append(f"  {act.get_type_display()} {day_abbr} dates: {date_str}")
+
+            if cancelled_dates_objs:
+                cancelled_dates_str = ", ".join([d.strftime('%-m/%-d') for d in sorted(cancelled_dates_objs)])
+                body_lines.append(f"  Cancelled dates: {cancelled_dates_str}")
+            
+            if i < len(waitlisted_activities) - 1: # Add separator between waitlisted classes
+                body_lines.append("")
+                body_lines.append("and")
+                body_lines.append("")
+        
+        if waitlisted_activities and enrolled_activities: # Add separator if both enrolled and waitlisted exist
             body_lines.append("")
 
         # --- Location Information ---
         unique_locations = set()
-        for act in enrolled_activities:
+        # Consider both enrolled and waitlisted activities for location info
+        for act in enrolled_activities + waitlisted_activities:
             try:
                 # This works for valid FKs
                 if act.location:
@@ -189,7 +234,13 @@ class EmailDetailsView(APIView):
 
         if len(unique_locations) == 1:
             location = unique_locations.pop()
-            body_lines.append(f"Class takes place at the {location.name}, located at {location.address}.")
+            location_line = f"Class takes place at the {location.name}"
+            if location.address:
+                location_line += f", located at {location.address}."
+            else:
+                location_line += "." # Add a period if no address
+            body_lines.append(location_line)
+
             if location.description:
                 body_lines.append(location.description)
             body_lines.append("")
@@ -199,12 +250,27 @@ class EmailDetailsView(APIView):
             act.max_capacity and act.enrollments.filter(status='active').count() >= act.max_capacity
             for act in enrolled_activities
         )
+        # Check if any class (enrolled or waitlisted) has students on its waitlist
+        has_waitlisted_students_in_any_class = any(
+            act.enrollments.filter(status='waiting').exists()
+            for act in (enrolled_activities + waitlisted_activities)
+        )
+        has_enrolled_activities = bool(enrolled_activities)
+
         if is_full:
             body_lines.append("This class is currently full, and there is a wait list. Please let me know any dates that you will not be able to attend class.")
-        else:
+            body_lines.append("If you have any questions, please don't hesitate to ask.")
+        elif has_enrolled_activities and has_waitlisted_students_in_any_class:
             body_lines.append("As a reminder, if you are aware that you will be away for certain days, please let me know which classes you will miss so I can open those spots to people on the waiting list. Please be sure to include your name and the dates you will be absent.")
+        else: # This covers solely waitlisted, or enrolled with no waitlist
+            body_lines.append("Thank you so much for being such a loving supporter of my classes!")
+            body_lines.append("If you have any questions, please don't hesitate to ask.")
         
-        body_lines.append("I look forward to seeing you in class soon!")
+        # Only include "I look forward to seeing you in class soon!" if there are enrolled activities
+        # or if it's not solely waitlisted (i.e., there are no waitlisted activities either)
+        if bool(enrolled_activities) or not bool(waitlisted_activities):
+            body_lines.append("I look forward to seeing you in class soon!")
+        
         body_lines.append("~ Alyssa")
 
         return "\n".join(body_lines)
@@ -221,7 +287,8 @@ class EmailDetailsView(APIView):
 
         activities = Activity.objects.filter(session=session).prefetch_related(
             'meetings',
-            'enrollments__student'
+            'enrollments__student',
+            'cancellations' # Corrected related_name
         ).order_by('day_of_week', 'time')
 
         student_classes = defaultdict(lambda: {'enrolled': set(), 'waitlisted': set(), 'student': None})
@@ -275,7 +342,7 @@ class EmailDetailsView(APIView):
             enrolled_activities_summary.append({
                 'day_of_week': act.day_of_week,
                 'type': act.get_type_display(),
-                'time': act.time.strftime('%-I:%M %p'),
+                'time': self._format_time_for_email(act.time),
                 'location': location_name
             })
 
@@ -290,7 +357,7 @@ class EmailDetailsView(APIView):
             waitlisted_activities_summary.append({
                 'day_of_week': act.day_of_week,
                 'type': act.get_type_display(),
-                'time': act.time.strftime('%-I:%M %p'),
+                'time': self._format_time_for_email(act.time),
                 'location': location_name
             })
 

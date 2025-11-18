@@ -12,7 +12,7 @@ import OrganizationCreate from './organization/OrganizationCreate';
 import OrganizationEdit from './organization/OrganizationEdit';
 import LocationList from './location/LocationList';
 import LocationDetail from './location/LocationDetail';
-import LocationCreate from './location/LocationCreate';
+import LocationEdit from './location/LocationEdit';
 import { checkTokenExpiration } from './utils/authFetch';
 import ContactsList from './contact/ContactsList';
 import ContactDetails from './contact/ContactDetails';
@@ -150,7 +150,12 @@ function AppLayout() {
         } />
         <Route path="/locations/new" element={
           <PrivateRoute>
-            <LocationCreate />
+            <LocationEdit />
+          </PrivateRoute>
+        } />
+        <Route path="/locations/:id/edit" element={
+          <PrivateRoute>
+            <LocationEdit />
           </PrivateRoute>
         } />
         <Route path="/contacts" element={

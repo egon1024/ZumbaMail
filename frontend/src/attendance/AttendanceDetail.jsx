@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { authFetch } from "../utils/authFetch";
 import { formatTime } from "../utils/formatTime";
 import { formatDate } from "../utils/formatDate";
+import "./AttendanceDetail.css";
 
 export default function AttendanceDetail() {
   const { id: activityId } = useParams();
@@ -437,11 +438,11 @@ export default function AttendanceDetail() {
                   {enrolledStudents.map(student => {
                     const status = getAttendanceStatus(student.id);
                     return (
-                      <div key={student.id} className="border rounded p-2 mb-2 bg-white d-flex justify-content-between align-items-center">
-                        <div>
+                      <div key={student.id} className="attendance-row">
+                        <div className="student-name">
                           <strong>{student.display_name}</strong>
                         </div>
-                        <div className="d-flex gap-2">
+                        <div className="button-group">
                           <button
                             type="button"
                             className={`btn btn-sm ${status === 'scheduled' ? 'btn-outline-secondary active' : 'btn-outline-secondary'}`}
@@ -485,43 +486,42 @@ export default function AttendanceDetail() {
                     {waitlistStudents.map(student => {
                       const status = getAttendanceStatus(student.id);
                       return (
-                        <div key={student.id} className="border rounded p-2 mb-2 bg-white d-flex justify-content-between align-items-center">
-                          <div>
-                            <strong>{student.display_name}</strong>
-                            <span className="badge bg-warning text-dark ms-2">Waitlist</span>
-                          </div>
-                          <div className="d-flex gap-2">
-                            <button
-                              type="button"
-                              className={`btn btn-sm ${status === 'scheduled' ? 'btn-outline-secondary active' : 'btn-outline-secondary'}`}
-                              onClick={() => setAttendanceStatus(student.id, 'scheduled')}
-                            >
-                              Waitlist
-                            </button>
-                            <button
-                              type="button"
-                              className={`btn btn-sm ${status === 'present' ? 'btn-success' : 'btn-outline-success'}`}
-                              onClick={() => setAttendanceStatus(student.id, 'present')}
-                            >
-                              Present
-                            </button>
-                            <button
-                              type="button"
-                              className={`btn btn-sm ${status === 'unexpected_absence' ? 'btn-danger' : 'btn-outline-danger'}`}
-                              onClick={() => setAttendanceStatus(student.id, 'unexpected_absence')}
-                            >
-                              Unexpected
-                            </button>
-                            <button
-                              type="button"
-                              className={`btn btn-sm ${status === 'expected_absence' ? 'btn-dark' : 'btn-outline-secondary'}`}
-                              onClick={() => setAttendanceStatus(student.id, 'expected_absence')}
-                            >
-                              Expected
-                            </button>
-                          </div>
-                        </div>
-                      );
+                                              <div key={student.id} className="attendance-row">
+                                                <div className="student-name">
+                                                  <strong>{student.display_name}</strong>
+                                                  <span className="badge bg-warning text-dark ms-2">Waitlist</span>
+                                                </div>
+                                                <div className="button-group">
+                                                  <button
+                                                    type="button"
+                                                    className={`btn btn-sm ${status === 'scheduled' ? 'btn-outline-secondary active' : 'btn-outline-secondary'}`}
+                                                    onClick={() => setAttendanceStatus(student.id, 'scheduled')}
+                                                  >
+                                                    Waitlist
+                                                  </button>
+                                                  <button
+                                                    type="button"
+                                                    className={`btn btn-sm ${status === 'present' ? 'btn-success' : 'btn-outline-success'}`}
+                                                    onClick={() => setAttendanceStatus(student.id, 'present')}
+                                                  >
+                                                    Present
+                                                  </button>
+                                                  <button
+                                                    type="button"
+                                                    className={`btn btn-sm ${status === 'unexpected_absence' ? 'btn-danger' : 'btn-outline-danger'}`}
+                                                    onClick={() => setAttendanceStatus(student.id, 'unexpected_absence')}
+                                                  >
+                                                    Unexpected
+                                                  </button>
+                                                  <button
+                                                    type="button"
+                                                    className={`btn btn-sm ${status === 'expected_absence' ? 'btn-dark' : 'btn-outline-secondary'}`}
+                                                    onClick={() => setAttendanceStatus(student.id, 'expected_absence')}
+                                                  >
+                                                    Expected
+                                                  </button>
+                                                </div>
+                                              </div>                      );
                     })}
                   </div>
                 </>
