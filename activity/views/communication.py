@@ -7,6 +7,7 @@ from activity.models import Organization, Session, Activity, Enrollment, Student
 from collections import defaultdict
 import hashlib
 import json
+from datetime import timedelta
 
 
 class SessionEnrollmentCombinationsView(APIView):
@@ -150,35 +151,85 @@ class EmailDetailsView(APIView):
         """Builds the email body."""
         body_lines = ["Hello-", "You are currently signed up for:", ""]
 
+        def format_time_for_email(time_obj):
+            hour = time_obj.hour
+            minute = time_obj.minute
+            am_pm = "am" if hour < 12 else "pm"
+            
+            # Convert to 12-hour format
+            hour = hour % 12
+            if hour == 0:
+                hour = 12 # 12 AM or 12 PM
+
+            time_str = str(hour)
+            if minute != 0:
+                time_str += f":{minute:02d}" # Add minutes if not 00
+
+            return f"{time_str}{am_pm}"
+
         # --- Enrolled Classes ---
         for i, act in enumerate(enrolled_activities):
             # Class name, day, and time
-            time_str = act.time.strftime('%-I:%M').replace(':00', '')
-            end_time = (act.time.hour + 1) % 24
-            end_time_str = f"{end_time}"
-            time_range = f"{time_str}-{end_time_str}"
+            start_time_formatted = format_time_for_email(act.time)
+            end_time_obj = act.time.replace(hour=(act.time.hour + 1) % 24) # Assuming 1-hour classes
+            end_time_formatted = format_time_for_email(end_time_obj)
+            time_range = f"{start_time_formatted} - {end_time_formatted}"
             body_lines.append(f"{act.get_type_display()} {act.day_of_week} {time_range}")
 
             # Class dates
-            meeting_dates = act.meetings.order_by('date').values_list('date', flat=True)
-            date_str = ", ".join([d.strftime('%-m/%-d') for d in meeting_dates])
+            possible_dates = act.get_possible_dates()
+            cancelled_dates_objs = act.get_cancelled_dates()
+            
+            display_meeting_dates = [d for d in possible_dates if d not in cancelled_dates_objs]
+
+            date_str = ", ".join([d.strftime('%-m/%-d') for d in display_meeting_dates])
             day_abbr = act.day_of_week[:4] if act.day_of_week == "Thursday" else act.day_of_week[:3]
-            body_lines.append(f"{act.get_type_display()} {day_abbr} dates: {date_str}")
+            body_lines.append(f"  {act.get_type_display()} {day_abbr} dates: {date_str}")
+
+            if cancelled_dates_objs:
+                cancelled_dates_str = ", ".join([d.strftime('%-m/%-d') for d in sorted(cancelled_dates_objs)])
+                body_lines.append(f"  Cancelled dates: {cancelled_dates_str}")
             
             if i < len(enrolled_activities) - 1 or waitlisted_activities:
                 body_lines.append("")
                 body_lines.append("and")
                 body_lines.append("")
 
-        # --- Waitlisted Classes (simplified) ---
-        for act in waitlisted_activities:
-            time_str = act.time.strftime('%-I:%M %p')
-            body_lines.append(f"Waitlist: {act.get_type_display()} {act.day_of_week} at {time_str}")
+        # --- Waitlisted Classes ---
+        for i, act in enumerate(waitlisted_activities):
+            # Class name, day, and time (consistent format)
+            start_time_formatted = format_time_for_email(act.time)
+            end_time_obj = act.time.replace(hour=(act.time.hour + 1) % 24)
+            end_time_formatted = format_time_for_email(end_time_obj)
+            time_range = f"{start_time_formatted}-{end_time_formatted}"
+            body_lines.append(f"Waitlist: {act.get_type_display()} {act.day_of_week} {time_range}")
+
+            # Class dates (including cancellations)
+            possible_dates = act.get_possible_dates()
+            cancelled_dates_objs = act.get_cancelled_dates()
+            
+            display_meeting_dates = [d for d in possible_dates if d not in cancelled_dates_objs]
+
+            date_str = ", ".join([d.strftime('%-m/%-d') for d in display_meeting_dates])
+            day_abbr = act.day_of_week[:4] if act.day_of_week == "Thursday" else act.day_of_week[:3]
+            body_lines.append(f"  {act.get_type_display()} {day_abbr} dates: {date_str}")
+
+            if cancelled_dates_objs:
+                cancelled_dates_str = ", ".join([d.strftime('%-m/%-d') for d in sorted(cancelled_dates_objs)])
+                body_lines.append(f"  Cancelled dates: {cancelled_dates_str}")
+            
+            if i < len(waitlisted_activities) - 1: # Add separator between waitlisted classes
+                body_lines.append("")
+                body_lines.append("and")
+                body_lines.append("")
+        
+        if waitlisted_activities and enrolled_activities: # Add separator if both enrolled and waitlisted exist
             body_lines.append("")
 
         # --- Location Information ---
         unique_locations = set()
-        for act in enrolled_activities:
+        # Consider both enrolled and waitlisted activities for location info
+        for act in enrolled_activities + waitlisted_activities:
             try:
                 # This works for valid FKs
                 if act.location:
@@ -189,7 +240,13 @@ class EmailDetailsView(APIView):
 
         if len(unique_locations) == 1:
             location = unique_locations.pop()
-            body_lines.append(f"Class takes place at the {location.name}, located at {location.address}.")
+            location_line = f"Class takes place at {location.name}"
+            if location.address:
+                location_line += f", located at {location.address}."
+            else:
+                location_line += "." # Add a period if no address
+            body_lines.append(location_line)
+
             if location.description:
                 body_lines.append(location.description)
             body_lines.append("")
@@ -199,12 +256,27 @@ class EmailDetailsView(APIView):
             act.max_capacity and act.enrollments.filter(status='active').count() >= act.max_capacity
             for act in enrolled_activities
         )
+        # Check if any class (enrolled or waitlisted) has students on its waitlist
+        has_waitlisted_students_in_any_class = any(
+            act.enrollments.filter(status='waiting').exists()
+            for act in (enrolled_activities + waitlisted_activities)
+        )
+        has_enrolled_activities = bool(enrolled_activities)
+
         if is_full:
             body_lines.append("This class is currently full, and there is a wait list. Please let me know any dates that you will not be able to attend class.")
-        else:
+            body_lines.append("If you have any questions, please don't hesitate to ask.")
+        elif has_enrolled_activities and has_waitlisted_students_in_any_class:
             body_lines.append("As a reminder, if you are aware that you will be away for certain days, please let me know which classes you will miss so I can open those spots to people on the waiting list. Please be sure to include your name and the dates you will be absent.")
+        else: # This covers solely waitlisted, or enrolled with no waitlist
+            body_lines.append("Thank you so much for being such a loving supporter of my classes!")
+            body_lines.append("If you have any questions, please don't hesitate to ask.")
         
-        body_lines.append("I look forward to seeing you in class soon!")
+        # Only include "I look forward to seeing you in class soon!" if there are enrolled activities
+        # or if it's not solely waitlisted (i.e., there are no waitlisted activities either)
+        if bool(enrolled_activities) or not bool(waitlisted_activities):
+            body_lines.append("I look forward to seeing you in class soon!")
+        
         body_lines.append("~ Alyssa")
 
         return "\n".join(body_lines)
@@ -221,7 +293,8 @@ class EmailDetailsView(APIView):
 
         activities = Activity.objects.filter(session=session).prefetch_related(
             'meetings',
-            'enrollments__student'
+            'enrollments__student',
+            'cancellations' # Corrected related_name
         ).order_by('day_of_week', 'time')
 
         student_classes = defaultdict(lambda: {'enrolled': set(), 'waitlisted': set(), 'student': None})
