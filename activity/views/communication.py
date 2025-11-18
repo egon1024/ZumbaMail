@@ -1,13 +1,15 @@
+import hashlib
+import json
+from datetime import timedelta
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions
 from django.shortcuts import get_object_or_404
 from django.conf import settings
-from activity.models import Organization, Session, Activity, Enrollment, Student
 from collections import defaultdict
-import hashlib
-import json
-from datetime import timedelta
+from activity.models import Organization, Session, Activity, Enrollment, Student
+from activity.models import Meeting
 
 
 class SessionEnrollmentCombinationsView(APIView):
@@ -128,13 +130,27 @@ class SessionEnrollmentCombinationsView(APIView):
         })
 
 
-from activity.models import Meeting
 class EmailDetailsView(APIView):
     """
     Get email composition details for a specific enrollment combination.
     Returns the BCC list, subject, and body text for the email.
     """
     permission_classes = [permissions.IsAuthenticated]
+
+    def _format_time_for_email(self, time_obj):
+        # Format as h:mm AM/PM (e.g., 7:00AM, 11:30PM)
+        formatted = time_obj.strftime('%-I:%M%p')
+        # Remove :00 if present
+        formatted = formatted.replace(':00', '')
+        # Convert AM/PM to lowercase
+        formatted = formatted.lower()
+        return formatted
+
+    def _get_time_range(self, time_obj):
+        start_time_formatted = self._format_time_for_email(time_obj)
+        end_time_obj = time_obj.replace(hour=(time_obj.hour + 1) % 24) # Assuming 1-hour classes
+        end_time_formatted = self._format_time_for_email(end_time_obj)
+        return f"{start_time_formatted} - {end_time_formatted}"
 
     def _build_subject(self, activities, organization):
         """Builds the email subject line."""
@@ -151,29 +167,10 @@ class EmailDetailsView(APIView):
         """Builds the email body."""
         body_lines = ["Hello-", "You are currently signed up for:", ""]
 
-        def format_time_for_email(time_obj):
-            hour = time_obj.hour
-            minute = time_obj.minute
-            am_pm = "am" if hour < 12 else "pm"
-            
-            # Convert to 12-hour format
-            hour = hour % 12
-            if hour == 0:
-                hour = 12 # 12 AM or 12 PM
-
-            time_str = str(hour)
-            if minute != 0:
-                time_str += f":{minute:02d}" # Add minutes if not 00
-
-            return f"{time_str}{am_pm}"
-
         # --- Enrolled Classes ---
         for i, act in enumerate(enrolled_activities):
             # Class name, day, and time
-            start_time_formatted = format_time_for_email(act.time)
-            end_time_obj = act.time.replace(hour=(act.time.hour + 1) % 24) # Assuming 1-hour classes
-            end_time_formatted = format_time_for_email(end_time_obj)
-            time_range = f"{start_time_formatted} - {end_time_formatted}"
+            time_range = self._get_time_range(act.time)
             body_lines.append(f"{act.get_type_display()} {act.day_of_week} {time_range}")
 
             # Class dates
@@ -198,10 +195,7 @@ class EmailDetailsView(APIView):
         # --- Waitlisted Classes ---
         for i, act in enumerate(waitlisted_activities):
             # Class name, day, and time (consistent format)
-            start_time_formatted = format_time_for_email(act.time)
-            end_time_obj = act.time.replace(hour=(act.time.hour + 1) % 24)
-            end_time_formatted = format_time_for_email(end_time_obj)
-            time_range = f"{start_time_formatted}-{end_time_formatted}"
+            time_range = self._get_time_range(act.time)
             body_lines.append(f"Waitlist: {act.get_type_display()} {act.day_of_week} {time_range}")
 
             # Class dates (including cancellations)
@@ -240,7 +234,7 @@ class EmailDetailsView(APIView):
 
         if len(unique_locations) == 1:
             location = unique_locations.pop()
-            location_line = f"Class takes place at {location.name}"
+            location_line = f"Class takes place at the {location.name}"
             if location.address:
                 location_line += f", located at {location.address}."
             else:
@@ -348,7 +342,7 @@ class EmailDetailsView(APIView):
             enrolled_activities_summary.append({
                 'day_of_week': act.day_of_week,
                 'type': act.get_type_display(),
-                'time': act.time.strftime('%-I:%M %p'),
+                'time': self._format_time_for_email(act.time),
                 'location': location_name
             })
 
@@ -363,7 +357,7 @@ class EmailDetailsView(APIView):
             waitlisted_activities_summary.append({
                 'day_of_week': act.day_of_week,
                 'type': act.get_type_display(),
-                'time': act.time.strftime('%-I:%M %p'),
+                'time': self._format_time_for_email(act.time),
                 'location': location_name
             })
 
