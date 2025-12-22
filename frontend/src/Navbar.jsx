@@ -43,6 +43,7 @@ function Navbar() {
               </a>
               <ul className="dropdown-menu" aria-labelledby="commDropdown">
                 <li><NavLink className="dropdown-item" to="/communication/session-emails" onClick={handleNavClick}>Session Enrollment Emails</NavLink></li>
+                <li><NavLink className="dropdown-item" to="/communication/email-blast" onClick={handleNavClick}>Email Blast</NavLink></li>
               </ul>
             </li>
             <li className="nav-item dropdown">

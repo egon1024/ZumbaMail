@@ -8,8 +8,105 @@ from rest_framework import permissions
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from collections import defaultdict
-from activity.models import Organization, Session, Activity, Enrollment, Student
+from activity.models import Organization, Session, Activity, Enrollment, Student, AttendanceRecord
 from activity.models import Meeting
+
+
+class EmailBlastView(APIView):
+    """
+    Get email recipients for an email blast based on filters.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        session_id = request.query_params.get('session_id')
+        organization_id = request.query_params.get('organization_id')
+        active_status = request.query_params.get('active_status', 'active') # active, inactive, both
+        # inclusion_criteria is expected to be a list, passed as e.g. inclusion_criteria=enrolled&inclusion_criteria=waitlisted
+        inclusion_criteria = request.query_params.getlist('inclusion_criteria')
+
+        # Default to all if not provided (though frontend should provide defaults)
+        if not inclusion_criteria:
+            inclusion_criteria = ['enrolled', 'waitlisted', 'walkin']
+
+        # Determine the scope of activities
+        if session_id:
+            try:
+                session = Session.objects.get(pk=session_id)
+                activities = Activity.objects.filter(session=session)
+            except Session.DoesNotExist:
+                return Response({"error": "Session not found"}, status=404)
+        elif organization_id:
+            # If no session but org is selected, get all activities for that org
+            activities = Activity.objects.filter(session__organization_id=organization_id)
+        else:
+            # Global blast - all activities
+            activities = Activity.objects.all()
+
+        # Base student queryset
+        student_qs = Student.objects.all()
+
+        # Filter by Active Status
+        if active_status == 'active':
+            student_qs = student_qs.filter(active=True)
+        elif active_status == 'inactive':
+            student_qs = student_qs.filter(active=False)
+        # 'both' implies no filter on active status
+
+        # Define Sets of Student IDs within the defined scope (activities)
+        
+        # 1. Enrolled (in the scoped activities)
+        enrolled_ids = set(Enrollment.objects.filter(
+            activity__in=activities,
+            status='active'
+        ).values_list('student_id', flat=True))
+
+        # 2. Waitlisted (in the scoped activities)
+        waitlisted_ids = set(Enrollment.objects.filter(
+            activity__in=activities,
+            status='waiting'
+        ).values_list('student_id', flat=True))
+
+        # 3. Walk-in Only (Has attendance record in scope, but NOT valid enrollment in scope)
+        attendee_ids = set(AttendanceRecord.objects.filter(
+            meeting__activity__in=activities
+        ).values_list('student_id', flat=True))
+        
+        # Students who have SOME enrollment (active or waiting) in this scope
+        any_enrollment_ids = enrolled_ids.union(waitlisted_ids)
+        
+        # Walk-in ONLY = Attendees who are NOT in the enrolled/waitlisted set
+        walkin_only_ids = attendee_ids - any_enrollment_ids
+
+        # Combine based on criteria
+        final_ids = set()
+        
+        if 'enrolled' in inclusion_criteria:
+            final_ids.update(enrolled_ids)
+        
+        if 'waitlisted' in inclusion_criteria:
+            final_ids.update(waitlisted_ids)
+            
+        if 'walkin' in inclusion_criteria:
+            final_ids.update(walkin_only_ids)
+
+        # Apply final student filters (active status, and email existence)
+        recipients = student_qs.filter(
+            id__in=final_ids
+        ).exclude(email='').exclude(email__isnull=True).order_by('last_name', 'first_name')
+        
+        # Build BCC List and Detail List
+        bcc_list = [s.email for s in recipients]
+        recipient_details = [{'name': f"{s.first_name} {s.last_name}", 'email': s.email} for s in recipients]
+
+        return Response({
+            'to_email': settings.DEFAULT_EMAIL_TO_ADDRESS,
+            'bcc_emails': ", ".join(bcc_list),
+            'recipients': recipient_details,
+            'subject': "",
+            'body': "",
+            'student_count': len(bcc_list)
+        })
 
 
 class SessionEnrollmentCombinationsView(APIView):

@@ -35,4 +35,5 @@ from .reports import (
 from .communication import (
 	SessionEnrollmentCombinationsView,
 	EmailDetailsView,
+	EmailBlastView,
 )

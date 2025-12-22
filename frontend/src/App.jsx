@@ -45,6 +45,7 @@ import ResidencyReport from './reports/ResidencyReport';
 import CommunicationHome from './communication/CommunicationHome';
 import SessionEmailList from './communication/SessionEmailList';
 import SessionEmailComposer from './communication/SessionEmailComposer';
+import EmailBlast from './communication/EmailBlast';
 
 function AppLayout() {
   const location = useLocation();
@@ -198,113 +199,118 @@ function AppLayout() {
             <ContactEdit />
           </PrivateRoute>
         } />
-          <Route path="/students" element={
-            <PrivateRoute>
-              <StudentsList />
-            </PrivateRoute>
-          } />
-          <Route path="/students/:id" element={
-            <PrivateRoute>
-              <StudentDetails />
-            </PrivateRoute>
-          } />
-          <Route path="/students/new" element={
-            <PrivateRoute>
-              <StudentCreate />
-            </PrivateRoute>
-          } />
-          <Route path="/students/:id/edit" element={
-            <PrivateRoute>
-              <StudentEdit />
-            </PrivateRoute>
-          } />
-          <Route path="/class" element={
-            <PrivateRoute>
-              <ClassList />
-            </PrivateRoute>
-          } />
-          <Route path="/classes" element={
-            <PrivateRoute>
-              <ClassList />
-            </PrivateRoute>
-          } />
-          <Route path="/classes/:id" element={
-            <PrivateRoute>
-              <ClassDetail />
-            </PrivateRoute>
-          } />
-          <Route path="/classes/:id/enrollment" element={
-            <PrivateRoute>
-              <ManageEnrollment />
-            </PrivateRoute>
-          } />
-          <Route path="/classes/new" element={
-            <PrivateRoute>
-              <ClassEdit />
-            </PrivateRoute>
-          } />
-          <Route path="/classes/:id/edit" element={
-            <PrivateRoute>
-              <ClassEdit />
-            </PrivateRoute>
-          } />
-          <Route path="/attendance" element={
-            <PrivateRoute>
-              <AttendanceList />
-            </PrivateRoute>
-          } />
-          <Route path="/attendance/:id" element={
-            <PrivateRoute>
-              <AttendanceDetail />
-            </PrivateRoute>
-          } />
-          <Route path="/attendance/signin" element={
-            <PrivateRoute>
-              <GenerateSignInSheet />
-            </PrivateRoute>
-          } />
-          <Route path="/schedules" element={
-            <PrivateRoute>
-              <CancellationList />
-            </PrivateRoute>
-          } />
-          <Route path="/reports/weekly" element={
-            <PrivateRoute>
-              <WeeklyReport />
-            </PrivateRoute>
-          } />
-          <Route path="/reports/cumulative" element={
-            <PrivateRoute>
-              <CumulativeReport />
-            </PrivateRoute>
-          } />
-          <Route path="/reports/end-of-session" element={
-            <PrivateRoute>
-              <EndOfSessionReport />
-            </PrivateRoute>
-          } />
-          <Route path="/reports/residency" element={
-            <PrivateRoute>
-              <ResidencyReport />
-            </PrivateRoute>
-          } />
-          <Route path="/communication" element={
-            <PrivateRoute>
-              <CommunicationHome />
-            </PrivateRoute>
-          } />
-          <Route path="/communication/session-emails" element={
-            <PrivateRoute>
-              <SessionEmailList />
-            </PrivateRoute>
-          } />
-          <Route path="/communication/session-email-composer/:combinationId" element={
-            <PrivateRoute>
-              <SessionEmailComposer />
-            </PrivateRoute>
-          } />
+        <Route path="/students" element={
+          <PrivateRoute>
+            <StudentsList />
+          </PrivateRoute>
+        } />
+        <Route path="/students/:id" element={
+          <PrivateRoute>
+            <StudentDetails />
+          </PrivateRoute>
+        } />
+        <Route path="/students/new" element={
+          <PrivateRoute>
+            <StudentCreate />
+          </PrivateRoute>
+        } />
+        <Route path="/students/:id/edit" element={
+          <PrivateRoute>
+            <StudentEdit />
+          </PrivateRoute>
+        } />
+        <Route path="/class" element={
+          <PrivateRoute>
+            <ClassList />
+          </PrivateRoute>
+        } />
+        <Route path="/classes" element={
+          <PrivateRoute>
+            <ClassList />
+          </PrivateRoute>
+        } />
+        <Route path="/classes/:id" element={
+          <PrivateRoute>
+            <ClassDetail />
+          </PrivateRoute>
+        } />
+        <Route path="/classes/:id/enrollment" element={
+          <PrivateRoute>
+            <ManageEnrollment />
+          </PrivateRoute>
+        } />
+        <Route path="/classes/new" element={
+          <PrivateRoute>
+            <ClassEdit />
+          </PrivateRoute>
+        } />
+        <Route path="/classes/:id/edit" element={
+          <PrivateRoute>
+            <ClassEdit />
+          </PrivateRoute>
+        } />
+        <Route path="/attendance" element={
+          <PrivateRoute>
+            <AttendanceList />
+          </PrivateRoute>
+        } />
+        <Route path="/attendance/:id" element={
+          <PrivateRoute>
+            <AttendanceDetail />
+          </PrivateRoute>
+        } />
+        <Route path="/attendance/signin" element={
+          <PrivateRoute>
+            <GenerateSignInSheet />
+          </PrivateRoute>
+        } />
+        <Route path="/schedules" element={
+          <PrivateRoute>
+            <CancellationList />
+          </PrivateRoute>
+        } />
+        <Route path="/reports/weekly" element={
+          <PrivateRoute>
+            <WeeklyReport />
+          </PrivateRoute>
+        } />
+        <Route path="/reports/cumulative" element={
+          <PrivateRoute>
+            <CumulativeReport />
+          </PrivateRoute>
+        } />
+        <Route path="/reports/end-of-session" element={
+          <PrivateRoute>
+            <EndOfSessionReport />
+          </PrivateRoute>
+        } />
+        <Route path="/reports/residency" element={
+          <PrivateRoute>
+            <ResidencyReport />
+          </PrivateRoute>
+        } />
+        <Route path="/communication" element={
+          <PrivateRoute>
+            <CommunicationHome />
+          </PrivateRoute>
+        } />
+        <Route path="/communication/session-emails" element={
+          <PrivateRoute>
+            <SessionEmailList />
+          </PrivateRoute>
+        } />
+        <Route path="/communication/session-email-composer/:combinationId" element={
+          <PrivateRoute>
+            <SessionEmailComposer />
+          </PrivateRoute>
+        } />
+        <Route path="/communication/email-blast" element={
+          <PrivateRoute>
+            <EmailBlast />
+          </PrivateRoute>
+        } />
       </Routes>
-  </div>
+    </div>
   );
 }
 

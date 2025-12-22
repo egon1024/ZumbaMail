@@ -8,8 +8,13 @@ function CommunicationHome() {
       description: 'Generate and send enrollment confirmation emails to students',
       path: '/communication/session-emails',
       icon: 'bi-envelope'
+    },
+    {
+      title: 'Email Blast',
+      description: 'Generate a generic email blast filtered by student status and enrollment',
+      path: '/communication/email-blast',
+      icon: 'bi-megaphone'
     }
-    // Add more communication items here as they are created
   ];
 
   return (

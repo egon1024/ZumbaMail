@@ -1,0 +1,25 @@
+name: PR Validation
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  validate-version-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for version tags
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request.body || "";
+            const tags = ["#major", "#minor", "#patch"];
+            const foundTags = tags.filter(tag => body.includes(tag));
+            
+            if (foundTags.length > 1) {
+              core.setFailed(`Error: Multiple version tags found: ${foundTags.join(", ")}. Please use only one.`);
+            } else if (foundTags.length === 0) {
+              console.log("No version tags found. Defaulting to minor bump (this check is just for conflicts).");
+            } else {
+              console.log(`Found version tag: ${foundTags[0]}`);
+            }
