@@ -273,6 +273,28 @@ function EmailBlast() {
                     <div className="card-body text-center py-5">
                         <h3 className="mb-4">Found {emailData.student_count} unique recipients</h3>
 
+                        <div className="mb-4 text-start bg-light p-3 rounded" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                            <small className="text-muted d-block mb-2">Recipients included ({emailData.student_count}):</small>
+                            <div style={{ fontSize: '0.875rem' }}>
+                                {emailData.recipients ? (
+                                    emailData.recipients.map((recipient, i) => (
+                                        <div key={i} className="mb-1">
+                                            <span className="fw-bold">{recipient.name}</span>
+                                            <span className="text-muted ms-2">&lt;{recipient.email}&gt;</span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <code style={{ color: '#198754' }}>
+                                        {emailData.bcc_emails.split(', ').map((email, i) => (
+                                            <React.Fragment key={i}>
+                                                {email}<br />
+                                            </React.Fragment>
+                                        ))}
+                                    </code>
+                                )}
+                            </div>
+                        </div>
+
                         <button
                             className="btn btn-lg btn-success"
                             onClick={handleOpenEmailClient}

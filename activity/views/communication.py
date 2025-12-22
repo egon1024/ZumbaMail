@@ -95,12 +95,14 @@ class EmailBlastView(APIView):
             id__in=final_ids
         ).exclude(email='').exclude(email__isnull=True).order_by('last_name', 'first_name')
         
-        # Build BCC List
+        # Build BCC List and Detail List
         bcc_list = [s.email for s in recipients]
+        recipient_details = [{'name': f"{s.first_name} {s.last_name}", 'email': s.email} for s in recipients]
 
         return Response({
             'to_email': settings.DEFAULT_EMAIL_TO_ADDRESS,
             'bcc_emails': ", ".join(bcc_list),
+            'recipients': recipient_details,
             'subject': "",
             'body': "",
             'student_count': len(bcc_list)
