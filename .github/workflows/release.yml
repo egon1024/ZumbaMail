@@ -26,9 +26,10 @@ jobs:
             const { execSync } = require('child_process');
             
             // Get all tags
+            // Get all tags
             let tags = [];
             try {
-              const tagsOutput = execSync('git tag --list "v*" --sort=-v:refname').toString().trim();
+              const tagsOutput = execSync('git tag --list --sort=-v:refname').toString().trim();
               if (tagsOutput) {
                 tags = tagsOutput.split('\n');
               }
@@ -37,10 +38,15 @@ jobs:
             }
 
             let latestVersion = "0.0.0"; // Default for first release (will bump to 0.1.0 if minor bump)
-            if (tags.length > 0) {
-              latestVersion = tags[0].replace(/^v/, '');
+            
+            // Find the first tag that looks like a version (x.y.z or vx.y.z)
+            const versionRegex = /^v?\d+\.\d+\.\d+$/;
+            const validTag = tags.find(tag => versionRegex.test(tag));
+
+            if (validTag) {
+              latestVersion = validTag.replace(/^v/, '');
             } else {
-              console.log("No tags found. Starting from 0.0.0.");
+              console.log("No valid version tags found. Starting from 0.0.0.");
             }
             console.log(`Latest version: ${latestVersion}`);
 
@@ -89,7 +95,7 @@ jobs:
               patch++;
             }
 
-            const newVersion = `v${major}.${minor}.${patch}`;
+            const newVersion = `${major}.${minor}.${patch}`;
             console.log(`New version: ${newVersion}`);
             
             core.setOutput('new_version', newVersion);
