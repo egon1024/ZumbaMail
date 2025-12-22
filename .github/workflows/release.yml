@@ -1,0 +1,106 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate Next Version
+        id: version
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { execSync } = require('child_process');
+            
+            // Get all tags
+            let tags = [];
+            try {
+              const tagsOutput = execSync('git tag --list "v*" --sort=-v:refname').toString().trim();
+              if (tagsOutput) {
+                tags = tagsOutput.split('\n');
+              }
+            } catch (e) {
+              console.log('No tags found or error listing tags.');
+            }
+
+            let latestVersion = "0.0.0"; // Default for first release (will bump to 0.1.0 if minor bump)
+            if (tags.length > 0) {
+              latestVersion = tags[0].replace(/^v/, '');
+            } else {
+              console.log("No tags found. Starting from 0.0.0.");
+            }
+            console.log(`Latest version: ${latestVersion}`);
+
+            let [major, minor, patch] = latestVersion.split('.').map(Number);
+
+            // Determine bump type
+            // We need to find the PR associated with this commit to check the body
+            const commitSha = context.sha;
+            let bump = 'minor'; // Default
+
+            // Search for PR associated with the commit
+            const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: commitSha,
+            });
+
+            let prBody = "";
+            if (prs.data.length > 0) {
+              const pr = prs.data[0];
+              prBody = pr.body || "";
+              console.log(`Found PR #${pr.number}`);
+            } else {
+              console.log("No PR found for this commit. Checking commit message.");
+              prBody = context.payload.head_commit.message;
+            }
+
+            if (prBody.includes('#major')) {
+              bump = 'major';
+            } else if (prBody.includes('#patch')) {
+              bump = 'patch';
+            } else if (prBody.includes('#minor')) {
+              bump = 'minor';
+            }
+
+            console.log(`Bump type: ${bump}`);
+
+            if (bump === 'major') {
+              major++;
+              minor = 0;
+              patch = 0;
+            } else if (bump === 'minor') {
+              minor++;
+              patch = 0;
+            } else {
+              patch++;
+            }
+
+            const newVersion = `v${major}.${minor}.${patch}`;
+            console.log(`New version: ${newVersion}`);
+            
+            core.setOutput('new_version', newVersion);
+            core.setOutput('bump_type', bump);
+
+      - name: Create Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
+        run: |
+          gh release create "$NEW_VERSION" \
+            --generate-notes \
+            --title "$NEW_VERSION" \
+            --target main
