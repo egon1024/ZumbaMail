@@ -210,7 +210,7 @@ export default function GenerateSignInSheet() {
                     <optgroup key={orgName} label={orgName}>
                       {acts.map(activity => (
                         <option key={activity.id} value={activity.id}>
-                          {activity.day_of_week} {activity.type} - {formatTime(activity.time)} at {activity.location}
+                          {activity.day_of_week} {activity.type} - {formatTime(activity.time)} at {activity.location_name}
                         </option>
                       ))}
                     </optgroup>
