@@ -147,7 +147,7 @@ def find_or_create_sheet_in_folder(file_name, folder_id, new_sheet_title):
         raise
 
 
-def create_signin_sheet(activity, start_date, num_weeks, enrolled_students, waitlist_students, dropin_students=None, attendance_data=None):
+def create_signin_sheet(activity, date_list, enrolled_students, waitlist_students, dropin_students=None, attendance_data=None):
     """
     Create a Google Sheets sign-in sheet for an activity
 
@@ -156,8 +156,7 @@ def create_signin_sheet(activity, start_date, num_weeks, enrolled_students, wait
 
     Args:
         activity: Activity model instance
-        start_date: datetime.date object for first column
-        num_weeks: number of weekly date columns to create
+        date_list: list of datetime.date objects for the columns
         enrolled_students: list of Student objects (enrolled)
         waitlist_students: list of Student objects (on waitlist)
         dropin_students: list of Student objects (drop-ins with attendance but not enrolled/waitlisted)
@@ -189,11 +188,9 @@ def create_signin_sheet(activity, start_date, num_weeks, enrolled_students, wait
     # Generate date headers and track dates for attendance lookup
     date_headers = []
     dates = []
-    current_date = start_date
-    for _ in range(num_weeks):
+    for current_date in date_list:
         date_headers.append(current_date.strftime('%-m/%-d'))
         dates.append(current_date.strftime('%Y-%m-%d'))
-        current_date += timedelta(days=7)
 
     # Build the header rows
     # Row 1: Title (merged across all columns)

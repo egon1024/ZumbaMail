@@ -99,6 +99,16 @@ class GenerateSignInSheetView(APIView):
             dates.append(current_date)
             current_date += timedelta(days=7)
 
+        # Filter out cancelled dates
+        cancellations = activity.cancellations.filter(date__in=dates).values_list('date', flat=True)
+        final_dates = [d for d in dates if d not in cancellations]
+        
+        # We need at least one date
+        if not final_dates:
+             # Fallback if all dates are cancelled? Or just show empty sheet?
+             # Let's keep one date or just proceed with empty list
+             pass
+
         # Query all attendance records for this activity and date range
         all_students = enrolled_students + waitlist_students
         student_ids = [s.id for s in all_students]
@@ -106,7 +116,7 @@ class GenerateSignInSheetView(APIView):
         # Get all meetings for these dates
         meetings = Meeting.objects.filter(
             activity=activity,
-            date__in=dates
+            date__in=final_dates
         ).prefetch_related('attendance_records__student')
 
         # Build attendance lookup and track drop-ins
@@ -137,8 +147,7 @@ class GenerateSignInSheetView(APIView):
         try:
             sheet_url = create_signin_sheet(
                 activity=activity,
-                start_date=start_date,
-                num_weeks=num_weeks,
+                date_list=final_dates,
                 enrolled_students=enrolled_students,
                 waitlist_students=waitlist_students,
                 dropin_students=dropin_students,

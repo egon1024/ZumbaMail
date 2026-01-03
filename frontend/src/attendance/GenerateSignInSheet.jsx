@@ -22,7 +22,7 @@ export default function GenerateSignInSheet() {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      authFetch('/api/sessions/').then(res => res.json()),
+      authFetch('/api/sessions/?closed=false').then(res => res.json()),
       authFetch('/api/classes/').then(res => res.json())
     ])
       .then(([sessionsData, activitiesData]) => {
