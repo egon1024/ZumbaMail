@@ -89,6 +89,13 @@ class SessionListView(ListAPIView):
         organization_id = self.request.query_params.get('organization')
         if organization_id:
             queryset = queryset.filter(organization_id=organization_id)
+        
+        # Filter by closed status
+        closed = self.request.query_params.get('closed')
+        if closed is not None:
+            is_closed = closed.lower() == 'true'
+            queryset = queryset.filter(closed=is_closed)
+            
         return queryset
 
     def get_serializer_class(self):
