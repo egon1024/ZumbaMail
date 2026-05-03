@@ -249,6 +249,84 @@ class EmailDetailsView(APIView):
         end_time_formatted = self._format_time_for_email(end_time_obj)
         return f"{start_time_formatted} - {end_time_formatted}"
 
+    def _get_activity_location(self, activity):
+        try:
+            loc = activity.location
+        except AttributeError:
+            return None
+        return loc if loc else None
+
+    def _normalized_address_key(self, location):
+        if not location or not location.address:
+            return ""
+        return location.address.strip()
+
+    def _format_venue_address_line(self, location):
+        line = f"Class takes place at the {location.name}"
+        addr = location.address.strip() if location.address else ""
+        if addr:
+            line += f", located at {addr}."
+        else:
+            line += "."
+        return line
+
+    def _location_plan(self, enrolled_activities, waitlisted_activities):
+        """
+        Returns dict with shared_address_block, representative_location (first activity
+        that has a location), or None if no activities have locations.
+        """
+        ordered = [(act, False) for act in enrolled_activities] + [(act, True) for act in waitlisted_activities]
+        located_pairs = [(act, is_wl) for act, is_wl in ordered if self._get_activity_location(act)]
+        if not located_pairs:
+            return None
+
+        norm_addresses = [
+            self._normalized_address_key(self._get_activity_location(act)) for act, _ in located_pairs
+        ]
+        distinct_addresses = set(norm_addresses)
+        location_ids = {self._get_activity_location(act).pk for act, _ in located_pairs}
+        shared_address_block = len(distinct_addresses) == 1 and not (
+            distinct_addresses == {""} and len(location_ids) > 1
+        )
+        representative_location = self._get_activity_location(located_pairs[0][0])
+        return {
+            "shared_address_block": shared_address_block,
+            "representative_location": representative_location,
+        }
+
+    def _append_meeting_schedule_lines(self, body_lines, act):
+        possible_dates = act.get_possible_dates()
+        cancelled_dates_objs = act.get_cancelled_dates()
+        display_meeting_dates = [d for d in possible_dates if d not in cancelled_dates_objs]
+        date_str = ", ".join([d.strftime('%-m/%-d') for d in display_meeting_dates])
+        body_lines.append(f"  Dates: {date_str}")
+        if cancelled_dates_objs:
+            cancelled_dates_str = ", ".join([d.strftime('%-m/%-d') for d in sorted(cancelled_dates_objs)])
+            body_lines.append(f"  Cancelled dates: {cancelled_dates_str}")
+
+    def _append_activity_location_paragraph(self, body_lines, act, plan, shared_venue_emitted):
+        """
+        Venue + description directly under the class schedule. When plan['shared_address_block'],
+        the shared 'Class takes place at…' line is emitted only once (first class in roster that
+        has a location). Later classes at the same address get only their description lines.
+        """
+        loc = self._get_activity_location(act)
+        if not loc:
+            return shared_venue_emitted
+        desc = loc.description.strip() if loc.description else ""
+        if plan["shared_address_block"]:
+            if not shared_venue_emitted:
+                body_lines.append(self._format_venue_address_line(plan["representative_location"]))
+                shared_venue_emitted = True
+            if desc:
+                body_lines.append(desc)
+        else:
+            body_lines.append(self._format_venue_address_line(loc))
+            if desc:
+                body_lines.append(desc)
+        body_lines.append("")
+        return shared_venue_emitted
+
     def _build_subject(self, activities, organization):
         """Builds the email subject line."""
         if not activities:
@@ -263,27 +341,19 @@ class EmailDetailsView(APIView):
     def _build_body(self, enrolled_activities, waitlisted_activities, session):
         """Builds the email body."""
         body_lines = ["Hello-", "You are currently signed up for:", ""]
+        plan = self._location_plan(enrolled_activities, waitlisted_activities)
+        shared_venue_emitted = False
 
         # --- Enrolled Classes ---
         for i, act in enumerate(enrolled_activities):
-            # Class name, day, and time
             time_range = self._get_time_range(act.time)
             body_lines.append(f"{act.get_type_display()} {act.day_of_week} {time_range}")
+            self._append_meeting_schedule_lines(body_lines, act)
+            if plan:
+                shared_venue_emitted = self._append_activity_location_paragraph(
+                    body_lines, act, plan, shared_venue_emitted
+                )
 
-            # Class dates
-            possible_dates = act.get_possible_dates()
-            cancelled_dates_objs = act.get_cancelled_dates()
-            
-            display_meeting_dates = [d for d in possible_dates if d not in cancelled_dates_objs]
-
-            date_str = ", ".join([d.strftime('%-m/%-d') for d in display_meeting_dates])
-            day_abbr = act.day_of_week[:4] if act.day_of_week == "Thursday" else act.day_of_week[:3]
-            body_lines.append(f"  {act.get_type_display()} {day_abbr} dates: {date_str}")
-
-            if cancelled_dates_objs:
-                cancelled_dates_str = ", ".join([d.strftime('%-m/%-d') for d in sorted(cancelled_dates_objs)])
-                body_lines.append(f"  Cancelled dates: {cancelled_dates_str}")
-            
             if i < len(enrolled_activities) - 1 or waitlisted_activities:
                 body_lines.append("")
                 body_lines.append("and")
@@ -291,56 +361,18 @@ class EmailDetailsView(APIView):
 
         # --- Waitlisted Classes ---
         for i, act in enumerate(waitlisted_activities):
-            # Class name, day, and time (consistent format)
             time_range = self._get_time_range(act.time)
             body_lines.append(f"Waitlist: {act.get_type_display()} {act.day_of_week} {time_range}")
+            self._append_meeting_schedule_lines(body_lines, act)
+            if plan:
+                shared_venue_emitted = self._append_activity_location_paragraph(
+                    body_lines, act, plan, shared_venue_emitted
+                )
 
-            # Class dates (including cancellations)
-            possible_dates = act.get_possible_dates()
-            cancelled_dates_objs = act.get_cancelled_dates()
-            
-            display_meeting_dates = [d for d in possible_dates if d not in cancelled_dates_objs]
-
-            date_str = ", ".join([d.strftime('%-m/%-d') for d in display_meeting_dates])
-            day_abbr = act.day_of_week[:4] if act.day_of_week == "Thursday" else act.day_of_week[:3]
-            body_lines.append(f"  {act.get_type_display()} {day_abbr} dates: {date_str}")
-
-            if cancelled_dates_objs:
-                cancelled_dates_str = ", ".join([d.strftime('%-m/%-d') for d in sorted(cancelled_dates_objs)])
-                body_lines.append(f"  Cancelled dates: {cancelled_dates_str}")
-            
-            if i < len(waitlisted_activities) - 1: # Add separator between waitlisted classes
+            if i < len(waitlisted_activities) - 1:
                 body_lines.append("")
                 body_lines.append("and")
                 body_lines.append("")
-        
-        if waitlisted_activities and enrolled_activities: # Add separator if both enrolled and waitlisted exist
-            body_lines.append("")
-
-        # --- Location Information ---
-        unique_locations = set()
-        # Consider both enrolled and waitlisted activities for location info
-        for act in enrolled_activities + waitlisted_activities:
-            try:
-                # This works for valid FKs
-                if act.location:
-                    unique_locations.add(act.location)
-            except AttributeError:
-                # This handles the case where act.location is a string
-                pass
-
-        if len(unique_locations) == 1:
-            location = unique_locations.pop()
-            location_line = f"Class takes place at the {location.name}"
-            if location.address:
-                location_line += f", located at {location.address}."
-            else:
-                location_line += "." # Add a period if no address
-            body_lines.append(location_line)
-
-            if location.description:
-                body_lines.append(location.description)
-            body_lines.append("")
 
         # --- Closing Paragraph ---
         is_full = any(
@@ -354,14 +386,26 @@ class EmailDetailsView(APIView):
         )
         has_enrolled_activities = bool(enrolled_activities)
 
-        if is_full:
-            body_lines.append("This class is currently full, and there is a wait list. Please let me know any dates that you will not be able to attend class.")
-            body_lines.append("If you have any questions, please don't hesitate to ask.")
-        elif has_enrolled_activities and has_waitlisted_students_in_any_class:
-            body_lines.append("As a reminder, if you are aware that you will be away for certain days, please let me know which classes you will miss so I can open those spots to people on the waiting list. Please be sure to include your name and the dates you will be absent.")
-        else: # This covers solely waitlisted, or enrolled with no waitlist
-            body_lines.append("Thank you so much for being such a loving supporter of my classes!")
-            body_lines.append("If you have any questions, please don't hesitate to ask.")
+        body_lines.append("")
+        body_lines.extend([
+            "As a reminder, if you are aware that you will be away for certain days, please let me know which classes you will miss so I can log an excused absence. Per the Rochester Rec policy, any student who misses 2 classes in a row without notification will be removed from the roster. Please be sure to include your name and the dates you will be absent. You can message me at alyssatuininga@yahoo.com or text at 603-834-3262 or you can contact the Rec directly.",
+            "",
+            "Please be aware that I will be absent for a significant number of days this session. I will be taking a long trip with my youngest son to Costa Rica and attending an annual quilt retreat. Thankfully, we have two amazing subs that will be covering classes.",
+            "",
+            "Substitute schedule:",
+            "May 7th: Cardio Drumming - Nancy",
+            "May 8th: Zumba Gold - Nancy",
+            "May 28th: Cardio Drumming - Nancy",
+            "May 29th: Zumba Gold - Nancy",
+            "June 1st: Zumba Gold - Nancy",
+            "June 1st: Cardio Drumming - Denise",
+            "June 4th: Cardio Drumming - Nancy",
+            "June 5th: Zumba Gold - Denise",
+            "June 11th: Cardio Drumming - Nancy",
+            "June 12th: Zumba Gold - Denise",
+            "",
+        ])
+        body_lines.append("If you have any questions, please don't hesitate to ask.")
         
         # Only include "I look forward to seeing you in class soon!" if there are enrolled activities
         # or if it's not solely waitlisted (i.e., there are no waitlisted activities either)
@@ -382,7 +426,7 @@ class EmailDetailsView(APIView):
         except Session.DoesNotExist:
             return Response({"error": "Session not found"}, status=404)
 
-        activities = Activity.objects.filter(session=session).prefetch_related(
+        activities = Activity.objects.filter(session=session).select_related('location').prefetch_related(
             'meetings',
             'enrollments__student',
             'cancellations' # Corrected related_name
