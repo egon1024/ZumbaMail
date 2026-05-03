@@ -30,6 +30,7 @@ from .reports import (
 	WeeklyReportView,
 	ResidencyReportView,
 	EndOfSessionReportView,
+	MonthlyReportView,
 	CumulativeReportView,
 )
 from .communication import (

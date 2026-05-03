@@ -41,6 +41,7 @@ import GenerateSignInSheet from './attendance/GenerateSignInSheet';
 import WeeklyReport from './reports/WeeklyReport';
 import CumulativeReport from './reports/CumulativeReport';
 import EndOfSessionReport from './reports/EndOfSessionReport';
+import MonthlyReport from './reports/MonthlyReport';
 import ResidencyReport from './reports/ResidencyReport';
 import CommunicationHome from './communication/CommunicationHome';
 import SessionEmailList from './communication/SessionEmailList';
@@ -282,6 +283,11 @@ function AppLayout() {
         <Route path="/reports/end-of-session" element={
           <PrivateRoute>
             <EndOfSessionReport />
+          </PrivateRoute>
+        } />
+        <Route path="/reports/monthly" element={
+          <PrivateRoute>
+            <MonthlyReport />
           </PrivateRoute>
         } />
         <Route path="/reports/residency" element={
