@@ -53,6 +53,7 @@ function Navbar() {
               <ul className="dropdown-menu" aria-labelledby="reportsDropdown">
                 <li><NavLink className="dropdown-item" to="/reports/weekly" onClick={handleNavClick}>Weekly</NavLink></li>
                 <li><NavLink className="dropdown-item" to="/reports/cumulative" onClick={handleNavClick}>Cumulative</NavLink></li>
+                <li><NavLink className="dropdown-item" to="/reports/monthly" onClick={handleNavClick}>Monthly</NavLink></li>
                 <li><NavLink className="dropdown-item" to="/reports/end-of-session" onClick={handleNavClick}>End of Session</NavLink></li>
                 <li><NavLink className="dropdown-item" to="/reports/residency" onClick={handleNavClick}>Residency</NavLink></li>
               </ul>

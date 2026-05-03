@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions
@@ -277,6 +279,125 @@ class EndOfSessionReportView(APIView):
             'session_start_date': session.start_date,
             'session_end_date': session.end_date,
             'activities': report_data
+        })
+
+
+class MonthlyReportView(APIView):
+    """
+    Attendance counts by meeting date for each recurring class pattern (type + day + time)
+    within an inclusive calendar range. Rows are consolidated across sessions when those
+    fields match; locations may differ and are summarized in location_name.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        organization_id = request.query_params.get('organization_id')
+        start_raw = request.query_params.get('start_date')
+        end_raw = request.query_params.get('end_date')
+
+        if not organization_id or not start_raw or not end_raw:
+            return Response(
+                {
+                    "error": "organization_id, start_date, and end_date are required (YYYY-MM-DD)",
+                },
+                status=400,
+            )
+
+        try:
+            start_date = datetime.strptime(start_raw, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_raw, '%Y-%m-%d').date()
+        except ValueError:
+            return Response(
+                {"error": "start_date and end_date must be in format YYYY-MM-DD"},
+                status=400,
+            )
+
+        if start_date > end_date:
+            return Response(
+                {"error": "start_date must be on or before end_date"},
+                status=400,
+            )
+
+        try:
+            organization = Organization.objects.get(pk=organization_id)
+        except Organization.DoesNotExist:
+            return Response(
+                {"error": "Organization not found"},
+                status=404,
+            )
+
+        # Consolidation key: canonical type, day_of_week, and time (location ignored).
+        groups = {}
+
+        meetings = (
+            Meeting.objects.filter(
+                date__gte=start_date,
+                date__lte=end_date,
+                activity__session__organization=organization,
+            )
+            .select_related('activity', 'activity__location')
+            .prefetch_related('attendance_records')
+        )
+
+        for meeting in meetings:
+            act = meeting.activity
+            key = (act.type, act.day_of_week, act.time)
+            if key not in groups:
+                groups[key] = {
+                    'day_of_week': act.day_of_week,
+                    'class_type': act.get_type_display(),
+                    'time': act.time.strftime('%H:%M'),
+                    'date_counts': defaultdict(int),
+                    'location_names': set(),
+                }
+            g = groups[key]
+            present_count = sum(
+                1 for r in meeting.attendance_records.all() if r.status == 'present'
+            )
+            g['date_counts'][meeting.date] += present_count
+            if act.location_id:
+                g['location_names'].add(act.location.name)
+
+        report_data = []
+        for g in groups.values():
+            locs = g['location_names']
+            if not locs:
+                location_name = None
+            elif len(locs) == 1:
+                location_name = next(iter(locs))
+            else:
+                location_name = ', '.join(sorted(locs))
+
+            date_counts = [
+                {'date': d, 'count': c}
+                for d, c in sorted(g['date_counts'].items())
+            ]
+            report_data.append({
+                'day_of_week': g['day_of_week'],
+                'class_type': g['class_type'],
+                'location_name': location_name,
+                'time': g['time'],
+                'date_counts': date_counts,
+            })
+
+        day_order = {
+            'Monday': 1,
+            'Tuesday': 2,
+            'Wednesday': 3,
+            'Thursday': 4,
+            'Friday': 5,
+            'Saturday': 6,
+            'Sunday': 7,
+        }
+        report_data.sort(
+            key=lambda x: (day_order.get(x['day_of_week'], 8), x['time'])
+        )
+
+        return Response({
+            'organization_name': organization.name,
+            'report_start_date': start_date,
+            'report_end_date': end_date,
+            'activities': report_data,
         })
 
 
