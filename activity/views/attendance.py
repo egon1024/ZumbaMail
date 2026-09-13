@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from activity.models import Activity, Meeting, AttendanceRecord, Student, ClassCancellation
 from activity.serializers import MeetingSerializer, StudentBasicSerializer
+from activity.utils.waitlist_order import ordered_waitlist_enrollments, student_payload_from_enrollment
 
 
 class MeetingGetOrCreateView(APIView):
@@ -47,7 +48,7 @@ class MeetingGetOrCreateView(APIView):
 
         # Also include enrolled and waitlist students for the UI
         enrolled_students = activity.enrollments.filter(status='active').select_related('student')
-        waitlist_students = activity.enrollments.filter(status='waiting').select_related('student')
+        waitlist_enrollments = ordered_waitlist_enrollments(activity)
 
         response_data = serializer.data
         response_data['enrolled_students'] = [
@@ -61,14 +62,8 @@ class MeetingGetOrCreateView(APIView):
             for e in sorted(enrolled_students, key=lambda e: (e.student.last_name or '', e.student.first_name or ''))
         ]
         response_data['waitlist_students'] = [
-            {
-                'id': e.student.id,
-                'display_name': e.student.display_name,
-                'first_name': e.student.first_name,
-                'last_name': e.student.last_name,
-                'email': e.student.email,
-            }
-            for e in sorted(waitlist_students, key=lambda e: (e.student.last_name or '', e.student.first_name or ''))
+            student_payload_from_enrollment(e)
+            for e in waitlist_enrollments
         ]
 
         return Response(response_data)

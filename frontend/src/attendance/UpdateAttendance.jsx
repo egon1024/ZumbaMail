@@ -5,6 +5,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { authFetch } from "../utils/authFetch";
 import { formatTime } from "../utils/formatTime";
 import { formatDate } from "../utils/formatDate";
+import { sortWaitlist, sortByLastFirstName } from "../utils/waitlistOrder";
+import WaitlistRankName from "../utils/WaitlistRankName";
 
 // Custom input that uses formatDate for display
 const FormattedDateInput = forwardRef(({ value, onClick, selectedDate }, ref) => {
@@ -134,17 +136,8 @@ export default function UpdateAttendance() {
         setMeeting(data);
         setAttendanceRecords(data.attendance_records || []);
 
-        const enrolledList = (data.enrolled_students || []).sort((a, b) => {
-          const lastNameCompare = (a.last_name || '').localeCompare(b.last_name || '');
-          if (lastNameCompare !== 0) return lastNameCompare;
-          return (a.first_name || '').localeCompare(b.first_name || '');
-        });
-
-        const waitlistList = (data.waitlist_students || []).sort((a, b) => {
-          const lastNameCompare = (a.last_name || '').localeCompare(b.last_name || '');
-          if (lastNameCompare !== 0) return lastNameCompare;
-          return (a.first_name || '').localeCompare(b.first_name || '');
-        });
+        const enrolledList = sortByLastFirstName(data.enrolled_students || []);
+        const waitlistList = sortWaitlist(data.waitlist_students || []);
 
         setEnrolledStudents(enrolledList);
         setWaitlistStudents(waitlistList);
@@ -610,7 +603,9 @@ export default function UpdateAttendance() {
                       return (
                         <div key={student.id} className="border rounded p-2 mb-2 bg-white d-flex justify-content-between align-items-center">
                           <div>
-                            <strong>{student.display_name}</strong>
+                            <WaitlistRankName student={student}>
+                              <strong>{student.display_name}</strong>
+                            </WaitlistRankName>
                             {student.email && <div className="text-muted small">{student.email}</div>}
                             <span className="badge bg-warning text-dark ms-2">Waitlist</span>
                           </div>

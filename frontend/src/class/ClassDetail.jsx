@@ -5,6 +5,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { authFetch } from '../utils/authFetch';
 import DayOfWeek from '../utils/DayOfWeek';
 import { formatTime } from '../utils/formatTime';
+import { sortWaitlist, sortByLastFirstName } from '../utils/waitlistOrder';
+import WaitlistRankName from '../utils/WaitlistRankName';
 import './ClassDetail.css';
 
 const ClassDetail = () => {
@@ -56,9 +58,9 @@ const ClassDetail = () => {
   if (error) return <div className="alert alert-danger">{error}</div>;
   if (!cls) return null;
 
-  // Sort students and waitlist by display_name
-  const sortedStudents = [...students].sort((a, b) => (a.display_name || '').localeCompare(b.display_name || ''));
-  const sortedWaitlist = [...waitlist].sort((a, b) => (a.display_name || '').localeCompare(b.display_name || ''));
+  // Sort students alphabetically; waitlist uses shared ranked order
+  const sortedStudents = sortByLastFirstName(students);
+  const sortedWaitlist = sortWaitlist(waitlist);
 
   return (
     <div className="container mt-4">
@@ -183,9 +185,11 @@ const ClassDetail = () => {
                     {sortedWaitlist.length === 0 && <li>No one on waitlist.</li>}
                     {sortedWaitlist.map(s => (
                       <li key={s.id}>
-                        <Link to={`/students/${s.id}`} className="student-link">
-                          {s.display_name || s.full_name || s.name || s.email || s.id}
-                        </Link>
+                        <WaitlistRankName student={s}>
+                          <Link to={`/students/${s.id}`} className="student-link">
+                            {s.display_name || s.full_name || s.name || s.email || s.id}
+                          </Link>
+                        </WaitlistRankName>
                       </li>
                     ))}
                   </ul>

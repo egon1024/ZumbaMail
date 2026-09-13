@@ -3,6 +3,8 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { authFetch } from "../utils/authFetch";
 import { formatTime } from "../utils/formatTime";
 import { formatDate } from "../utils/formatDate";
+import { sortWaitlist, sortByLastFirstName } from "../utils/waitlistOrder";
+import WaitlistRankName from "../utils/WaitlistRankName";
 import "./AttendanceDetail.css";
 
 export default function AttendanceDetail() {
@@ -93,8 +95,8 @@ export default function AttendanceDetail() {
                 organization_name: data.organization_name
               });
 
-              const enrolledList = data.enrolled_students || [];
-              const waitlistList = data.waitlist_students || [];
+              const enrolledList = sortByLastFirstName(data.enrolled_students || []);
+              const waitlistList = sortWaitlist(data.waitlist_students || []);
               setEnrolledStudents(enrolledList);
               setWaitlistStudents(waitlistList);
 
@@ -488,7 +490,9 @@ export default function AttendanceDetail() {
                       return (
                                               <div key={student.id} className="attendance-row">
                                                 <div className="student-name">
-                                                  <strong>{student.display_name}</strong>
+                                                  <WaitlistRankName student={student}>
+                                                    <strong>{student.display_name}</strong>
+                                                  </WaitlistRankName>
                                                   <span className="badge bg-warning text-dark ms-2">Waitlist</span>
                                                 </div>
                                                 <div className="button-group">

@@ -193,11 +193,12 @@ class CustomStudentAdmin(StudentAdmin):
 admin.site.register(Student, CustomStudentAdmin)
 
 class EnrollmentAdmin(admin.ModelAdmin):
-	list_display = ('id', 'student', 'activity', 'get_session', 'get_status_display')
+	list_display = ('id', 'student', 'activity', 'get_session', 'get_status_display', 'waitlist_rank')
 	list_display_links = ('id',)
 	list_filter = ('activity__session', 'activity', 'status')
 	search_fields = ('student__first_name', 'student__last_name')
-
+	fields = ('student', 'activity', 'status', 'waitlist_rank', 'date_enrolled')
+	readonly_fields = ('date_enrolled',)
 	def get_queryset(self, request):
 		qs = super().get_queryset(request)
 		return qs.filter(activity__closed=False)

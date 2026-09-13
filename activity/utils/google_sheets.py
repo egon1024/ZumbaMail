@@ -147,7 +147,7 @@ def find_or_create_sheet_in_folder(file_name, folder_id, new_sheet_title):
         raise
 
 
-def create_signin_sheet(activity, date_list, enrolled_students, waitlist_students, dropin_students=None, attendance_data=None):
+def create_signin_sheet(activity, date_list, enrolled_students, waitlist_enrollments=None, dropin_students=None, attendance_data=None, waitlist_students=None):
     """
     Create a Google Sheets sign-in sheet for an activity
 
@@ -158,9 +158,10 @@ def create_signin_sheet(activity, date_list, enrolled_students, waitlist_student
         activity: Activity model instance
         date_list: list of datetime.date objects for the columns
         enrolled_students: list of Student objects (enrolled)
-        waitlist_students: list of Student objects (on waitlist)
+        waitlist_enrollments: list of Enrollment objects (waiting), preferred
         dropin_students: list of Student objects (drop-ins with attendance but not enrolled/waitlisted)
         attendance_data: dict mapping {student_id: {date_str: status}} for pre-filling attendance
+        waitlist_students: deprecated; use waitlist_enrollments. Accepted for compatibility.
 
     Returns:
         str: URL of the created Google Sheet
@@ -169,6 +170,13 @@ def create_signin_sheet(activity, date_list, enrolled_students, waitlist_student
         attendance_data = {}
     if dropin_students is None:
         dropin_students = []
+    if waitlist_enrollments is None:
+        # Backward compatible: bare Student list with no ranks
+        waitlist_enrollments = []
+        if waitlist_students:
+            for student in waitlist_students:
+                waitlist_enrollments.append(_WaitlistEntry(student, None))
+
     # Spreadsheet title based on activity - include session name
     spreadsheet_title = f"{activity.session.name} - {activity.day_of_week} {activity.type}"
 
@@ -192,18 +200,20 @@ def create_signin_sheet(activity, date_list, enrolled_students, waitlist_student
         date_headers.append(current_date.strftime('%-m/%-d'))
         dates.append(current_date.strftime('%Y-%m-%d'))
 
+    # Columns: Rank | Name | dates...
+    num_cols = len(date_headers) + 2
+
     # Build the header rows
     # Row 1: Title (merged across all columns)
-    title_row = [spreadsheet_title] + [''] * len(date_headers)
+    title_row = [spreadsheet_title] + [''] * (num_cols - 1)
 
-    # Row 2: Date headers
-    header_row = [''] + date_headers
+    # Row 2: Rank | (name blank) | date headers
+    header_row = ['Rank', ''] + date_headers
 
-    # Build student rows with attendance marks
+    # Build student rows with attendance marks (Rank blank for enrolled)
     student_rows = []
     for student in enrolled_students:
-        row = [student.display_name]
-        # Check attendance for each date
+        row = ['', student.display_name]
         for date_str in dates:
             cell_value = ''
             if student.id in attendance_data:
@@ -213,24 +223,38 @@ def create_signin_sheet(activity, date_list, enrolled_students, waitlist_student
                         cell_value = 'X'
                     elif status == 'present':
                         cell_value = '✓'
-                    # Note: 'unexpected_absence' and 'scheduled' are left blank intentionally
             row.append(cell_value)
         student_rows.append(row)
 
-    # Add waitlist section - always show header even if no waitlist students
+    # Waitlist section — Option B:
+    # ranked waitlist first (by rank), then unranked waitlist + drop-ins alphabetically
     waitlist_rows = []
-    waitlist_rows.append([''] * (len(date_headers) + 1))  # Blank row
-    waitlist_rows.append(['Wait List/Drop Ins:'] + [''] * len(date_headers))
+    waitlist_rows.append([''] * num_cols)  # Blank row
+    waitlist_rows.append(['', 'Wait List/Drop Ins:'] + [''] * len(date_headers))
 
-    # Combine waitlist and drop-in students, sort alphabetically by last name, first name
-    waitlist_and_dropins = waitlist_students + dropin_students
-    # Already sorted from database queries, but ensure consistent order
-    waitlist_and_dropins.sort(key=lambda s: (s.last_name or '', s.first_name or ''))
+    ranked_entries = []
+    unranked_students = []
+    for entry in waitlist_enrollments:
+        student = entry.student if hasattr(entry, 'student') else entry
+        rank = getattr(entry, 'waitlist_rank', None)
+        if rank is not None:
+            ranked_entries.append((rank, student))
+        else:
+            unranked_students.append(student)
 
-    # Add waitlist and drop-in students with attendance marks
-    for student in waitlist_and_dropins:
-        row = [student.display_name]
-        # Check attendance for each date
+    ranked_entries.sort(key=lambda item: item[0])
+
+    remaining = unranked_students + list(dropin_students)
+    remaining.sort(key=lambda s: (s.last_name or '', s.first_name or ''))
+
+    waitlist_section_people = []
+    for rank, student in ranked_entries:
+        waitlist_section_people.append((rank, student))
+    for student in remaining:
+        waitlist_section_people.append((None, student))
+
+    for rank, student in waitlist_section_people:
+        row = [rank if rank is not None else '', student.display_name]
         for date_str in dates:
             cell_value = ''
             if student.id in attendance_data and date_str in attendance_data[student.id]:
@@ -239,12 +263,11 @@ def create_signin_sheet(activity, date_list, enrolled_students, waitlist_student
                     cell_value = 'X'
                 elif status == 'present':
                     cell_value = '✓'
-                # Note: 'unexpected_absence' and 'scheduled' are left blank intentionally
             row.append(cell_value)
         waitlist_rows.append(row)
 
     # Add a few blank rows at the end for walk-ins
-    blank_rows = [[''] * (len(date_headers) + 1) for _ in range(3)]
+    blank_rows = [[''] * num_cols for _ in range(3)]
 
     # Combine all rows
     all_rows = [title_row, header_row] + student_rows + waitlist_rows + blank_rows
@@ -253,9 +276,22 @@ def create_signin_sheet(activity, date_list, enrolled_students, waitlist_student
     worksheet.update('A1', all_rows)
 
     # Apply formatting
-    _format_signin_sheet(worksheet, len(date_headers), len(enrolled_students), len(waitlist_and_dropins))
+    _format_signin_sheet(
+        worksheet,
+        len(date_headers),
+        len(enrolled_students),
+        len(waitlist_section_people),
+    )
 
     return sheet_url
+
+
+class _WaitlistEntry:
+    """Minimal stand-in when only Student objects are passed."""
+
+    def __init__(self, student, waitlist_rank):
+        self.student = student
+        self.waitlist_rank = waitlist_rank
 
 
 def _format_signin_sheet(worksheet, num_date_columns, num_enrolled, num_waitlist_and_dropins):
@@ -268,53 +304,74 @@ def _format_signin_sheet(worksheet, num_date_columns, num_enrolled, num_waitlist
         num_enrolled: number of enrolled students
         num_waitlist_and_dropins: number of waitlist and drop-in students combined
     """
+    num_cols = num_date_columns + 2  # Rank + Name + dates
+
     # Format title row (row 1)
     worksheet.format('A1', {
         'textFormat': {'bold': True, 'fontSize': 18},
         'horizontalAlignment': 'CENTER'
     })
 
-    # Merge title cells
-    worksheet.merge_cells(1, 1, 1, num_date_columns + 1)
+    # Merge title cells across Rank + Name + dates
+    worksheet.merge_cells(1, 1, 1, num_cols)
 
-    # Format header row (row 2) - date columns
-    header_range = f'B2:{chr(66 + num_date_columns)}2'
-    worksheet.format(header_range, {
+    # Format header row (row 2) - Rank label + date columns
+    worksheet.format('A2', {
         'textFormat': {'bold': True},
         'horizontalAlignment': 'CENTER'
     })
+    # Date headers start at column C
+    if num_date_columns > 0:
+        header_range = f'C2:{_col_letter(num_cols)}2'
+        worksheet.format(header_range, {
+            'textFormat': {'bold': True},
+            'horizontalAlignment': 'CENTER'
+        })
 
-    # Center all date column cells (from row 3 to end of data)
-    # Calculate end row: header row + enrolled students + blank row + waitlist header + waitlist/dropin students + blank rows
+    # Center date column cells and Rank column
     end_row = 2 + num_enrolled + 2 + num_waitlist_and_dropins + 3
-    data_range = f'B3:{chr(65 + num_date_columns)}{end_row}'
+    worksheet.format(f'A3:A{end_row}', {
+        'horizontalAlignment': 'CENTER',
+        'verticalAlignment': 'MIDDLE'
+    })
+    data_range = f'C3:{_col_letter(num_cols)}{end_row}'
     worksheet.format(data_range, {
         'horizontalAlignment': 'CENTER',
         'verticalAlignment': 'MIDDLE'
     })
 
-    # Set column widths to "Fit to Data" using auto-resize
+    # Narrow Rank column; auto-resize the rest
     try:
-        requests = []
-        # Auto-resize all columns (from column A to the last date column)
-        requests.append({
-            'autoResizeDimensions': {
-                'dimensions': {
-                    'sheetId': worksheet.id,
-                    'dimension': 'COLUMNS',
-                    'startIndex': 0,
-                    'endIndex': num_date_columns + 1
+        requests = [
+            {
+                'updateDimensionProperties': {
+                    'range': {
+                        'sheetId': worksheet.id,
+                        'dimension': 'COLUMNS',
+                        'startIndex': 0,
+                        'endIndex': 1,
+                    },
+                    'properties': {'pixelSize': 50},
+                    'fields': 'pixelSize',
                 }
-            }
-        })
+            },
+            {
+                'autoResizeDimensions': {
+                    'dimensions': {
+                        'sheetId': worksheet.id,
+                        'dimension': 'COLUMNS',
+                        'startIndex': 1,
+                        'endIndex': num_cols,
+                    }
+                }
+            },
+        ]
         worksheet.spreadsheet.batch_update({'requests': requests})
     except Exception as e:
-        print(f"Warning: Could not auto-resize columns: {e}")
+        print(f"Warning: Could not resize columns: {e}")
 
     # Add borders to the entire grid
-    # Calculate end row: header row + enrolled students + blank row + waitlist header + waitlist/dropin students + blank rows
-    end_row = 2 + num_enrolled + 2 + num_waitlist_and_dropins + 3
-    grid_range = f'A2:{chr(65 + num_date_columns)}{end_row}'
+    grid_range = f'A2:{_col_letter(num_cols)}{end_row}'
     worksheet.format(grid_range, {
         'borders': {
             'top': {'style': 'SOLID'},
@@ -324,8 +381,18 @@ def _format_signin_sheet(worksheet, num_date_columns, num_enrolled, num_waitlist
         }
     })
 
-    # Format waitlist header (always present now)
+    # Format waitlist header in the Name column
     waitlist_row = 3 + num_enrolled + 1  # After blank row
-    worksheet.format(f'A{waitlist_row}', {
+    worksheet.format(f'B{waitlist_row}', {
         'textFormat': {'bold': True}
     })
+
+
+def _col_letter(col_number):
+    """1-based column number to spreadsheet letter (supports >26)."""
+    result = ''
+    n = col_number
+    while n > 0:
+        n, remainder = divmod(n - 1, 26)
+        result = chr(65 + remainder) + result
+    return result
