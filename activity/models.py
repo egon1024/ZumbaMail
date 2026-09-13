@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.validators import MinValueValidator
 
 
 class Organization(models.Model):
@@ -194,6 +195,7 @@ class Student(models.Model):
 class Enrollment(models.Model):
 	"""
 	Connects a Student to an Activity within a Session. Tracks enrollment status (active, waiting, dropped).
+	Optional waitlist_rank applies only while status is waiting (null = unranked).
 	"""
 	STATUS_CHOICES = [
 		('active', 'Active'),
@@ -205,6 +207,27 @@ class Enrollment(models.Model):
 	activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name='enrollments')
 	status = models.CharField(choices=STATUS_CHOICES, default='active')
 	date_enrolled = models.DateField(auto_now_add=True)
+	waitlist_rank = models.PositiveIntegerField(
+		null=True,
+		blank=True,
+		validators=[MinValueValidator(1)],
+		help_text='Optional waitlist priority (1 = first). Null means unranked.',
+	)
+
+	class Meta:
+		constraints = [
+			models.UniqueConstraint(
+				fields=['activity', 'waitlist_rank'],
+				condition=models.Q(status='waiting', waitlist_rank__isnull=False),
+				name='unique_waitlist_rank_per_activity',
+			),
+		]
+
+	def save(self, *args, **kwargs):
+		# Rank only applies while waiting; clear otherwise (admin and model saves).
+		if self.status != 'waiting':
+			self.waitlist_rank = None
+		super().save(*args, **kwargs)
 
 	def __str__(self):
 		return f"{self.student} in {self.activity} ({self.status})"

@@ -83,4 +83,25 @@
 	border-radius: 1.5em;
 	box-shadow: none;
 }
-/* Add custom styles for ManageEnrollment here if needed */
+
+/* Waitlist rank: name left-aligned, inputs column-aligned; names wrap (no ellipsis) */
+.waitlist-rank-row {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) 3.25rem;
+	align-items: center;
+	gap: 0.35rem 0.4rem;
+}
+
+.waitlist-rank-row .waitlist-name-cell {
+	min-width: 0;
+	overflow-wrap: anywhere;
+	white-space: normal;
+}
+
+.waitlist-rank-input {
+	width: 3.25rem;
+	text-align: center;
+	padding-left: 0.25rem;
+	padding-right: 0.25rem;
+	min-height: 2rem;
+}

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Organization, Contact, Location
 from .models import Student, Activity, Enrollment, Meeting, AttendanceRecord, ClassCancellation
+from activity.utils.waitlist_order import ordered_waitlist_enrollments, student_payload_from_enrollment
 
 
 class ActivitySerializer(serializers.ModelSerializer):
@@ -123,27 +124,25 @@ class ActivityListSerializer(serializers.ModelSerializer):
         return obj.enrollments.filter(status='waiting').count()
 
     def get_students(self, obj):
-        students = obj.enrollments.filter(status='active').select_related('student')
+        students = obj.enrollments.filter(status='active').select_related('student').order_by(
+            'student__last_name', 'student__first_name'
+        )
         return [
             {
                 'id': e.student.id,
                 'full_name': getattr(e.student, 'full_name', None) or f"{e.student.first_name} {e.student.last_name}",
                 'display_name': getattr(e.student, 'display_name', None) or f"{e.student.last_name}, {e.student.first_name}",
+                'first_name': e.student.first_name,
+                'last_name': e.student.last_name,
                 'email': e.student.email,
             }
             for e in students
         ]
 
     def get_waitlist(self, obj):
-        waitlist = obj.enrollments.filter(status='waiting').select_related('student')
         return [
-            {
-                'id': e.student.id,
-                'full_name': getattr(e.student, 'full_name', None) or f"{e.student.first_name} {e.student.last_name}",
-                'display_name': getattr(e.student, 'display_name', None) or f"{e.student.last_name}, {e.student.first_name}",
-                'email': e.student.email,
-            }
-            for e in waitlist
+            student_payload_from_enrollment(e)
+            for e in ordered_waitlist_enrollments(obj)
         ]
 
     def get_location_name(self, obj):

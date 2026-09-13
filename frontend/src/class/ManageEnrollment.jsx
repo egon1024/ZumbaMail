@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { authFetch } from '../utils/authFetch';
 import { useParams, useNavigate } from 'react-router-dom';
+import { sortWaitlist, sortByLastFirstName, studentDisplayName } from '../utils/waitlistOrder';
 import './ManageEnrollment.css';
 
 function filterList(list, query) {
@@ -27,18 +28,26 @@ const ManageEnrollment = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
+  // Per-row draft rank inputs (string keyed by student id)
+  const [rankDrafts, setRankDrafts] = useState({});
+  const [rankingStudentId, setRankingStudentId] = useState(null);
+  const [rankConflict, setRankConflict] = useState(null); // { student, rank, occupantName }
+
+  const syncRankDrafts = (waitlistList) => {
+    const drafts = {};
+    waitlistList.forEach(s => {
+      drafts[s.id] = s.waitlist_rank != null ? String(s.waitlist_rank) : '';
+    });
+    setRankDrafts(drafts);
+  };
 
   // Auto-save handler
   const autoSave = async (enrolledList, waitlistList) => {
     setSaving(true);
     setError(null);
     try {
-      const resp = await fetch(`/api/activity/${id}/enrollment/`, {
+      const resp = await authFetch(`/api/activity/${id}/enrollment/`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
         body: JSON.stringify({
           enrolled: enrolledList.map(s => s.id),
           waitlist: waitlistList.map(s => s.id),
@@ -61,7 +70,9 @@ const ManageEnrollment = () => {
       .then(([students, activity]) => {
         setAllStudents(students);
         setEnrolled(activity.students || []);
-        setWaitlist(activity.waitlist || []);
+        const wl = activity.waitlist || [];
+        setWaitlist(wl);
+        syncRankDrafts(wl);
         setClassData(activity);
         setLoading(false);
       })
@@ -71,43 +82,41 @@ const ManageEnrollment = () => {
       });
   }, [id]);
 
-  // Helper function to sort students by last name, then first name
-  const sortByName = (a, b) => {
-    const lastCompare = (a.last_name || '').localeCompare(b.last_name || '');
-    if (lastCompare !== 0) return lastCompare;
-    return (a.first_name || '').localeCompare(b.first_name || '');
-  };
-
-  // Helper function to get color based on enrollment status
   const getEnrollmentColor = (count, maxCapacity) => {
-    if (!maxCapacity) return '#000000'; // black if no limit
-    if (count > maxCapacity) return '#dc3545'; // red for overfull
-    if (count === maxCapacity) return '#ffc107'; // yellow/amber for full
-    return '#28a745'; // green for not full
+    if (!maxCapacity) return '#000000';
+    if (count > maxCapacity) return '#dc3545';
+    if (count === maxCapacity) return '#ffc107';
+    return '#28a745';
   };
 
-  // Compute available students (not enrolled or waitlisted), sorted by last name
   const enrolledIds = new Set(enrolled.map(s => s.id));
   const waitlistIds = new Set(waitlist.map(s => s.id));
-  const available = allStudents.filter(s => !enrolledIds.has(s.id) && !waitlistIds.has(s.id))
-    .slice().sort(sortByName);
+  const available = sortByLastFirstName(
+    allStudents.filter(s => !enrolledIds.has(s.id) && !waitlistIds.has(s.id))
+  );
 
-  // Sort enrolled and waitlist by last name
-  const sortedEnrolled = [...enrolled].sort(sortByName);
-  const sortedWaitlist = [...waitlist].sort(sortByName);
+  const sortedEnrolled = sortByLastFirstName(enrolled);
+  const sortedWaitlist = sortWaitlist(waitlist);
 
-  // Move functions with auto-save
   const move = (from, setFrom, to, setTo, selected, setSelected) => {
     const toMove = from.filter(s => selected.includes(s.id));
     const newFrom = from.filter(s => !selected.includes(s.id));
-    const newTo = [...to, ...toMove];
+    // Clear waitlist_rank locally when leaving waitlist (backend also clears)
+    const clearedMove = toMove.map(s => (
+      setFrom === setWaitlist ? { ...s, waitlist_rank: null } : s
+    ));
+    const newTo = [...to, ...clearedMove];
     setFrom(newFrom);
     setTo(newTo);
     setSelected([]);
 
-    // Auto-save based on which list is being updated.
-    // When moving between enrolled and waitlist, use newFrom (updated source list),
-    // not the stale React state for that source — otherwise the student stays in both payloads.
+    if (setFrom === setWaitlist) {
+      syncRankDrafts(newFrom);
+    }
+    if (setTo === setWaitlist) {
+      syncRankDrafts(newTo);
+    }
+
     if (setTo === setEnrolled) {
       autoSave(newTo, setFrom === setWaitlist ? newFrom : waitlist);
     } else if (setTo === setWaitlist) {
@@ -115,7 +124,6 @@ const ManageEnrollment = () => {
     }
   };
 
-  // Remove functions (move back to available) with auto-save
   const remove = (from, setFrom, to, setTo, selected, setSelected) => {
     const toRemove = from.filter(s => selected.includes(s.id));
     const newFrom = from.filter(s => !selected.includes(s.id));
@@ -123,12 +131,94 @@ const ManageEnrollment = () => {
     setTo([...to, ...toRemove]);
     setSelected([]);
 
-    // Auto-save - we're removing from enrolled or waitlist
+    if (setFrom === setWaitlist) {
+      syncRankDrafts(newFrom);
+    }
+
     if (setFrom === setEnrolled) {
       autoSave(newFrom, waitlist);
     } else if (setFrom === setWaitlist) {
       autoSave(enrolled, newFrom);
     }
+  };
+
+  const refreshWaitlistFromServer = async () => {
+    const activity = await authFetch(`/api/activity/${id}/`).then(r => r.json());
+    const wl = activity.waitlist || [];
+    setWaitlist(wl);
+    syncRankDrafts(wl);
+  };
+
+  const submitRank = async (student, force = false) => {
+    const draft = rankDrafts[student.id];
+    const trimmed = (draft ?? '').trim();
+    let rankPayload = null;
+    if (trimmed !== '') {
+      if (!/^\d+$/.test(trimmed) || parseInt(trimmed, 10) < 1) {
+        setError('Rank must be an integer greater than or equal to 1.');
+        return;
+      }
+      rankPayload = parseInt(trimmed, 10);
+    }
+
+    setRankingStudentId(student.id);
+    setError(null);
+    try {
+      const resp = await authFetch(`/api/activity/${id}/waitlist-rank/`, {
+        method: 'POST',
+        body: JSON.stringify({
+          student_id: student.id,
+          rank: rankPayload,
+          force,
+        }),
+      });
+      const data = await resp.json().catch(() => ({}));
+
+      if (resp.status === 409 && data.conflict) {
+        setRankConflict({
+          student,
+          rank: rankPayload,
+          occupantName: data.occupant_name || 'another student',
+        });
+        return;
+      }
+
+      if (!resp.ok) {
+        setError(data.detail || 'Failed to update waitlist rank.');
+        // Reset draft to server value
+        setRankDrafts(prev => ({
+          ...prev,
+          [student.id]: student.waitlist_rank != null ? String(student.waitlist_rank) : '',
+        }));
+        return;
+      }
+
+      // Force/cascade may bump others — refresh full waitlist for accurate ranks
+      await refreshWaitlistFromServer();
+      setRankConflict(null);
+    } catch (err) {
+      setError('Failed to update waitlist rank. Please try again.');
+    } finally {
+      setRankingStudentId(null);
+    }
+  };
+
+  const handleRankConflictYes = async () => {
+    if (!rankConflict) return;
+    const { student } = rankConflict;
+    setRankConflict(null);
+    await submitRank(student, true);
+  };
+
+  const handleRankConflictNo = () => {
+    if (rankConflict) {
+      const { student } = rankConflict;
+      setRankDrafts(prev => ({
+        ...prev,
+        [student.id]: student.waitlist_rank != null ? String(student.waitlist_rank) : '',
+      }));
+    }
+    setRankConflict(null);
   };
 
   if (loading) return <div>Loading enrollment...</div>;
@@ -141,8 +231,8 @@ const ManageEnrollment = () => {
         </div>
         <div className="card-body">
           <div className="row">
-            {/* All Students */}
-            <div className="col-md-4">
+            {/* All Students — stack like phone until xl so names stay readable */}
+            <div className="col-12 col-xl-4">
               <h6>All Students ({available.length})</h6>
               <input className="form-control mb-2" placeholder="Search..." value={searchAll} onChange={e => setSearchAll(e.target.value)} />
               <div className="sticky-action-row">
@@ -165,14 +255,14 @@ const ManageEnrollment = () => {
                       style={{ cursor: 'pointer', userSelect: 'none' }}
                       onClick={() => setSelectedAll(selectedAll.includes(s.id) ? selectedAll.filter(id => id !== s.id) : [...selectedAll, s.id])}
                     >
-                      {s.display_name || s.full_name || s.name || 'Unknown'}
+                      {studentDisplayName(s)}
                     </span>
                   </li>
                 ))}
               </ul>
             </div>
             {/* Enrolled */}
-            <div className="col-md-4">
+            <div className="col-12 col-xl-4">
               <h6>
                 Enrolled{' '}
                 {classData?.max_capacity ? (
@@ -209,14 +299,14 @@ const ManageEnrollment = () => {
                       style={{ cursor: 'pointer', userSelect: 'none' }}
                       onClick={() => setSelectedEnrolled(selectedEnrolled.includes(s.id) ? selectedEnrolled.filter(id => id !== s.id) : [...selectedEnrolled, s.id])}
                     >
-                      {s.display_name || s.full_name || s.name || 'Unknown'}
+                      {studentDisplayName(s)}
                     </span>
                   </li>
                 ))}
               </ul>
             </div>
             {/* Waitlist */}
-            <div className="col-md-4">
+            <div className="col-12 col-xl-4">
               <h6>Waitlist ({waitlist.length})</h6>
               <input className="form-control mb-2" placeholder="Search..." value={searchWaitlist} onChange={e => setSearchWaitlist(e.target.value)} />
               <div className="sticky-action-row">
@@ -225,7 +315,7 @@ const ManageEnrollment = () => {
               </div>
               <ul className="list-group manage-list">
                 {filterList(sortedWaitlist, searchWaitlist).map(s => (
-                  <li key={s.id} className="list-group-item">
+                  <li key={s.id} className="list-group-item waitlist-rank-row">
                     <input
                       type="checkbox"
                       checked={selectedWaitlist.includes(s.id)}
@@ -233,14 +323,30 @@ const ManageEnrollment = () => {
                         setSelectedWaitlist(e.target.checked ? [...selectedWaitlist, s.id] : selectedWaitlist.filter(id => id !== s.id));
                       }}
                       id={`waitlist-${s.id}`}
-                    />{' '}
+                    />
                     <span
-                      className="student-name-box"
+                      className="student-name-box waitlist-name-cell"
                       style={{ cursor: 'pointer', userSelect: 'none' }}
                       onClick={() => setSelectedWaitlist(selectedWaitlist.includes(s.id) ? selectedWaitlist.filter(id => id !== s.id) : [...selectedWaitlist, s.id])}
                     >
-                      {s.display_name || s.full_name || s.name || 'Unknown'}
+                      {studentDisplayName(s)}
                     </span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      className="form-control form-control-sm waitlist-rank-input"
+                      aria-label={`Rank for ${studentDisplayName(s)}`}
+                      title="Press Enter to set or clear rank"
+                      value={rankDrafts[s.id] ?? ''}
+                      disabled={rankingStudentId === s.id}
+                      onChange={e => setRankDrafts(prev => ({ ...prev, [s.id]: e.target.value }))}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          submitRank(s);
+                        }
+                      }}
+                    />
                   </li>
                 ))}
               </ul>
@@ -268,6 +374,33 @@ const ManageEnrollment = () => {
           </div>
         </div>
       </div>
+
+      {rankConflict && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Apply anyway?</h5>
+                <button type="button" className="btn-close" onClick={handleRankConflictNo} aria-label="Close"></button>
+              </div>
+              <div className="modal-body">
+                <p className="mb-0">
+                  Rank {rankConflict.rank} is already used by {rankConflict.occupantName}.
+                  Applying will shift contiguous ranks to make room.
+                </p>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-primary" onClick={handleRankConflictYes}>
+                  Yes
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={handleRankConflictNo}>
+                  No
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

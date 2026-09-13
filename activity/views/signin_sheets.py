@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from datetime import datetime, timedelta
 from activity.models import Activity, Meeting, AttendanceRecord
 from activity.utils.google_sheets import create_signin_sheet
+from activity.utils.waitlist_order import ordered_waitlist_enrollments
 
 
 class GenerateSignInSheetView(APIView):
@@ -81,9 +82,9 @@ class GenerateSignInSheetView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Get enrolled and waitlist students
+        # Get enrolled and waitlist students (waitlist in shared rank order)
         enrolled_enrollments = activity.enrollments.filter(status='active').select_related('student').order_by('student__last_name', 'student__first_name')
-        waitlist_enrollments = activity.enrollments.filter(status='waiting').select_related('student').order_by('student__last_name', 'student__first_name')
+        waitlist_enrollments = list(ordered_waitlist_enrollments(activity))
 
         enrolled_students = [e.student for e in enrolled_enrollments]
         waitlist_students = [e.student for e in waitlist_enrollments]
@@ -149,7 +150,7 @@ class GenerateSignInSheetView(APIView):
                 activity=activity,
                 date_list=final_dates,
                 enrolled_students=enrolled_students,
-                waitlist_students=waitlist_students,
+                waitlist_enrollments=waitlist_enrollments,
                 dropin_students=dropin_students,
                 attendance_data=attendance_data
             )

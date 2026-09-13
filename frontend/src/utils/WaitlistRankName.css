@@ -1,0 +1,20 @@
+.waitlist-rank-name {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.4rem;
+	min-width: 0;
+}
+
+.waitlist-rank-slot {
+	display: inline-block;
+	min-width: 1.75rem;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	font-weight: 600;
+	color: #6c757d;
+	flex-shrink: 0;
+}
+
+.waitlist-rank-name-text {
+	min-width: 0;
+}
