@@ -105,11 +105,13 @@ const ManageEnrollment = () => {
     setTo(newTo);
     setSelected([]);
 
-    // Auto-save based on which list is being updated
+    // Auto-save based on which list is being updated.
+    // When moving between enrolled and waitlist, use newFrom (updated source list),
+    // not the stale React state for that source — otherwise the student stays in both payloads.
     if (setTo === setEnrolled) {
-      autoSave(newTo, waitlist);
+      autoSave(newTo, setFrom === setWaitlist ? newFrom : waitlist);
     } else if (setTo === setWaitlist) {
-      autoSave(enrolled, newTo);
+      autoSave(setFrom === setEnrolled ? newFrom : enrolled, newTo);
     }
   };
 

@@ -1,0 +1,21 @@
+---
+description: Product goals for Alyssa — enrollment, attendance, waitlists, email, sign-in sheets
+alwaysApply: true
+---
+
+# Product Intent (End User: Alyssa)
+
+Fitness instructor (Zumba, Pound, etc.) across multiple organizations (mainly city rec). **Non-technical** end user: UI must stay simple, consistent, and **responsive on PC and mobile**. Goal is saving time vs manual spreadsheets — not spreadsheet-admin complexity.
+
+## Must Support
+
+- Students with contact info (email, phone, Facebook URL) **and** emergency contact
+- Multi-class / multi-org attendance; ordered waitlists; drop/stop attending
+- Contact waitlist or others to fill spots when absences are known
+- Group/filter people by class; email current attendees of a class
+- Session transitions (next session may change time/date/location or not run)
+- “Create a new Session for this class” as a first-class flow
+- Sign-in sheets as **Google Sheets**: scheduled people, columns per meeting date, attendance check-off, space for walk-ins, planned absences; easy to spot chronic misses
+- Copy-friendly reports for pasting into email (see reports rule)
+
+App replaces manual Google Docs spreadsheets. Sign-in sheet generation is the intentional spreadsheet exception.

@@ -1,0 +1,47 @@
+---
+description: ZumbaMail project overview, tech stack, structure, models, and CI
+alwaysApply: true
+---
+
+# ZumbaMail — Project Overview
+
+Class management app for Alyssa (fitness instructor: Zumba, Pound, etc.) teaching across city rec departments. Handles enrollment, attendance, scheduling, Google Sheets sign-in sheets, email, and reporting. Replaces manual spreadsheet workflows; generating sheets is secondary except for printable sign-in sheets.
+
+## Tech Stack
+
+- **Backend:** Django 5.2 + DRF 3.16, Python 3.11
+- **Frontend:** React 19 + Vite 7, Bootstrap 5 (Bootswatch), react-router-dom 7
+- **DB:** PostgreSQL · **Auth:** JWT via simplejwt (`ACCESS_TOKEN_LIFETIME` 2hr, `REFRESH_TOKEN_LIFETIME` 1 day, rotate refresh)
+- **External:** Google Sheets/Drive (sign-in sheets), Gmail SMTP (email blasts)
+- **Deploy:** Gunicorn + Nginx on host (no Docker). `make deploy`.
+
+## Layout
+
+- `activity/` — models, serializers, `views/` (one file per domain), `routers/` (one per domain; aggregated in `urls.py`), `utils/`
+- `frontend/src/` — feature folders (`organization`, `session`, `class`, `student`, `attendance`, etc.); `utils/authFetch.js`
+- `zumba_site/` — Django settings/urls · API base: `/api/`
+
+## Model Hierarchy (authoritative)
+
+```
+Organization → Session → Activity ("Class" in UI) → Meeting (single date)
+Also: Contact, Location (org-scoped); Activity → Enrollment ← Student; Meeting → AttendanceRecord; Activity → ClassCancellation
+```
+
+- Enrollment statuses: `active`, `waiting`, `dropped`, `not_enrolled`
+- AttendanceRecord statuses: `present`, `unexpected_absence`, `expected_absence`, `scheduled`
+- Soft deletes via `is_deleted` where used; store times as 24hr, dates as ISO; display differently in UI
+
+## Local Dev
+
+```bash
+python manage.py runserver          # :8000
+cd frontend && npm run dev          # :5173, proxies /api
+# or: runserver 0.0.0.0:8000 ; npm run dev -- --host
+```
+
+`make test-syntax` / `make test-backend-syntax` / `make test-frontend-syntax`. Env from `.env` via django-environ (`GOOGLE_*`, `EMAIL_*`).
+
+## CI / PRs
+
+- `syntax-check.yml`, `pr-validation.yml` (body must include exactly one of `#major` `#minor` `#patch`), `release.yml` on merge to main

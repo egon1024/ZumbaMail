@@ -1,0 +1,46 @@
+---
+description: React frontend conventions — authFetch, utils, UI, list/card patterns
+globs: frontend/**/*.{js,jsx,css}
+alwaysApply: false
+---
+
+# Frontend Conventions
+
+## Auth & Utilities
+
+- **Always** `authFetch` from `utils/authFetch.js` for API calls — never native `fetch`
+- JWT: `checkTokenExpiration()` refreshes access via refresh token; on failure clears `localStorage` and redirects to login. Checks run on `PrivateRoute` page load, before each `authFetch`, and on global `keydown`/`click` (debounced in `App.jsx`)
+- Prefer existing utils: `formatDate.js` (`MMM dd, YYYY`), `formatTime.js` (`formatTime` / `parseTime12hr`), `DayOfWeek.jsx`, `Tooltip.jsx`, `phone/PhoneDisplay.jsx`
+- Reuse link/label components: `OrganizationLink`, `ContactLink`, `SessionLink`, `ClassLabel`
+- Feature folders under `frontend/src/[feature]/` with List / Detail / Create / Edit / Link as needed
+- Styling: Bootstrap + `custom.css` (and feature CSS as needed)
+
+## Display
+
+- Dates: `MMM dd, YYYY` · Times: 12-hour with AM/PM (backend stores 24hr)
+- Days of week: always `DayOfWeek` widget — never ad-hoc day badges
+- Breadcrumbs: names/identifiers, **not** numeric IDs
+- Link classes: `.clickable-text` (blue on hover, no underline); `.plain-link` (black, no hover); `.active-name` (blue, no hover — for parent-driven hover activation on a field)
+
+## Lists & Clickable Rows
+
+- Tables with client-side sort (▲ ▼) and clear columns
+- Org-scoped lists (locations, contacts, etc.): read `organization` from the URL query string and pass it to the API; offer an org filter dropdown when useful
+- Clickable rows: `.clickable-row`, `tabIndex={0}`, Enter/Space → navigate; `.reactive-link-cell` / `.reactive-link-text` on cells/text
+- Per-field hover links (e.g. Locations tables): hover activates only that field via `.plain-link` / `.active-name`, not the whole row
+
+## Cards
+
+```jsx
+<div className="card shadow-sm border-primary mb-4">
+  <div className="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+    <h4 className="mb-0">Title</h4>
+    {/* actions */}
+  </div>
+  <div className="card-body">{/* ... */}</div>
+</div>
+```
+
+## Fetch Pattern
+
+`loading` / `error` / `data` state; `authFetch`; show Loading and `alert alert-danger` for errors. Forms: disable submit while saving; navigate on success.

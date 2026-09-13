@@ -1,0 +1,34 @@
+---
+description: Django/DRF backend conventions for ZumbaMail
+globs: activity/**/*.py,zumba_site/**/*.py
+alwaysApply: false
+---
+
+# Backend Conventions
+
+## File Layout
+
+- Models: `activity/models.py` · Serializers: `activity/serializers.py`
+- Views: `activity/views/` (one module per domain); export from `views/__init__.py`
+- URLs: `activity/routers/` (one per domain); aggregated by `activity/urls.py`
+- All Python imports at **file top** — never inside functions/classes/methods
+
+## DRF Views
+
+- CRUD: `ListAPIView`, `CreateAPIView`, `RetrieveAPIView`, `UpdateAPIView`, `DestroyAPIView`
+- Custom logic: `APIView`
+- Always `permission_classes = [permissions.IsAuthenticated]`
+- `select_related()` for FK; `prefetch_related()` for M2M / reverse FK
+
+## URL Shape (examples)
+
+- List/create: `/api/resources/`
+- Detail/update: `/api/resources/<int:pk>/`
+- Delete / soft_delete / custom actions: `/api/resources/<int:pk>/…/`
+
+## Data
+
+- Prefer soft delete (`is_deleted`) over hard delete where the pattern exists
+- Persist times 24hr (`HH:MM`), dates ISO (`YYYY-MM-DD`)
+- Serializers: `SerializerMethodField` (e.g. counts like `contact_count`, `num_locations`), `source=`, nested serializers when needed
+- List filtering: support `organization_id` (or `organization`) query params in `get_queryset` where the UI filters by org
