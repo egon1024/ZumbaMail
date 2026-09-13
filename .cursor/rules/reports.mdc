@@ -1,0 +1,29 @@
+---
+description: Shared report requirements — weekly, end-of-session, residency
+globs: "**/reports/**",activity/views/reports.py,activity/routers/reports.py
+alwaysApply: false
+---
+
+# Reports
+
+All reports: filter by **organization**; format for easy **copy/paste into email**.
+
+## Weekly (`/reports/weekly`)
+
+- Inputs: Organization + week (Sunday–Saturday)
+- Per meeting: day + class type, attendee count, no-shows (unexpected absences); optional expected absences
+- Example tone: `Monday Zumba: 24 people attending` / `No shows: Smith, John; Doe, Jane`
+
+## End of Session (`/reports/end-of-session`)
+
+- Inputs: Organization + Session (optional “show closed sessions”)
+- Per class: day + type, then `date (count), date (count), …`
+
+## Residency (`/reports/residency`)
+
+- Inputs: Organization + Session (optional closed sessions)
+- Per class: Rochester resident vs non-resident aggregate counts across the session
+
+## Cumulative (`/reports/cumulative`)
+
+- Spec still open — define before implementing new behavior

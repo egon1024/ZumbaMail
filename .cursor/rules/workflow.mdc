@@ -1,0 +1,35 @@
+---
+description: How to change code — bugs, features, explanations, renames
+alwaysApply: true
+---
+
+# Workflow Preferences
+
+## What to Change When
+
+- **Bug / error fixes:** Fix directly; explain what was wrong afterward. Do not wait for permission on routine fixes.
+- **New features / unclear design:** Propose approach and get buy-in before implementing (multiple valid architectures → ask first).
+- **Default implementation:** Make the change and explain it.
+
+## Explanations
+
+When introducing React hooks, DRF, Bootstrap, or file placement: explain concepts, imports, and why this pattern — especially for the developer’s experience level (see developer-context rule).
+
+## Consistency While Working
+
+When reading code, proactively note DRY/reuse/inconsistency opportunities; suggest extractions when patterns repeat. Do not block shipping on drive-by refactors unless asked.
+
+## File Renames / Moves
+
+Prefer `git mv` to preserve history when renaming or moving tracked files — **only when the user has explicitly allowed git operations** for that step.
+
+## Living Docs
+
+When design decisions or standards change, update the relevant `.cursor/rules/*.mdc` file.
+
+## Feature Work (OpenSpec)
+
+- Manage feature design and implementation through **OpenSpec** (`openspec/`, plus `.cursor` opsx skills/commands) — not ad-hoc progress markdown.
+- Active work: OpenSpec changes under `openspec/changes/`.
+- History / status: **archived** OpenSpec changes (not a separate PROGRESS.md).
+- Prefer the OpenSpec propose → apply → verify → archive flow for non-trivial features; use explore mode for thinking without implementing.

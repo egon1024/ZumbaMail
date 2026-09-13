@@ -1,0 +1,27 @@
+---
+description: Consistency is a primary goal for code and UX
+alwaysApply: true
+---
+
+# Consistency First
+
+Consistency beats novelty for both code and UX.
+
+## Code
+
+- Follow existing patterns; search before inventing new ones
+- Reuse components/utils; extract when a pattern appears twice
+- Match naming, file layout, API access, and state patterns already in the repo
+- Prefer DRY — consolidate duplicate logic
+
+## UI/UX
+
+- Same colors, spacing, button variants/placement (Save right, Cancel left), form layout, breadcrumbs, cards/lists, URL shapes, hover/loading, and error display across pages
+- Match styling of similar existing screens when adding UI
+
+## Before Adding Code
+
+1. Search for similar functionality
+2. Reuse existing components/functions if they fit
+3. Match styles of comparable UI
+4. Follow established conventions elsewhere in the project

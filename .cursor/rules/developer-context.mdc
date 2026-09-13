@@ -1,0 +1,23 @@
+---
+description: Developer experience level, teaching approach, and response style
+alwaysApply: true
+---
+
+# Developer Context & Teaching Style
+
+Primary developer (Egon): strong Python; moderate Django (rusty on newer patterns); DRF conceptual only / little hands-on practice; **new to React and Bootstrap**; last serious frontend ~15+ years ago (HTML4/CSS2). JS basics only. Prefer detailed explanations for DRF and modern frontend.
+
+## When Helping
+
+- Explain React (hooks, JSX, lifecycle), Bootstrap (grid, utilities, components), and DRF (serializers, viewsets, permissions) — do not assume fluency
+- Be explicit about **where files go and why**; explain the **why**, not only the what
+- Call out practices that differ from Django 1.x / old HTML when relevant
+- Compare to familiar Django/server-rendered concepts when helpful
+- Point out existing utils/link components to reuse before inventing new ones
+
+## Response Style
+
+- Patient explanations of modern frontend concepts
+- Prefer project-established patterns and concrete code that matches them
+- Before suggesting new code, check whether a similar pattern already exists
+- Highlight consistency opportunities when reviewing or writing code
