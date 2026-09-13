@@ -17,19 +17,39 @@ const ClassDetail = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
+    setError(null);
     authFetch(`/api/activity/${id}/`)
-      .then(resp => resp.json())
-      .then(data => {
+      .then(async (resp) => {
+        let data = null;
+        const contentType = resp.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          try {
+            data = await resp.json();
+          } catch {
+            throw new Error('Failed to load class details');
+          }
+        }
+        if (!resp.ok) {
+          throw new Error('Failed to load class details');
+        }
+        return data;
+      })
+      .then((data) => {
+        if (cancelled) return;
         setCls(data);
         setStudents(data.students || []);
         setWaitlist(data.waitlist || []);
+        setError(null);
         setLoading(false);
       })
       .catch(() => {
+        if (cancelled) return;
         setError('Failed to load class details');
         setLoading(false);
       });
+    return () => { cancelled = true; };
   }, [id]);
 
   if (loading) return <div>Loading class details...</div>;
